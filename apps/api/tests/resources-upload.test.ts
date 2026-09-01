@@ -45,8 +45,8 @@ describe("Resources Multipart Upload", () => {
       request.ownerId = "test-user-1";
       tenantContext.run({ ownerId: "test-user-1" }, () => {
         done();
-      }, 60000);
-    }, 60000);
+      });
+    });
 
     app.register(resourceRoutes);
     await app.ready();
@@ -62,7 +62,7 @@ describe("Resources Multipart Upload", () => {
           name: "Test List",
           slug: "test-list",
           position: 0,
-        }, 60000);
+        });
         resolve();
       }),
     );
@@ -85,14 +85,14 @@ describe("Resources Multipart Upload", () => {
     form.append("file", Buffer.from("fake pdf content"), {
       filename: "test.pdf",
       contentType: "application/pdf",
-    }, 60000);
+    });
 
     const response = await app.inject({
       method: "POST",
       url: "/api/resources",
       headers: form.getHeaders(),
       payload: form.getBuffer(),
-    }, 60000);
+    });
 
     expect(response.statusCode).toBe(201);
     const data = JSON.parse(response.payload);
