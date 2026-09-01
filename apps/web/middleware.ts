@@ -17,6 +17,6 @@ export default auth;
  */
 export const config = {
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|nexus-icon|site.webmanifest|apple-touch-icon|signin).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|nexus-icon|site.webmanifest|apple-touch-icon|signin|terms|privacy).*)",
   ],
 };

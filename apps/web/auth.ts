@@ -90,8 +90,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
+      const isPublicRoute = ["/terms", "/privacy"].includes(nextUrl.pathname);
 
-      if (isApiAuthRoute) return true;
+      if (isApiAuthRoute || isPublicRoute) return true;
 
       if (!isLoggedIn) {
         return false; // Redirect to signIn page
