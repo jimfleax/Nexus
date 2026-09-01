@@ -89,6 +89,11 @@ export const authPlugin = fp(async (fastify) => {
   fastify.addHook(
     "preHandler",
     async (request: FastifyRequest, reply: FastifyReply) => {
+      // Public routes — skip auth entirely
+      if (request.url === "/health" || request.url.startsWith("/api/auth/")) {
+        return;
+      }
+
       const authHeader = request.headers.authorization;
       let token = "";
 
@@ -97,6 +102,7 @@ export const authPlugin = fp(async (fastify) => {
       } else if (request.headers.cookie) {
         const cookieHeader = request.headers.cookie;
         const cookieNames = [
+          "nexus-session",
           "authjs.session-token",
           "__Secure-authjs.session-token",
           "next-auth.session-token",
@@ -105,9 +111,23 @@ export const authPlugin = fp(async (fastify) => {
 
         for (const name of cookieNames) {
           if (cookieHeader.includes(name)) {
+            // nexus-session is a simple single-part cookie — read directly
+            if (name === "nexus-session") {
+              const match = cookieHeader.match(
+                new RegExp(`(?:^|;\\s*)nexus-session=([^;]*)`),
+              );
+              if (match && match[1]) {
+                token = match[1];
+                break;
+              }
+              continue;
+            }
+
             let stitched = "";
             for (let i = 0; i < 5; i++) {
-              const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}\\.${i}=([^;]*)`));
+              const match = cookieHeader.match(
+                new RegExp(`(?:^|;\\s*)${name}\\.${i}=([^;]*)`),
+              );
               if (match && match[1]) {
                 stitched += match[1];
               }
@@ -116,7 +136,9 @@ export const authPlugin = fp(async (fastify) => {
               token = stitched;
               break;
             } else {
-              const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+              const match = cookieHeader.match(
+                new RegExp(`(?:^|;\\s*)${name}=([^;]*)`),
+              );
               if (match && match[1]) {
                 token = match[1];
                 break;

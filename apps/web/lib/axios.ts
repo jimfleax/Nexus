@@ -7,8 +7,6 @@
 import axios from "axios";
 import { toast } from "sonner";
 
-import { signOut } from "next-auth/react";
-
 /**
  * @constant {AxiosInstance} api
  * @description Axios instance for the Nexus backend, rooted at the /api/v1 route proxy.
@@ -32,7 +30,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         toast.error("Session expired. Please sign in again.");
-        signOut({ callbackUrl: "/signin" });
+        fetch("/api/auth/signout", { method: "POST" }).finally(() => {
+          window.location.href = "/signin";
+        });
       }
     } else if (error.response?.status !== 404) {
       toast.error(message);

@@ -7,7 +7,6 @@
 
 import { Suspense } from "react";
 import Image from "next/image";
-import { signOut } from "next-auth/react";
 import { SignOut } from "@phosphor-icons/react";
 import {
   HardDrives,
@@ -286,7 +285,11 @@ export function ProfileModal({
               confirmText="Logout"
               cancelText="Cancel"
               isDestructive
-              onConfirm={() => signOut({ callbackUrl: "/signin" })}
+              onConfirm={() =>
+                fetch("/api/auth/signout", { method: "POST" }).then(() => {
+                  window.location.href = "/signin";
+                })
+              }
             />
           </div>
 

@@ -1,15 +1,16 @@
 /**
  * @file page.tsx
- * @description Sign-in page offering Google and GitHub OAuth via server actions, presented on an animated gradient backdrop.
+ * @description Sign-in page offering Google and GitHub OAuth via direct GET form submissions to the Fastify auth routes, presented on an animated gradient backdrop.
+ * @architecture No server actions — each form submits GET to /api/auth/google or /api/auth/github which are
+ *   proxied (via next.config.ts rewrite fallback) directly to the Fastify OAuth initiation handler.
  */
-import { signIn } from "@/auth";
 import { OAuthSubmitButton } from "./oauth-submit-button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { Hexagon } from "lucide-react";
 import Link from "next/link";
 
 /**
- * @desc    Render the sign-in card with provider buttons; each form uses a server action to call signIn
+ * @desc    Render the sign-in card with provider buttons; each form GETs the Fastify OAuth initiation endpoint
  * @returns {JSX.Element} The sign-in UI
  */
 export default function SignInPage() {
@@ -32,12 +33,7 @@ export default function SignInPage() {
         </div>
 
         <div className="flex flex-col gap-3 p-8 pt-0">
-          <form
-            action={async () => {
-              "use server";
-              await signIn("google", { redirectTo: "/projects" });
-            }}
-          >
+          <form action="/api/auth/google" method="GET">
             <OAuthSubmitButton provider="google">
               <svg
                 className="mr-2 h-4 w-4"
@@ -58,12 +54,7 @@ export default function SignInPage() {
             </OAuthSubmitButton>
           </form>
 
-          <form
-            action={async () => {
-              "use server";
-              await signIn("github", { redirectTo: "/projects" });
-            }}
-          >
+          <form action="/api/auth/github" method="GET">
             <OAuthSubmitButton provider="github">
               <svg
                 className="mr-2 h-4 w-4"
@@ -85,9 +76,14 @@ export default function SignInPage() {
         <div className="border-t border-white/10 bg-white/5 p-6 text-center">
           <p className="text-xs text-zinc-500">
             By signing in, you agree to our{" "}
-            <Link href="/terms" className="underline hover:text-zinc-300">Terms of Service</Link>
-            {" "}and{" "}
-            <Link href="/privacy" className="underline hover:text-zinc-300">Privacy Policy</Link>.
+            <Link href="/terms" className="underline hover:text-zinc-300">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="underline hover:text-zinc-300">
+              Privacy Policy
+            </Link>
+            .
           </p>
         </div>
       </div>

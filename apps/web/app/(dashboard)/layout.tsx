@@ -1,11 +1,49 @@
 /**
  * @file layout.tsx
- * @description Authenticated app shell: resolves the session server-side and wraps the dashboard in providers and the AppShell frame.
+ * @description Authenticated app shell: resolves the session server-side by verifying the nexus-session JWT
+ *   cookie and wraps the dashboard in providers and the AppShell frame.
+ * @architecture Reads the nexus-session HttpOnly cookie via next/headers, verifies it with jose's jwtVerify
+ *   against AUTH_SECRET, and extracts the user payload. If missing or invalid, redirects to /signin
+ *   (middleware also handles this as a belt-and-suspenders guard).
  */
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { jwtVerify } from "jose";
 import { AppShell } from "@/components/layout/app-shell";
 import { Providers } from "@/components/providers";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+
+/**
+ * @desc    Verify the nexus-session JWT and return the decoded user payload, or null if invalid
+ */
+async function getSessionUser(): Promise<{
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+} | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexus-session")?.value;
+    if (!token) return null;
+
+    const secret = process.env.AUTH_SECRET;
+    if (!secret) return null;
+
+    const key = new TextEncoder().encode(secret);
+    const { payload } = await jwtVerify(token, key);
+
+    if (!payload.sub) return null;
+
+    return {
+      id: payload.sub,
+      name: (payload.name as string) ?? null,
+      email: (payload.email as string) ?? null,
+      image: (payload.image as string) ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * @desc    Render the dashboard frame with the current session user
@@ -17,15 +55,15 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const user = await getSessionUser();
 
-  if (!session) {
+  if (!user) {
     redirect("/signin");
   }
 
   return (
     <Providers>
-      <AppShell user={session.user}>{children}</AppShell>
+      <AppShell user={user}>{children}</AppShell>
     </Providers>
   );
 }

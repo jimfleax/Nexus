@@ -8,6 +8,7 @@ import "dotenv/config";
 import Fastify from "fastify";
 import { connectDB } from "./db.js";
 import { authPlugin } from "./auth.js";
+import { authRoutes } from "./routes/auth.js";
 import { projectRoutes } from "./routes/projects.js";
 import { listRoutes } from "./routes/lists.js";
 import { resourceRoutes } from "./routes/resources.js";
@@ -37,6 +38,8 @@ fastify.register(storagePlugin, {
 });
 fastify.register(deletionPlugin);
 
+// Auth routes must be registered BEFORE authPlugin to remain ungated
+fastify.register(authRoutes);
 fastify.register(authPlugin);
 fastify.register(projectRoutes);
 fastify.register(listRoutes);
