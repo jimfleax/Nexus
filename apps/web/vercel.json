@@ -3,7 +3,7 @@
 
   "framework": "nextjs",
 
-  "buildCommand": "cd ../.. && npm run build --workspace=packages/shared ; npm run build --workspace=apps/web",
+  "buildCommand": "cd ../.. && npm run build --workspace=packages/shared --if-present && npm run build --workspace=apps/web",
   "installCommand": "cd ../.. && npm ci",
   "outputDirectory": ".next",
 

@@ -62,7 +62,7 @@ jobs:
         run: npm ci
 
       - name: Build shared package
-        run: npm run build --workspace=packages/shared 2>/dev/null || true
+        run: npm run build --workspace=packages/shared --if-present
 
       - name: Build API (tsc)
         run: npm run build --workspace=apps/api

@@ -28,7 +28,7 @@ COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
 
 # Build the shared package first (if it has a build script), then the api
-RUN npm run build --workspace=packages/shared 2>/dev/null || true
+RUN npm run build --workspace=packages/shared --if-present
 RUN npm run build --workspace=apps/api
 
 # ─────────────────────────────────────────────────────────────────────────────
