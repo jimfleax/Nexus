@@ -14,7 +14,6 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { InfoDialog } from "@/components/ui/info-dialog";
@@ -24,8 +23,8 @@ import { InfoDialog } from "@/components/ui/info-dialog";
  * @param   {{p: Project}} props - The project to display
  * @returns {JSX.Element} The project card
  */
-export function ProjectCard({ p }: { p: Project }) {
-  const listCount = (p as any).listCount ?? 0;
+export function ProjectCard({ p }: { p: Project & { listCount?: number } }) {
+  const listCount = p.listCount ?? 0;
   const router = useRouter();
   const [infoOpen, setInfoOpen] = useState(false);
 

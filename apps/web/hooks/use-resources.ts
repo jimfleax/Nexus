@@ -52,7 +52,7 @@ export function useCreateResource() {
     }: {
       projectId: string;
       listId: string;
-      input: any;
+      input: CreateResourceInput & { file?: File; mimeType?: string };
     }) => apiClient.resources.create(projectId, listId, input),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
@@ -99,12 +99,12 @@ export function useDeleteResource() {
  * @desc    Mutation that finalizes a Drive upload for a resource and invalidates the resource cache
  */
 
-
 /**
  * @desc    Mutation to mark a resource as opened
  */
 export function useMarkOpened() {
   return useMutation({
-    mutationFn: (resourceId: string) => apiClient.resources.markOpened(resourceId),
+    mutationFn: (resourceId: string) =>
+      apiClient.resources.markOpened(resourceId),
   });
 }

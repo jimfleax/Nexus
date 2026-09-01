@@ -28,15 +28,18 @@ export function useFavorites() {
       await queryClient.cancelQueries({ queryKey: ["favorites"] });
       const previousFavorites = queryClient.getQueryData(["favorites"]);
 
-      queryClient.setQueryData(["favorites"], (old: any[] | undefined) => {
-        if (!old) return old;
-        const exists = old.some((r: { id: string }) => r.id === resourceId);
-        if (exists) {
-          return old.filter((r: { id: string }) => r.id !== resourceId);
-        }
-        // Since we don't have the full resource here, we just invalidate later
-        return old;
-      });
+      queryClient.setQueryData(
+        ["favorites"],
+        (old: { id: string }[] | undefined) => {
+          if (!old) return old;
+          const exists = old.some((r: { id: string }) => r.id === resourceId);
+          if (exists) {
+            return old.filter((r: { id: string }) => r.id !== resourceId);
+          }
+          // Since we don't have the full resource here, we just invalidate later
+          return old;
+        },
+      );
 
       return { previousFavorites };
     },

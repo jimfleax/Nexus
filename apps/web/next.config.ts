@@ -32,8 +32,10 @@ const nextConfig: NextConfig = {
    *   only paths with no matching Route Handler fall through to the backend
    *   (e.g. /health, /api/protected, any future raw Fastify routes).
    *
-   * - afterFiles: run AFTER filesystem routes fail.
-   *   /api/* catch-all ensures any unmatched /api path is still forwarded.
+   * - afterFiles: run AFTER filesystem routes fail, but before dynamic routes.
+   *
+   * - fallback: run AFTER all routes fail (including dynamic routes like /api/auth/[...nextauth]).
+   *   /api/* catch-all ensures any unmatched /api path is forwarded to the backend.
    */
   async rewrites() {
     return {
@@ -44,17 +46,16 @@ const nextConfig: NextConfig = {
           destination: `${API_URL}/health`,
         },
       ],
-      afterFiles: [
+      afterFiles: [],
+      fallback: [
         // Forward any /api/* path that didn't match a Next.js Route Handler
         {
           source: "/api/:path*",
           destination: `${API_URL}/api/:path*`,
         },
       ],
-      fallback: [],
     };
   },
 };
 
 export default nextConfig;
-

@@ -10,7 +10,11 @@ import { useReaderSettings } from "@/components/reader-settings-provider";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useProject } from "@/hooks/use-projects";
 import { useList } from "@/hooks/use-lists";
-import { useResource, useDeleteResource, useMarkOpened } from "@/hooks/use-resources";
+import {
+  useResource,
+  useDeleteResource,
+  useMarkOpened,
+} from "@/hooks/use-resources";
 import { ResourceViewer } from "@/components/resource-viewer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ListSkeleton } from "@/components/ui/data-skeletons";
@@ -26,9 +30,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { apiClient } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 const EditResourceDialog = React.lazy(() =>
   import("@/components/resources/edit-resource-dialog").then((mod) => ({
@@ -161,7 +168,9 @@ export function ResourcePage({
                 {favorites.has(resource.id) ? "★" : "☆"}
               </TooltipTrigger>
               <TooltipContent>
-                {favorites.has(resource.id) ? "Remove from favorites" : "Add to favorites"}
+                {favorites.has(resource.id)
+                  ? "Remove from favorites"
+                  : "Add to favorites"}
               </TooltipContent>
             </Tooltip>
             <ConfirmDialog
@@ -201,9 +210,7 @@ export function ResourcePage({
         <div className="mt-4 flex flex-wrap gap-2 text-sm text-[#6247aa]">
           <span className="capitalize">{resource.type}</span>
           <span>·</span>
-          <span>
-            Last updated {formatDate(resource.updatedAt)}
-          </span>
+          <span>Last updated {formatDate(resource.updatedAt)}</span>
           {resource.readingTime && (
             <>
               <span>·</span>

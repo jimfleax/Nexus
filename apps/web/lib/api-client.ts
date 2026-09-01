@@ -191,27 +191,33 @@ export const apiClient = {
     async create(
       projectId: string,
       listId: string,
-      input: any,
+      input: CreateResourceInput & {
+        file?: File;
+        mimeType?: string;
+        [key: string]: unknown;
+      },
     ): Promise<Resource> {
       if (input.file) {
         const form = new FormData();
         form.append("projectId", projectId);
         form.append("listId", listId);
         Object.keys(input).forEach((key) => {
-          if (input[key] !== undefined) form.append(key, input[key]);
+          if (input[key] !== undefined)
+            form.append(key, input[key] as string | Blob);
         });
         const { data } = await api.post<Resource>("/resources", form, {
           headers: {
-             "Content-Type": "multipart/form-data"
-          }
+            "Content-Type": "multipart/form-data",
+          },
         });
         return data;
       }
 
-      const { data } = await api.post<Resource>(
-        "/resources",
-        { ...input, projectId, listId },
-      );
+      const { data } = await api.post<Resource>("/resources", {
+        ...input,
+        projectId,
+        listId,
+      });
       return data;
     },
     /**

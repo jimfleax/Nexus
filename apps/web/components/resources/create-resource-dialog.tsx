@@ -23,7 +23,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { apiClient } from "@/lib/api-client";
 import { FilePicker } from "@/components/ui/file-picker";
 import { formatFilenameToTitle } from "@/lib/utils";
 
@@ -88,10 +87,17 @@ export function CreateResourceDialog({
   const [selectedListId, setSelectedListId] = useState(initialListId ?? "");
   const activeListId = initialListId || selectedListId;
 
-  const { mutateAsync: createResource, isPending: isUploading, error: createError } = useCreateResource();
-  
-  const displayError = createError 
-    ? (createError as any).response?.data?.error || createError.message || "Failed to create resource"
+  const {
+    mutateAsync: createResource,
+    isPending: isUploading,
+    error: createError,
+  } = useCreateResource();
+
+  const displayError = createError
+    ? (createError as { response?: { data?: { error?: string } } }).response
+        ?.data?.error ||
+      createError.message ||
+      "Failed to create resource"
     : null;
 
   useEffect(() => {
@@ -144,7 +150,7 @@ export function CreateResourceDialog({
       setContent("");
       setTagsInput("");
       setFile(null);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to create resource", err);
     }
   };

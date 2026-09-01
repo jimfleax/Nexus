@@ -49,10 +49,9 @@ describe("Resources Multipart Upload", () => {
     });
 
     app.register(resourceRoutes);
-    await app.ready();
-
     const listId = new mongoose.Types.ObjectId().toHexString();
     const projectId = new mongoose.Types.ObjectId().toHexString();
+    app.decorate("testContext", { listId, projectId });
 
     await new Promise<void>((resolve) =>
       tenantContext.run({ ownerId: "test-user-1" }, async () => {
@@ -66,7 +65,7 @@ describe("Resources Multipart Upload", () => {
         resolve();
       }),
     );
-    app.decorate("testContext", { listId, projectId });
+    await app.ready();
   }, 60000);
 
   afterAll(async () => {
@@ -96,7 +95,7 @@ describe("Resources Multipart Upload", () => {
 
     expect(response.statusCode).toBe(201);
     const data = JSON.parse(response.payload);
-    
+
     expect(data.title).toBe("Test Upload");
     expect(data.driveFileId).toMatch(/^fake-file-/);
     expect(data.size).toBe(Buffer.from("fake pdf content").length);
