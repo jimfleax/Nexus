@@ -85,9 +85,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
     /**
-     * @desc    Always return true here to let the custom auth() wrapper in the middleware handle the routing.
+     * @desc    Gate routes natively. Return false to redirect to signin, true to proceed, or a Response to redirect elsewhere.
      */
-    authorized() {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isPublicRoute = ["/signin", "/terms", "/policy", "/api", "/health"].some(route => nextUrl.pathname.startsWith(route));
+
+      // 1. If not logged in and not a public route -> NextAuth will redirect to signin page
+      if (!isLoggedIn && !isPublicRoute) {
+        return false;
+      }
+
+      // 2. If logged in and trying to access signin -> Redirect to App (Dashboard)
+      if (isLoggedIn && nextUrl.pathname === "/signin") {
+        return Response.redirect(new URL("/projects", nextUrl));
+      }
+
       return true;
     },
   },

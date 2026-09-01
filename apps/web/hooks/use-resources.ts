@@ -52,12 +52,13 @@ export function useCreateResource() {
     }: {
       projectId: string;
       listId: string;
-      input: CreateResourceInput;
+      input: any;
     }) => apiClient.resources.create(projectId, listId, input),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["resources", variables.projectId, variables.listId],
       });
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
     },
   });
 }
@@ -97,67 +98,7 @@ export function useDeleteResource() {
 /**
  * @desc    Mutation that finalizes a Drive upload for a resource and invalidates the resource cache
  */
-export function useCompleteUpload() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      resourceId,
-      driveFileId,
-    }: {
-      resourceId: string;
-      driveFileId: string;
-    }) => apiClient.resources.completeUpload(resourceId, { driveFileId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
-    },
-  });
-}
 
-/**
- * @desc    Mutation that creates a resource, uploads a file if present, and marks upload as complete
- */
-export function useCreateResourceWithUpload() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      projectId,
-      listId,
-      input,
-      file,
-    }: {
-      projectId: string;
-      listId: string;
-      input: CreateResourceInput;
-      file?: File | null;
-    }) => {
-      const created = await apiClient.resources.create(projectId, listId, input);
-      if (file && created.uploadUri) {
-        const uploadRes = await fetch(created.uploadUri, {
-          method: "PUT",
-          body: file,
-          headers: { "Content-Type": file.type },
-        });
-        if (uploadRes.ok) {
-          const driveData = await uploadRes.json();
-          if (driveData && driveData.id) {
-            await apiClient.resources.completeUpload(created.id, {
-              driveFileId: driveData.id,
-            });
-          }
-        } else {
-          throw new Error("Failed to upload file to storage");
-        }
-      }
-      return created;
-    },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["resources", variables.projectId, variables.listId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
-    },
-  });
-}
 
 /**
  * @desc    Mutation to mark a resource as opened

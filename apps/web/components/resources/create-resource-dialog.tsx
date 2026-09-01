@@ -10,7 +10,7 @@ import { Plus } from "@phosphor-icons/react";
 import type { ResourceType } from "@nexus/shared";
 import { useProjects } from "@/hooks/use-projects";
 import { useLists } from "@/hooks/use-lists";
-import { useCreateResourceWithUpload } from "@/hooks/use-resources";
+import { useCreateResource } from "@/hooks/use-resources";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -88,7 +88,7 @@ export function CreateResourceDialog({
   const [selectedListId, setSelectedListId] = useState(initialListId ?? "");
   const activeListId = initialListId || selectedListId;
 
-  const { mutateAsync: createResource, isPending: isUploading, error: createError } = useCreateResourceWithUpload();
+  const { mutateAsync: createResource, isPending: isUploading, error: createError } = useCreateResource();
   
   const displayError = createError 
     ? (createError as any).response?.data?.error || createError.message || "Failed to create resource"
@@ -132,8 +132,8 @@ export function CreateResourceDialog({
           content: content.trim() || undefined,
           tags: parsedTags,
           mimeType: file ? file.type : undefined,
+          file: file || undefined,
         },
-        file,
       });
 
       setDialogOpen(false);

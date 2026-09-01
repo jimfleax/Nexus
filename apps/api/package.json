@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fastify/multipart": "^10.1.1",
     "@fastify/type-provider-zod": "^1.0.0",
     "@nexus/shared": "*",
     "dotenv": "^17.4.2",
@@ -22,8 +23,10 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@types/form-data": "^2.2.1",
     "@types/node": "^20",
     "eslint": "^10.9.1",
+    "form-data": "^4.0.6",
     "mongodb-memory-server": "^11.2.0",
     "tsx": "^4",
     "typescript": "^5",

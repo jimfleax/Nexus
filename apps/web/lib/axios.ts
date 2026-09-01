@@ -14,7 +14,7 @@ import { signOut } from "next-auth/react";
  * @description Axios instance for the Nexus backend, rooted at the /api/v1 route proxy.
  */
 export const api = axios.create({
-  baseURL: "/api/v1",
+  baseURL: "/api",
   headers: { "Content-Type": "application/json" },
 });
 

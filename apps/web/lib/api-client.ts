@@ -191,11 +191,26 @@ export const apiClient = {
     async create(
       projectId: string,
       listId: string,
-      input: CreateResourceInput,
+      input: any,
     ): Promise<Resource> {
+      if (input.file) {
+        const form = new FormData();
+        form.append("projectId", projectId);
+        form.append("listId", listId);
+        Object.keys(input).forEach((key) => {
+          if (input[key] !== undefined) form.append(key, input[key]);
+        });
+        const { data } = await api.post<Resource>("/resources", form, {
+          headers: {
+             "Content-Type": "multipart/form-data"
+          }
+        });
+        return data;
+      }
+
       const { data } = await api.post<Resource>(
-        `/projects/${projectId}/lists/${listId}/resources`,
-        input,
+        "/resources",
+        { ...input, projectId, listId },
       );
       return data;
     },
@@ -223,22 +238,7 @@ export const apiClient = {
     async delete(resourceId: string): Promise<void> {
       await api.delete(`/resources/${resourceId}`);
     },
-    /**
-     * @desc    Confirm a Drive upload finished and finalize the resource
-     * @param   {string} resourceId - Resource ID
-     * @param   {object} payload - Object containing the Drive file ID
-     * @returns {Promise<Resource>} The finalized resource
-     */
-    async completeUpload(
-      resourceId: string,
-      payload: { driveFileId: string },
-    ): Promise<Resource> {
-      const { data } = await api.post<Resource>(
-        `/resources/${resourceId}/upload/complete`,
-        payload,
-      );
-      return data;
-    },
+
     /**
      * @desc    Toggle a resource's favorite flag
      * @param   {string} resourceId - Resource ID

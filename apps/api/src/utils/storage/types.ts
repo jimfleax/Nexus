@@ -13,11 +13,18 @@ export interface StorageQuota {
   limit: number | null;
 }
 
+import type { Readable } from "stream";
+
 /**
  * @interface IStorageAdapter
- * @description Contract for initializing uploads, deleting files, and reading quota for a storage backend.
+ * @description Contract for uploading files, deleting files, and reading quota for a storage backend.
  */
 export interface IStorageAdapter {
+  uploadFile(
+    ownerId: string,
+    metadata: { title: string; mimeType: string },
+    fileStream: Readable,
+  ): Promise<{ driveFileId: string; size: number }>;
   initializeUpload(
     ownerId: string,
     metadata: { title: string; mimeType: string },

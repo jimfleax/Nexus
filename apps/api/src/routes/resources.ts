@@ -64,7 +64,6 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       bodyLimit: 14 * 1024 * 1024, // 14MB limit
       schema: {
-        body: CreateResourceSchema,
         response: {
           201: ResourceSchema,
           400: z.object({ error: z.string() }),
@@ -74,7 +73,36 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const body = request.body;
+      let body: any;
+      let fileStream: any;
+      let mimeType = "";
+
+      if (request.isMultipart()) {
+        const data = await request.file();
+        if (!data) {
+          return reply.status(400).send({ error: "Missing file in multipart request" } as any);
+        }
+        body = {};
+        for (const [key, field] of Object.entries(data.fields)) {
+          if (field && (field as any).value !== undefined) {
+             body[key] = (field as any).value;
+          }
+        }
+        if (body.isFavorite !== undefined) {
+          body.isFavorite = body.isFavorite === "true";
+        }
+        fileStream = data.file;
+        mimeType = data.mimetype;
+      } else {
+        body = request.body;
+      }
+
+      const parsedBody = CreateResourceSchema.safeParse(body);
+      if (!parsedBody.success) {
+        return reply.status(400).send({ error: "Invalid payload: " + parsedBody.error.message } as any);
+      }
+      
+      body = parsedBody.data;
       const ownerId = (request as any).ownerId;
 
       const list = await KnowledgeListModel.findOne({
@@ -84,7 +112,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       if (!list) {
         return reply
           .status(404)
-          .send({ error: "Knowledge List not found in the specified project" });
+          .send({ error: "Knowledge List not found in the specified project" } as any);
       }
 
       const existingResource = await ResourceModel.findOne({
@@ -100,8 +128,8 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           } as any);
       }
 
-      let uploadUri: string | undefined;
-      let status: "pending" | "ready" | "error" = "ready";
+      let driveFileId: string | undefined;
+      let size: number | undefined;
 
       const isFileUpload =
         (body.type === "pdf" || body.type === "image") &&
@@ -109,30 +137,33 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         !body.content;
 
       if (isFileUpload) {
+        if (!fileStream) {
+           return reply.status(400).send({ error: "File stream required for this resource type" } as any);
+        }
         try {
-          const mimeType =
-            body.mimeType ||
-            (body.type === "pdf" ? "application/pdf" : "image/jpeg");
-          uploadUri = await server.storage.initializeUpload(ownerId, {
+          const mType = mimeType || body.mimeType || (body.type === "pdf" ? "application/pdf" : "image/jpeg");
+          const uploadResult = await server.storage.uploadFile(ownerId, {
             title: body.title,
-            mimeType,
-          });
-          status = "pending";
+            mimeType: mType,
+          }, fileStream);
+          driveFileId = uploadResult.driveFileId;
+          size = uploadResult.size;
         } catch (error: any) {
-          request.log.error(error, "Storage upload init failed");
+          request.log.error(error, "Storage upload failed");
           if (error.name === "StorageError") {
             return reply.status(400).send({ error: error.message } as any);
           }
           return reply
             .status(500)
-            .send({ error: "Failed to initialize storage" } as any);
+            .send({ error: "Failed to upload file to storage" } as any);
         }
       }
 
       const resource = new ResourceModel({
         ...body,
-        status,
-        uploadUri,
+        status: "ready",
+        driveFileId,
+        size,
       });
 
       await resource.save();
@@ -196,78 +227,6 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
   );
 
   /**
-   * @desc    Complete a Drive upload by verifying the uploaded file and recording its size/metadata
-   * @route   POST /api/resources/:id/upload/complete
-   * @access  Private
-   */
-  server.post(
-    "/api/resources/:id/upload/complete",
-    {
-      schema: {
-        params: z.object({ id: z.string() }),
-        body: z.object({ driveFileId: z.string() }),
-        response: {
-          200: ResourceSchema,
-          400: z.object({ error: z.string() }),
-          404: z.object({ error: z.string() }),
-          500: z.object({ error: z.string() }),
-        },
-      },
-    },
-    async (request, reply) => {
-      const { id } = request.params;
-      const { driveFileId } = request.body;
-      const ownerId = (request as any).ownerId;
-
-      const resource = await ResourceModel.findById(id);
-      if (!resource) {
-        return reply.status(404).send({ error: "Resource not found" });
-      }
-
-      const user = await UserModel.findOne({ ownerId });
-      if (!user || !user.driveRefreshToken) {
-        return reply.status(400).send({ error: "Google Drive not configured" });
-      }
-
-      const oauth2Client = new google.auth.OAuth2(
-        process.env.AUTH_GOOGLE_ID,
-        process.env.AUTH_GOOGLE_SECRET,
-      );
-      oauth2Client.setCredentials({ refresh_token: user.driveRefreshToken });
-      const drive = google.drive({ version: "v3", auth: oauth2Client });
-
-      try {
-        const fileRes = await drive.files.get({
-          fileId: driveFileId,
-          fields: "size",
-        });
-
-        const sizeStr = fileRes.data.size;
-        const sizeNum = sizeStr ? parseInt(sizeStr, 10) : 0;
-
-        // We verified the file exists and got its size
-        if (sizeNum > 100 * 1024 * 1024) {
-          return reply
-            .status(400)
-            .send({ error: "File size exceeds 100MB limit" });
-        }
-
-        resource.driveFileId = driveFileId;
-        resource.size = sizeNum;
-        resource.status = "ready";
-        resource.uploadUri = undefined;
-        await resource.save();
-
-        return resource;
-      } catch (err: any) {
-        request.log.error(err, "Failed to verify drive file");
-        return reply.status(500).send({ error: "Failed to verify file" });
-      }
-    },
-  );
-
-  /**
-   * @desc    Stream a resource's Drive-stored file with byte-range and disposition headers
    * @route   GET /api/resources/:id/file
    * @access  Private
    */

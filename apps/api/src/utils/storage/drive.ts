@@ -97,6 +97,43 @@ export class DriveStorageAdapter implements IStorageAdapter {
     return folderId;
   }
 
+  async uploadFile(
+    ownerId: string,
+    metadata: { title: string; mimeType: string },
+    fileStream: import("stream").Readable,
+  ): Promise<{ driveFileId: string; size: number }> {
+    try {
+      const { drive, user } = await this.getDrive(ownerId);
+      const folderId = await this.ensureDriveFolder(drive, user);
+      const parents = folderId ? [folderId] : undefined;
+
+      const res = await drive.files.create({
+        requestBody: {
+          name: metadata.title,
+          mimeType: metadata.mimeType,
+          parents,
+        },
+        media: {
+          mimeType: metadata.mimeType,
+          body: fileStream,
+        },
+        fields: "id,size",
+      });
+
+      if (!res.data.id) {
+        throw new Error("No file ID returned from Google Drive");
+      }
+
+      return {
+        driveFileId: res.data.id,
+        size: res.data.size ? parseInt(res.data.size, 10) : 0,
+      };
+    } catch (err: any) {
+      if (err instanceof StorageError) throw err;
+      throw new StorageError(err.message || "Failed to upload file", err);
+    }
+  }
+
   /**
    * @desc    Begin a Drive resumable upload and return the upload URI for the client
    * @param   {string} ownerId - The owning user

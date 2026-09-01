@@ -90,13 +90,47 @@ export const authPlugin = fp(async (fastify) => {
     "preHandler",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const authHeader = request.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      let token = "";
+
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+      } else if (request.headers.cookie) {
+        const cookieHeader = request.headers.cookie;
+        const cookieNames = [
+          "authjs.session-token",
+          "__Secure-authjs.session-token",
+          "next-auth.session-token",
+          "__Secure-next-auth.session-token",
+        ];
+
+        for (const name of cookieNames) {
+          if (cookieHeader.includes(name)) {
+            let stitched = "";
+            for (let i = 0; i < 5; i++) {
+              const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}\\.${i}=([^;]*)`));
+              if (match && match[1]) {
+                stitched += match[1];
+              }
+            }
+            if (stitched) {
+              token = stitched;
+              break;
+            } else {
+              const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+              if (match && match[1]) {
+                token = match[1];
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      if (!token) {
         return reply
           .status(401)
           .send({ error: "Unauthorized: Missing or invalid token" });
       }
-
-      const token = authHeader.substring(7);
       const secret = process.env.AUTH_SECRET;
 
       if (!secret) {

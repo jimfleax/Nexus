@@ -5,6 +5,7 @@
  */
 
 import { IStorageAdapter, StorageQuota } from "./types.js";
+import type { Readable } from "stream";
 
 /**
  * @class FakeStorageAdapter
@@ -13,6 +14,21 @@ import { IStorageAdapter, StorageQuota } from "./types.js";
 export class FakeStorageAdapter implements IStorageAdapter {
   public uploads = new Map<string, { title: string; mimeType: string }>();
   public deletedFiles = new Set<string>();
+
+  async uploadFile(
+    ownerId: string,
+    metadata: { title: string; mimeType: string },
+    fileStream: Readable,
+  ): Promise<{ driveFileId: string; size: number }> {
+    // Consume the stream to calculate size
+    let size = 0;
+    for await (const chunk of fileStream) {
+      size += chunk.length;
+    }
+    const driveFileId = `fake-file-${Math.random().toString(36).substring(7)}`;
+    this.uploads.set(driveFileId, metadata);
+    return { driveFileId, size };
+  }
 
   /**
    * @desc    Generate a fake resumable upload URI and record the upload in memory
