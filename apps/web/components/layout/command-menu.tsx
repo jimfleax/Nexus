@@ -8,7 +8,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import {
   House,
@@ -117,32 +116,28 @@ export function CommandMenu({ user }: { user?: User }) {
   }, [search, router]);
 
   /* ── Open create dialog (close palette first) ────── */
-  const openCreate = useCallback(
-    (type: "project" | "list" | "resource") => {
-      setOpen(false);
-      // Small delay to let the palette close animation finish
-      requestAnimationFrame(() => {
-        if (type === "project") setProjectDialogOpen(true);
-        else if (type === "list") setListDialogOpen(true);
-        else if (type === "resource") setResourceDialogOpen(true);
-      });
-    },
-    [],
-  );
+  const openCreate = useCallback((type: "project" | "list" | "resource") => {
+    setOpen(false);
+    // Small delay to let the palette close animation finish
+    requestAnimationFrame(() => {
+      if (type === "project") setProjectDialogOpen(true);
+      else if (type === "list") setListDialogOpen(true);
+      else if (type === "resource") setResourceDialogOpen(true);
+    });
+  }, []);
 
   /* ── Logout handler ──────────────────────────────── */
   const handleLogout = useCallback(() => {
     setLogoutConfirmOpen(false);
     setOpen(false);
-    signOut({ callbackUrl: "/signin" });
+    fetch("/api/auth/signout", { method: "POST" }).finally(() => {
+      window.location.href = "/signin";
+    });
   }, []);
 
   return (
     <>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
-      >
+      <CommandDialog open={open} onOpenChange={setOpen}>
         {/* ── User banner ── */}
         {user && (
           <div className="flex items-center gap-3 border-b border-[#dec9e9] px-3 py-3">
@@ -185,9 +180,7 @@ export function CommandMenu({ user }: { user?: User }) {
 
         <CommandList>
           <CommandEmpty>
-            {suggestionsLoading
-              ? "Searching..."
-              : "No results found."}
+            {suggestionsLoading ? "Searching..." : "No results found."}
           </CommandEmpty>
 
           {/* ── Live search results ── */}
@@ -214,10 +207,7 @@ export function CommandMenu({ user }: { user?: User }) {
 
           {/* ── Navigation ── */}
           <CommandGroup heading="Navigation">
-            <CommandItem
-              value="nav:home"
-              onSelect={() => navigateTo("/")}
-            >
+            <CommandItem value="nav:home" onSelect={() => navigateTo("/")}>
               <House className="text-[#815ac0]" />
               <span>Home</span>
               <CommandShortcut>⌘1</CommandShortcut>
@@ -329,10 +319,7 @@ export function CommandMenu({ user }: { user?: User }) {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleLogout}
-            >
+            <Button variant="destructive" onClick={handleLogout}>
               Logout
             </Button>
           </DialogFooter>
