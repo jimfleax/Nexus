@@ -5,6 +5,7 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { Providers } from "@/components/providers";
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 /**
  * @desc    Render the dashboard frame with the current session user
@@ -18,9 +19,13 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
 
+  if (!session) {
+    redirect("/signin");
+  }
+
   return (
     <Providers>
-      <AppShell user={session?.user}>{children}</AppShell>
+      <AppShell user={session.user}>{children}</AppShell>
     </Providers>
   );
 }

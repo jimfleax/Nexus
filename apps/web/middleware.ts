@@ -1,22 +1,35 @@
-/**
- * @file proxy.ts
- * @description Next.js middleware proxy that applies the auth guard to protected routes.
- * @architecture Re-exports the NextAuth auth helper and scopes it with a matcher that skips auth, static, and sign-in routes.
- */
-
 import { auth } from "@/auth";
+import { NextResponse } from "next/server";
 
-/**
- * @desc    NextAuth middleware wrapper used by Next.js as the route guard
- */
-export default auth;
+// Define all routes that do not require authentication
+const publicRoutes = [
+  "/signin",
+  "/terms",
+  "/privacy",
+  "/api/auth", // NextAuth API routes must be public
+  "/health"    // Liveness checks
+];
 
-/**
- * @constant {object} config
- * @description Matcher controlling which routes the auth middleware protects.
- */
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+
+  const isPublicRoute = publicRoutes.some(route => nextUrl.pathname.startsWith(route));
+
+  // 1. If not logged in and trying to access a protected route -> Redirect to Sign In
+  if (!isLoggedIn && !isPublicRoute) {
+    return NextResponse.redirect(new URL("/signin", nextUrl));
+  }
+
+  // 2. If logged in and trying to access Sign In -> Redirect to App (Dashboard)
+  if (isLoggedIn && nextUrl.pathname === "/signin") {
+    return NextResponse.redirect(new URL("/projects", nextUrl));
+  }
+
+  return NextResponse.next();
+});
+
 export const config = {
-  matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|nexus-icon|site.webmanifest|apple-touch-icon|signin|terms|privacy).*)",
-  ],
+  // Run on all paths EXCEPT static assets, Next.js internals, and images
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

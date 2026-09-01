@@ -84,20 +84,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
-    /**
-     * @desc    Require authentication for all routes except the auth API
-     */
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
-      const isPublicRoute = ["/terms", "/privacy"].includes(nextUrl.pathname);
-
-      if (isApiAuthRoute || isPublicRoute) return true;
-
-      if (!isLoggedIn) {
-        return false; // Redirect to signIn page
-      }
-      return true;
-    },
   },
 });
