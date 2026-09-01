@@ -6,18 +6,15 @@ on:
     paths:
       - "apps/api/**"
       - "packages/shared/**"
-      - "pnpm-lock.yaml"
+      - "package-lock.json"
       - ".github/workflows/api-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "apps/api/**"
       - "packages/shared/**"
-      - "pnpm-lock.yaml"
+      - "package-lock.json"
       - ".github/workflows/api-ci.yml"
-
-env:
-  PNPM_VERSION: 10
 
 jobs:
   # ────────────────────────────────────────────────────────────────────────────
@@ -31,22 +28,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run ESLint (API)
-        run: pnpm --filter @nexus/api lint
+        run: npm run lint --workspace=apps/api
 
   # ────────────────────────────────────────────────────────────────────────────
   # 2. Build (depends on lint passing)
@@ -60,25 +52,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build shared package
-        run: pnpm --filter @nexus/shared build 2>/dev/null || true
+        run: npm run build --workspace=packages/shared 2>/dev/null || true
 
       - name: Build API (tsc)
-        run: pnpm --filter @nexus/api build
+        run: npm run build --workspace=apps/api
 
       - name: Upload compiled dist
         uses: actions/upload-artifact@v4

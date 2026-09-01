@@ -5,17 +5,15 @@
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:22-alpine AS deps
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 WORKDIR /app
 
 # Copy manifests first for better layer caching
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
 
 # Install prod + dev deps (we need devDeps to compile TS)
-RUN pnpm install --frozen-lockfile
+RUN npm ci
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2 – builder
@@ -29,17 +27,15 @@ WORKDIR /app
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
 
-# Build the shared package first, then the api
-RUN pnpm --filter @nexus/shared build 2>/dev/null || true
-RUN pnpm --filter @nexus/api build
+# Build the shared package first (if it has a build script), then the api
+RUN npm run build --workspace=packages/shared 2>/dev/null || true
+RUN npm run build --workspace=apps/api
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 – runner
 #   Lean production image — no devDeps, no source files.
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
-
-RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs \
@@ -48,15 +44,14 @@ RUN addgroup --system --gid 1001 nodejs \
 WORKDIR /app
 
 # Copy manifests to install prod-only deps in runner stage
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
 
-RUN pnpm install --frozen-lockfile --prod
+RUN npm ci --omit=dev
 
 # Copy compiled output
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
-# Shared package is consumed via workspace; copy its compiled output if present
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist 2>/dev/null || true
 
 USER fastify
