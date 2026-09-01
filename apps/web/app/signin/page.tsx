@@ -6,6 +6,7 @@ import { signIn } from "@/auth";
 import { OAuthSubmitButton } from "./oauth-submit-button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { Hexagon } from "lucide-react";
+import Link from "next/link";
 
 /**
  * @desc    Render the sign-in card with provider buttons; each form uses a server action to call signIn
@@ -83,7 +84,10 @@ export default function SignInPage() {
         </div>
         <div className="border-t border-white/10 bg-white/5 p-6 text-center">
           <p className="text-xs text-zinc-500">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
+            By signing in, you agree to our{" "}
+            <Link href="/terms" className="underline hover:text-zinc-300">Terms of Service</Link>
+            {" "}and{" "}
+            <Link href="/privacy" className="underline hover:text-zinc-300">Privacy Policy</Link>.
           </p>
         </div>
       </div>
