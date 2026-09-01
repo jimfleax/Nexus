@@ -42,7 +42,7 @@ export const infoRoutes: FastifyPluginAsyncZod = async (server) => {
 
         return {
           id: project.id,
-          type: "project",
+          type: "project" as const,
           name: project.name,
           description: project.description,
           createdAt: project.createdAt,
@@ -58,7 +58,7 @@ export const infoRoutes: FastifyPluginAsyncZod = async (server) => {
 
         return {
           id: list.id,
-          type: "list",
+          type: "list" as const,
           name: list.name,
           description: list.description,
           createdAt: list.createdAt,
@@ -71,7 +71,7 @@ export const infoRoutes: FastifyPluginAsyncZod = async (server) => {
 
         return {
           id: resource.id,
-          type: "resource",
+          type: "resource" as const,
           name: resource.title,
           description: resource.description,
           createdAt: resource.createdAt,

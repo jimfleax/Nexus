@@ -1,0 +1,30 @@
+# deps / build artifacts
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+apps/*/dist
+packages/*/dist
+**/*.tsbuildinfo
+
+# secrets & local config
+.env
+.env.*
+!.env.example
+
+# Next.js app (not needed for api image)
+apps/web
+.next
+
+# tooling / scratch
+.git
+.scratch
+docs
+prd
+coverage
+*.log
+
+# misc
+README.md
+run.sh
+test-*.js
+test-*.mjs
