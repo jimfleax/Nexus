@@ -130,9 +130,18 @@ export function CommandMenu({ user }: { user?: User }) {
   const handleLogout = useCallback(() => {
     setLogoutConfirmOpen(false);
     setOpen(false);
-    fetch("/api/auth/signout", { method: "POST" }).finally(() => {
-      window.location.href = "/signin";
-    });
+    fetch("/api/auth/signout", { method: "POST" })
+      .then((res) => {
+        if (res.ok) window.location.href = "/signin";
+        else {
+          import("sonner").then(({ toast }) =>
+            toast.error("Failed to sign out"),
+          );
+        }
+      })
+      .catch(() => {
+        import("sonner").then(({ toast }) => toast.error("Failed to sign out"));
+      });
   }, []);
 
   return (

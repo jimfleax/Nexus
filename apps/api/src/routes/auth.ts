@@ -8,6 +8,7 @@
 
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
+import crypto from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
 import { UserModel } from "../models/User.js";
 
@@ -110,12 +111,19 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     }
 
     const redirectUri = `${apiUrl()}/api/auth/callback/google`;
+    const state = crypto.randomBytes(16).toString("hex");
+    reply.header(
+      "Set-Cookie",
+      `oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=300`,
+    );
+
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,
       response_type: "code",
       scope: "openid email profile",
       prompt: "select_account",
+      state,
     });
 
     return reply.redirect(`${GOOGLE_AUTH_URL}?${params.toString()}`);
@@ -127,12 +135,26 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
    * @access  Public
    */
   fastify.get("/api/auth/callback/google", async (request, reply) => {
-    const { code, error } = request.query as Record<string, string>;
+    const { code, state, error } = request.query as Record<string, string>;
 
-    if (error || !code) {
-      fastify.log.warn({ error }, "Google OAuth error");
+    if (error || !code || !state) {
+      fastify.log.warn({ error }, "Google OAuth error or missing code/state");
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
+
+    const cookieHeader = request.headers.cookie ?? "";
+    const match = cookieHeader.match(/(?:^|;\s*)oauth_state=([^;]+)/);
+    const stateCookie = match?.[1];
+
+    if (!stateCookie || stateCookie !== state) {
+      fastify.log.warn("Google OAuth state mismatch");
+      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
+    }
+
+    reply.header(
+      "Set-Cookie",
+      `oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
+    );
 
     try {
       const clientId = process.env.AUTH_GOOGLE_ID!;
@@ -219,10 +241,17 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     }
 
     const redirectUri = `${apiUrl()}/api/auth/callback/github`;
+    const state = crypto.randomBytes(16).toString("hex");
+    reply.header(
+      "Set-Cookie",
+      `oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=300`,
+    );
+
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,
       scope: "read:user user:email",
+      state,
     });
 
     return reply.redirect(`${GITHUB_AUTH_URL}?${params.toString()}`);
@@ -234,12 +263,26 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
    * @access  Public
    */
   fastify.get("/api/auth/callback/github", async (request, reply) => {
-    const { code, error } = request.query as Record<string, string>;
+    const { code, state, error } = request.query as Record<string, string>;
 
-    if (error || !code) {
-      fastify.log.warn({ error }, "GitHub OAuth error");
+    if (error || !code || !state) {
+      fastify.log.warn({ error }, "GitHub OAuth error or missing code/state");
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
+
+    const cookieHeader = request.headers.cookie ?? "";
+    const match = cookieHeader.match(/(?:^|;\s*)oauth_state=([^;]+)/);
+    const stateCookie = match?.[1];
+
+    if (!stateCookie || stateCookie !== state) {
+      fastify.log.warn("GitHub OAuth state mismatch");
+      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
+    }
+
+    reply.header(
+      "Set-Cookie",
+      `oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
+    );
 
     try {
       const clientId = process.env.AUTH_GITHUB_ID!;
@@ -275,7 +318,10 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       };
 
       if (!tokenData.access_token || tokenData.error) {
-        fastify.log.error(tokenData, "GitHub token exchange returned error");
+        fastify.log.error(
+          { error: tokenData.error },
+          "GitHub token exchange returned error",
+        );
         return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
       }
 

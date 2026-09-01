@@ -27,6 +27,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatBytes } from "@/lib/utils";
 import { useUserMetrics } from "@/hooks/use-user-metrics";
+import { toast } from "sonner";
 
 /**
  * @constant TYPE_LABELS
@@ -286,9 +287,12 @@ export function ProfileModal({
               cancelText="Cancel"
               isDestructive
               onConfirm={() =>
-                fetch("/api/auth/signout", { method: "POST" }).then(() => {
-                  window.location.href = "/signin";
-                })
+                fetch("/api/auth/signout", { method: "POST" })
+                  .then((res) => {
+                    if (res.ok) window.location.href = "/signin";
+                    else toast.error("Failed to sign out");
+                  })
+                  .catch(() => toast.error("Failed to sign out"))
               }
             />
           </div>

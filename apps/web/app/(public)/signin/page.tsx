@@ -4,6 +4,7 @@
  * @architecture Renders sign-in buttons as anchor links to /api/auth/google and /api/auth/github,
  *   proxied to the Fastify backend which handles the full OAuth flow and issues the nexus-session cookie.
  */
+import { OAuthSubmitButton } from "./oauth-submit-button";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { Hexagon } from "lucide-react";
 import Link from "next/link";

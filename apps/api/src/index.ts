@@ -38,7 +38,7 @@ fastify.register(storagePlugin, {
 });
 fastify.register(deletionPlugin);
 
-// Auth routes must be registered BEFORE authPlugin to remain ungated
+// Auth routes remain public because authPlugin skips URLs beginning with /api/auth/, not because of registration order
 fastify.register(authRoutes);
 fastify.register(authPlugin);
 fastify.register(projectRoutes);

@@ -90,7 +90,10 @@ export const authPlugin = fp(async (fastify) => {
     "preHandler",
     async (request: FastifyRequest, reply: FastifyReply) => {
       // Public routes — skip auth entirely
-      if (request.url === "/health" || request.url.startsWith("/api/auth/")) {
+      if (
+        request.url.split("?")[0] === "/health" ||
+        request.url.startsWith("/api/auth/")
+      ) {
         return;
       }
 
