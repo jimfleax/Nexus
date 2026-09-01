@@ -52,7 +52,7 @@ RUN npm ci --omit=dev
 
 # Copy compiled output
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
-COPY --from=builder /app/packages/shared/dist ./packages/shared/dist 2>/dev/null || true
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 USER fastify
 
