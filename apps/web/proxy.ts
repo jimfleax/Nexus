@@ -13,7 +13,7 @@ import type { NextRequest } from "next/server";
 /**
  * @desc    Route guard: redirect unauthenticated users to /signin, authenticated users away from /signin
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isPublic = [
