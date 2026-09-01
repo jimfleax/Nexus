@@ -84,5 +84,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+    /**
+     * @desc    Always return true here to let the custom auth() wrapper in the middleware handle the routing.
+     */
+    authorized() {
+      return true;
+    },
   },
 });
