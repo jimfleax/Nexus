@@ -1,0 +1,13 @@
+{
+  "name": "nexus-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "playwright": "^1.62.1",
+    "prettier": "^3.6.2"
+  }
+}

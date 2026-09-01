@@ -1,1 +1,25 @@
-node_modules\n.env*
+node_modules
+.env*
+.scratch
+.next
+dist
+out
+build
+coverage
+*.tsbuildinfo
+gambetta.zip
+
+# One-off scratch / debug scripts (see reasoning: redundant throwaway tooling)
+fix_*.py
+test_cleanup.sh
+test_interactive.py
+test_server.ts
+test_setsid*.sh
+test_sh_args.sh
+test_sigint.sh
+test_tsx.sh
+test-web.js
+apps/api/check-db.js
+apps/api/test-*.js
+prd
+docs

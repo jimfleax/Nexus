@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+build
+dist
+coverage
+.env
+.env*
+*.zip
+*.tsbuildinfo
+.scratch
+next-env.d.ts
+package-lock.json
+gambetta.zip
+prd
+docs
