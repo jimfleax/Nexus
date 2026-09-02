@@ -68,12 +68,7 @@ export function MarkdownViewer({ content }: { content: string }) {
             className,
             children,
             ...props
-          }: {
-            inline?: boolean;
-            className?: string;
-            children?: React.ReactNode;
-            [key: string]: unknown;
-          }) {
+          }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) {
             const match = /language-(\w+)/.exec(className || "");
 
             // It's a code block if it has a class like language-xxx, or if it has newline (usually block)
