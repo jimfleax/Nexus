@@ -66,13 +66,11 @@ async function signSessionJwt(payload: {
  *          Uses { skipTenant: true } because no tenant context exists during OAuth callbacks.
  */
 async function upsertUser(ownerId: string): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const existing = await (UserModel as any)
     .findOne({ ownerId })
     .setOptions({ skipTenant: true });
 
   if (!existing) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (UserModel as any)
       .create([{ ownerId }] as any, { skipTenant: true } as any)
       .catch(() => {
@@ -380,5 +378,4 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
   });
-
 });

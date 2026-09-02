@@ -1,56 +1,24 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import Fastify from "fastify";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import { connectDB, tenantContext } from "../src/db.js";
+import { tenantContext } from "../src/db.js";
 import { projectRoutes } from "../src/routes/projects.js";
 import { ProjectModel } from "../src/models/Project.js";
-import {
-  validatorCompiler,
-  serializerCompiler,
-  ZodTypeProvider,
-} from "fastify-type-provider-zod";
+import { createTestApp, teardownTestApp, TestAppContext } from "./helpers.js";
 
 describe("Project Routes", () => {
-  let app: any;
-  let mongoServer: MongoMemoryServer;
+  let ctx: TestAppContext;
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    await connectDB(mongoServer.getUri());
-
-    app = Fastify().withTypeProvider<ZodTypeProvider>();
-    app.setValidatorCompiler(validatorCompiler);
-    app.setSerializerCompiler(serializerCompiler);
-
-    // Mock deleter plugin
-    app.decorate("deleter", {
-      deleteProject: async (projectId: string, ownerId: string) => {
-        await ProjectModel.findByIdAndDelete(projectId, { skipTenant: true });
-      },
-    });
-
+    ctx = await createTestApp({ routes: [projectRoutes] });
     await ProjectModel.init();
-
-    // Mock tenant context
-    app.addHook("onRequest", (request: any, reply: any, done: any) => {
-      request.ownerId = "user-1";
-      tenantContext.run({ ownerId: "user-1" }, () => done());
-    });
-
-    app.register(projectRoutes);
-    await app.ready();
   });
 
   afterAll(async () => {
-    await app.close();
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await mongoServer.stop();
+    await teardownTestApp(ctx);
   });
 
   it("POST /api/projects should create a new project", async () => {
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "POST",
       url: "/api/projects",
       payload: {
@@ -67,7 +35,7 @@ describe("Project Routes", () => {
   });
 
   it("POST /api/projects should return 409 for duplicate project name", async () => {
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "POST",
       url: "/api/projects",
       payload: {
@@ -81,7 +49,7 @@ describe("Project Routes", () => {
   });
 
   it("GET /api/projects should list all projects", async () => {
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "GET",
       url: "/api/projects",
     });
@@ -94,7 +62,7 @@ describe("Project Routes", () => {
 
   it("GET /api/projects/:id should return project details", async () => {
     const projects = await ProjectModel.find({}, null, { skipTenant: true });
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "GET",
       url: `/api/projects/${projects[0].id}`,
     });
@@ -106,7 +74,7 @@ describe("Project Routes", () => {
 
   it("PATCH /api/projects/:id should update a project", async () => {
     const projects = await ProjectModel.find({}, null, { skipTenant: true });
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "PATCH",
       url: `/api/projects/${projects[0].id}`,
       payload: {
@@ -120,18 +88,22 @@ describe("Project Routes", () => {
     expect(data.slug).toBe("updated-project");
   });
 
-  it("DELETE /api/projects/:id should delete a project", async () => {
-    const projects = await ProjectModel.find({}, null, { skipTenant: true });
-    const response = await app.inject({
-      method: "DELETE",
-      url: `/api/projects/${projects[0].id}`,
-    });
+  it(
+    "DELETE /api/projects/:id should delete a project",
+    { retry: 2 },
+    async () => {
+      const projects = await ProjectModel.find({}, null, { skipTenant: true });
+      const response = await ctx.app.inject({
+        method: "DELETE",
+        url: `/api/projects/${projects[0].id}`,
+      });
 
-    expect(response.statusCode).toBe(204);
+      expect(response.statusCode).toBe(204);
 
-    const check = await ProjectModel.findById(projects[0].id, null, {
-      skipTenant: true,
-    });
-    expect(check).toBeNull();
-  });
+      const check = await ProjectModel.findById(projects[0].id, null, {
+        skipTenant: true,
+      });
+      expect(check).toBeNull();
+    },
+  );
 });

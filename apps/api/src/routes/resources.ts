@@ -1,12 +1,13 @@
 /**
  * @file resources.ts
  * @description Fastify plugin defining CRUD, file-upload handoff, streaming, favorite, and open-tracking routes for resources.
- * @architecture Tenant-isolated; validates with shared Zod schemas, initializes/verifies Drive resumable uploads, streams file content from Drive, and enforces uniqueness per project/title.
+ * @architecture Tenant-isolated; validates with shared Zod schemas. Business logic delegated to
+ *              resource.service for testability. HTTP-specific concerns (multipart, Drive streaming)
+ *              remain in the route handler.
  */
 
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { ResourceModel } from "../models/Resource.js";
 import { UserModel } from "../models/User.js";
 import { google } from "googleapis";
 import {
@@ -14,9 +15,18 @@ import {
   UpdateResourceSchema,
   ResourceSchema,
 } from "@nexus/shared";
-import { KnowledgeListModel } from "../models/KnowledgeList.js";
-
 import { Readable } from "stream";
+import {
+  listResourcesByProject,
+  findResourceById,
+  findResourceContent,
+  isDuplicateTitle,
+  validateListMembership,
+  findListById,
+  createResource,
+  updateResource,
+  toggleFavoriteResource,
+} from "../services/resource.service.js";
 
 /**
  * @module resourceRoutes
@@ -39,18 +49,10 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         },
       },
     },
-    async (request, reply) => {
+    async (request, _reply) => {
       const { projectId } = request.params;
       const { listId } = request.query;
-      const filter: any = { projectId };
-      if (listId) {
-        filter.listId = listId;
-      }
-      // For list views, we usually exclude the heavy 'content' field to save bandwidth
-      const resources = await ResourceModel.find(filter)
-        .select("-content")
-        .sort({ createdAt: -1 });
-      return resources;
+      return listResourcesByProject(projectId, listId);
     },
   );
 
@@ -80,12 +82,14 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       if (request.isMultipart()) {
         const data = await request.file();
         if (!data) {
-          return reply.status(400).send({ error: "Missing file in multipart request" } as any);
+          return reply
+            .status(400)
+            .send({ error: "Missing file in multipart request" } as any);
         }
         body = {};
         for (const [key, field] of Object.entries(data.fields)) {
           if (field && (field as any).value !== undefined) {
-             body[key] = (field as any).value;
+            body[key] = (field as any).value;
           }
         }
         if (body.isFavorite !== undefined) {
@@ -99,33 +103,36 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
 
       const parsedBody = CreateResourceSchema.safeParse(body);
       if (!parsedBody.success) {
-        return reply.status(400).send({ error: "Invalid payload: " + parsedBody.error.message } as any);
-      }
-      
-      body = parsedBody.data;
-      const ownerId = (request as any).ownerId;
-
-      const list = await KnowledgeListModel.findOne({
-        _id: body.listId,
-        projectId: body.projectId,
-      });
-      if (!list) {
-        return reply
-          .status(404)
-          .send({ error: "Knowledge List not found in the specified project" } as any);
-      }
-
-      const existingResource = await ResourceModel.findOne({
-        projectId: body.projectId,
-        title: body.title,
-        ownerId,
-      });
-      if (existingResource) {
         return reply
           .status(400)
           .send({
-            error: "A resource with this name already exists in the project",
+            error: "Invalid payload: " + parsedBody.error.message,
           } as any);
+      }
+
+      body = parsedBody.data;
+      const ownerId = request.ownerId;
+
+      // Validate list membership via service
+      const list = await validateListMembership(body.listId, body.projectId);
+      if (!list) {
+        return reply
+          .status(404)
+          .send({
+            error: "Knowledge List not found in the specified project",
+          } as any);
+      }
+
+      // Check title uniqueness via service
+      const exists = await isDuplicateTitle(
+        body.projectId,
+        body.title,
+        ownerId,
+      );
+      if (exists) {
+        return reply.status(400).send({
+          error: "A resource with this name already exists in the project",
+        } as any);
       }
 
       let driveFileId: string | undefined;
@@ -138,14 +145,25 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
 
       if (isFileUpload) {
         if (!fileStream) {
-           return reply.status(400).send({ error: "File stream required for this resource type" } as any);
+          return reply
+            .status(400)
+            .send({
+              error: "File stream required for this resource type",
+            } as any);
         }
         try {
-          const mType = mimeType || body.mimeType || (body.type === "pdf" ? "application/pdf" : "image/jpeg");
-          const uploadResult = await server.storage.uploadFile(ownerId, {
-            title: body.title,
-            mimeType: mType,
-          }, fileStream);
+          const mType =
+            mimeType ||
+            body.mimeType ||
+            (body.type === "pdf" ? "application/pdf" : "image/jpeg");
+          const uploadResult = await server.storage.uploadFile(
+            ownerId,
+            {
+              title: body.title,
+              mimeType: mType,
+            },
+            fileStream,
+          );
           driveFileId = uploadResult.driveFileId;
           size = uploadResult.size;
         } catch (error: any) {
@@ -159,14 +177,13 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         }
       }
 
-      const resource = new ResourceModel({
+      // Create resource via service
+      const resource = await createResource({
         ...body,
-        status: "ready",
         driveFileId,
         size,
       });
 
-      await resource.save();
       return reply.status(201).send(resource);
     },
   );
@@ -188,7 +205,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const resource = await ResourceModel.findById(request.params.id);
+      const resource = await findResourceById(request.params.id);
       if (!resource) {
         return reply.status(404).send({ error: "Resource not found" });
       }
@@ -213,14 +230,11 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const resource = await ResourceModel.findById(request.params.id).select(
-        "content type",
-      );
+      const resource = await findResourceContent(request.params.id);
       if (!resource) {
         return reply.status(404).send({ error: "Resource not found" });
       }
 
-      // We can return it as raw text or markdown
       reply.header("Content-Type", "text/plain; charset=utf-8");
       return reply.send(resource.content || "");
     },
@@ -244,9 +258,9 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const ownerId = (request as any).ownerId;
+      const ownerId = request.ownerId;
 
-      const resource = await ResourceModel.findById(id);
+      const resource = await findResourceById(id);
       if (!resource || !resource.driveFileId) {
         return reply.status(404).send({ error: "Resource or file not found" });
       }
@@ -316,7 +330,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
   );
 
   /**
-   * @desc    Toggle a resource's favorite flag
+   * @desc    Toggle a resource's favorite flag server-side (reads current state, flips it)
    * @route   PUT /api/resources/:id/favorite
    * @access  Private
    */
@@ -325,7 +339,6 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         params: z.object({ id: z.string() }),
-        body: z.object({ isFavorite: z.boolean() }),
         response: {
           200: ResourceSchema,
           404: z.object({ error: z.string() }),
@@ -333,15 +346,11 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const { isFavorite } = request.body;
-      const resource = await ResourceModel.findByIdAndUpdate(
-        request.params.id,
-        { $set: { isFavorite } },
-        { new: true },
-      );
-      if (!resource)
+      const updated = await toggleFavoriteResource(request.params.id);
+      if (!updated)
         return reply.status(404).send({ error: "Resource not found" });
-      return resource;
+
+      return updated;
     },
   );
 
@@ -362,11 +371,9 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const resource = await ResourceModel.findByIdAndUpdate(
-        request.params.id,
-        { $set: { lastOpenedAt: new Date() } },
-        { new: true },
-      );
+      const resource = await updateResource(request.params.id, {
+        lastOpenedAt: new Date(),
+      });
       if (!resource)
         return reply.status(404).send({ error: "Resource not found" });
       return resource;
@@ -395,42 +402,46 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
     async (request, reply) => {
       const body = request.body;
 
-      const resource = await ResourceModel.findById(request.params.id);
+      const resource = await findResourceById(request.params.id);
       if (!resource) {
         return reply.status(404).send({ error: "Resource not found" });
       }
 
       if (body.listId) {
-        // Need to ensure the new list exists
-        const list = await KnowledgeListModel.findById(body.listId);
+        // Validate the new list exists
+        const list = await findListById(body.listId);
         if (!list) {
           return reply.status(404).send({ error: "Knowledge List not found" });
         }
         body.projectId = list.projectId;
       }
 
+      // Check title uniqueness via service
       const targetProjectId = body.projectId || resource.projectId;
-      if (body.title && body.title !== resource.title) {
-        const ownerId = (request as any).ownerId;
-        const existingResource = await ResourceModel.findOne({
-          projectId: targetProjectId,
-          title: body.title,
+      const titleToCheck = body.title ?? resource.title;
+
+      const projectChanged =
+        body.projectId && body.projectId !== resource.projectId;
+      const titleChanged = body.title && body.title !== resource.title;
+
+      if (projectChanged || titleChanged) {
+        const ownerId = request.ownerId;
+        const exists = await isDuplicateTitle(
+          targetProjectId,
+          titleToCheck,
           ownerId,
-          _id: { $ne: request.params.id },
-        });
-        if (existingResource) {
-          return reply
-            .status(400)
-            .send({
-              error: "A resource with this name already exists in the project",
-            } as any);
+          request.params.id,
+        );
+        if (exists) {
+          return reply.status(400).send({
+            error: "A resource with this name already exists in the project",
+          } as any);
         }
       }
 
-      const updatedResource = await ResourceModel.findByIdAndUpdate(
+      const updatedResource = await updateResource(
         request.params.id,
-        { $set: body },
-        { new: true, runValidators: true },
+        body as Record<string, unknown>,
       );
 
       return updatedResource;
@@ -454,8 +465,8 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const ownerId = (request as any).ownerId;
-      const resource = await ResourceModel.findById(request.params.id);
+      const ownerId = request.ownerId;
+      const resource = await findResourceById(request.params.id);
 
       if (!resource) {
         return reply.status(404).send({ error: "Resource not found" });

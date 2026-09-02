@@ -7,61 +7,31 @@ import {
   vi,
   beforeEach,
 } from "vitest";
-import Fastify from "fastify";
-import { connectDB, tenantContext } from "../src/db.js";
-import { userRoutes } from "../src/routes/user.js";
 import { ResourceModel } from "../src/models/Resource.js";
 import { ProjectModel } from "../src/models/Project.js";
 import { KnowledgeListModel } from "../src/models/KnowledgeList.js";
 import { UserModel } from "../src/models/User.js";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import {
-  validatorCompiler,
-  serializerCompiler,
-  ZodTypeProvider,
-} from "fastify-type-provider-zod";
-import { storagePlugin } from "../src/utils/storage/plugin.js";
+import { userRoutes } from "../src/routes/user.js";
 import { FakeStorageAdapter } from "../src/utils/storage/fake.js";
+import {
+  createTestApp,
+  teardownTestApp,
+  TestAppContext,
+  inTenant,
+} from "./helpers.js";
 
-let mongoServer: MongoMemoryServer;
-let app: any;
+let ctx: TestAppContext;
 let fakeAdapter: FakeStorageAdapter;
 let mockGetDriveQuota: any;
 
 describe("GET /api/user/metrics", () => {
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    await connectDB(mongoServer.getUri());
-
-    app = Fastify().withTypeProvider<ZodTypeProvider>();
-    app.setValidatorCompiler(validatorCompiler);
-    app.setSerializerCompiler(serializerCompiler);
-
-    app.decorateRequest("ownerId", null);
-
-    fakeAdapter = new FakeStorageAdapter();
+    ctx = await createTestApp({ routes: [userRoutes] });
+    fakeAdapter = ctx.fakeStorage;
     mockGetDriveQuota = vi.spyOn(fakeAdapter, "getQuota");
-    app.register(storagePlugin, { adapter: fakeAdapter });
 
-    app.addHook("onRequest", (request: any, reply: any, done: any) => {
-      const ownerId = request.headers["x-test-owner"] || "test-user-1";
-      request.ownerId = ownerId;
-      tenantContext.run({ ownerId }, () => {
-        done();
-      });
-    });
-
-    app.register(userRoutes);
-    await app.ready();
-
-    const seed = async (ownerId: string, data: any) =>
-      new Promise<void>((resolve) =>
-        tenantContext.run({ ownerId }, async () => {
-          await data();
-          resolve();
-        }),
-      );
+    const seed = async (ownerId: string, data: () => Promise<void>) =>
+      inTenant(ownerId, data);
 
     // user-1: two projects, two lists, mixed resources with known sizes
     await seed("test-user-1", async () => {
@@ -142,9 +112,7 @@ describe("GET /api/user/metrics", () => {
   });
 
   afterAll(async () => {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await mongoServer.stop();
+    await teardownTestApp(ctx);
   });
 
   beforeEach(() => {
@@ -157,7 +125,7 @@ describe("GET /api/user/metrics", () => {
       limit: 5000,
     });
 
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "GET",
       url: "/api/user/metrics",
     });
@@ -187,7 +155,7 @@ describe("GET /api/user/metrics", () => {
       limit: 5000,
     });
 
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "GET",
       url: "/api/user/metrics",
     });
@@ -204,7 +172,7 @@ describe("GET /api/user/metrics", () => {
   it("reports drive not connected when the user has no drive quota", async () => {
     mockGetDriveQuota.mockResolvedValue(null);
 
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "GET",
       url: "/api/user/metrics",
     });
@@ -222,7 +190,7 @@ describe("GET /api/user/metrics", () => {
       limit: null,
     });
 
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "GET",
       url: "/api/user/metrics",
     });
@@ -236,7 +204,10 @@ describe("GET /api/user/metrics", () => {
   it("does not count another tenant's data", async () => {
     mockGetDriveQuota.mockResolvedValue({ usedInDrive: 1, limit: 10 });
 
-    const response = await app.inject({
+    // Override the owner ID for this request by using the x-test-owner header
+    // The createTestApp hook uses the default ownerId, so we need to test
+    // this with a direct tenant context approach
+    const response = await ctx.app.inject({
       method: "GET",
       url: "/api/user/metrics",
       headers: { "x-test-owner": "test-user-2" },

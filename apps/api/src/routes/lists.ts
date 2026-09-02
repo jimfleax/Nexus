@@ -1,22 +1,25 @@
 /**
  * @file lists.ts
  * @description Fastify plugin defining CRUD, reorder, and cascade-delete routes for knowledge lists.
- * @architecture Scoped by the auth plugin's tenant context; validates bodies via shared Zod schemas and deletes linked resources transactionally.
+ * @architecture Scoped by the auth plugin's tenant context; validates bodies via shared Zod schemas.
+ *              Business logic delegated to list.service for testability.
  */
 
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { KnowledgeListModel } from "../models/KnowledgeList.js";
 import {
   CreateKnowledgeListSchema,
   UpdateKnowledgeListSchema,
   ReorderKnowledgeListSchema,
   KnowledgeListSchema,
 } from "@nexus/shared";
-import { ProjectModel } from "../models/Project.js";
-
-import { ResourceModel } from "../models/Resource.js";
-import mongoose from "mongoose";
+import {
+  listByProject,
+  findListById,
+  createList,
+  updateList,
+  reorderLists,
+} from "../services/list.service.js";
 
 /**
  * @module listRoutes
@@ -38,11 +41,8 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
         },
       },
     },
-    async (request, reply) => {
-      const lists = await KnowledgeListModel.find({
-        projectId: request.params.projectId,
-      }).sort({ position: 1 });
-      return lists;
+    async (request, _reply) => {
+      return listByProject(request.params.projectId);
     },
   );
 
@@ -63,7 +63,7 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const list = await KnowledgeListModel.findById(request.params.id);
+      const list = await findListById(request.params.id);
       if (!list) {
         return reply.status(404).send({ error: "List not found" });
       }
@@ -81,7 +81,7 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         params: z.object({ projectId: z.string() }),
-        body: CreateKnowledgeListSchema.omit({ projectId: true }), // the projectId comes from URL
+        body: CreateKnowledgeListSchema.omit({ projectId: true }),
         response: {
           201: KnowledgeListSchema,
           404: z.object({ error: z.string() }),
@@ -90,35 +90,13 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const { projectId } = request.params;
-      const project = await ProjectModel.findById(projectId);
-      if (!project) {
-        return reply.status(404).send({ error: "Project not found" });
-      }
-
-      const body = request.body;
-      const slug = body.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)+/g, "");
-
-      // Find highest position to append to end
-      const lastList = await KnowledgeListModel.findOne({ projectId }).sort({
-        position: -1,
-      });
-      const position = lastList ? lastList.position + 1 : 0;
-
-      const list = new KnowledgeListModel({
-        ...body,
-        projectId,
-        slug,
-        position,
-      });
-
       try {
-        await list.save();
+        const list = await createList(request.params.projectId, request.body);
         return reply.status(201).send(list);
       } catch (error: any) {
+        if (error.message === "Project not found") {
+          return reply.status(404).send({ error: "Project not found" });
+        }
         if (error.code === 11000) {
           return reply.status(409).send({
             error: "List with this name already exists in the project",
@@ -148,22 +126,8 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const body = request.body;
-      const updates: any = { ...body };
-
-      if (body.name) {
-        updates.slug = body.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)+/g, "");
-      }
-
       try {
-        const list = await KnowledgeListModel.findByIdAndUpdate(
-          request.params.id,
-          { $set: updates },
-          { new: true, runValidators: true },
-        );
+        const list = await updateList(request.params.id, request.body);
 
         if (!list) {
           return reply.status(404).send({ error: "List not found" });
@@ -199,9 +163,9 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     async (request, reply) => {
       const listId = request.params.id;
-      const ownerId = (request as any).ownerId;
+      const ownerId = request.ownerId;
 
-      const list = await KnowledgeListModel.findById(listId);
+      const list = await findListById(listId);
       if (!list) {
         return reply.status(404).send({ error: "List not found" });
       }
@@ -231,19 +195,9 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
     async (request, reply) => {
       const { projectId } = request.params;
       const { items } = request.body;
-      const ownerId = (request as any).ownerId;
+      const ownerId = request.ownerId;
 
-      // Perform bulk atomic updates for position
-      const bulkOps = items.map((item) => ({
-        updateOne: {
-          filter: { _id: item.id, projectId, ownerId }, // ensure they belong to this project and owner
-          update: { $set: { position: item.position } },
-        },
-      }));
-
-      if (bulkOps.length > 0) {
-        await KnowledgeListModel.bulkWrite(bulkOps);
-      }
+      await reorderLists(projectId, ownerId, items);
 
       return reply.send({ success: true });
     },

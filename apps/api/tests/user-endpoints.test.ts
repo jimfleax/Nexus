@@ -1,120 +1,81 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import Fastify from "fastify";
-import { connectDB } from "../src/db.js";
+import { ResourceModel } from "../src/models/Resource.js";
 import { userRoutes } from "../src/routes/user.js";
 import { resourceRoutes } from "../src/routes/resources.js";
-import { ResourceModel } from "../src/models/Resource.js";
-import { tenantContext } from "../src/db.js";
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
 import {
-  validatorCompiler,
-  serializerCompiler,
-  ZodTypeProvider,
-} from "fastify-type-provider-zod";
-import { storagePlugin } from "../src/utils/storage/plugin.js";
-import { FakeStorageAdapter } from "../src/utils/storage/fake.js";
-import { deletionPlugin } from "../src/plugins/deletion.js";
+  createTestApp,
+  teardownTestApp,
+  TestAppContext,
+  inTenant,
+} from "./helpers.js";
 
-let mongoServer: MongoMemoryServer;
-let app: any;
+let ctx: TestAppContext;
 
 describe("User Endpoints", () => {
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    await connectDB(mongoServer.getUri());
+    ctx = await createTestApp({ routes: [userRoutes, resourceRoutes] });
 
-    app = Fastify().withTypeProvider<ZodTypeProvider>();
-    app.setValidatorCompiler(validatorCompiler);
-    app.setSerializerCompiler(serializerCompiler);
-
-    app.decorateRequest("ownerId", null);
-    app.register(storagePlugin, { adapter: new FakeStorageAdapter() });
-    app.register(deletionPlugin);
-
-    // Setup tenant context for each request
-    app.addHook("onRequest", (request: any, reply: any, done: any) => {
-      // Mock the auth middleware by setting ownerId directly
-      request.ownerId = "test-user-1";
-      tenantContext.run({ ownerId: "test-user-1" }, () => {
-        done();
-      });
+    // Setup data for user-1
+    await inTenant("test-user-1", async () => {
+      await ResourceModel.create([
+        {
+          projectId: "proj-1",
+          listId: "list-1",
+          title: "Fav 1",
+          type: "note",
+          isFavorite: true,
+        },
+        {
+          projectId: "proj-1",
+          listId: "list-1",
+          title: "Not Fav 1",
+          type: "note",
+          isFavorite: false,
+        },
+        {
+          projectId: "proj-1",
+          listId: "list-1",
+          title: "Fav 2",
+          type: "note",
+          isFavorite: true,
+        },
+        {
+          projectId: "proj-1",
+          listId: "list-1",
+          title: "Recent 1",
+          type: "note",
+          lastOpenedAt: new Date(Date.now() - 1000),
+        },
+        {
+          projectId: "proj-1",
+          listId: "list-1",
+          title: "Recent 2",
+          type: "note",
+          lastOpenedAt: new Date(Date.now() - 5000),
+        },
+      ]);
     });
 
-    app.register(userRoutes);
-    app.register(resourceRoutes);
-
-    await app.ready();
-
-    // Setup some data for user-1
-    await new Promise<void>((resolve) =>
-      tenantContext.run({ ownerId: "test-user-1" }, async () => {
-        await ResourceModel.create([
-          {
-            projectId: "proj-1",
-            listId: "list-1",
-            title: "Fav 1",
-            type: "note",
-            isFavorite: true,
-          },
-          {
-            projectId: "proj-1",
-            listId: "list-1",
-            title: "Not Fav 1",
-            type: "note",
-            isFavorite: false,
-          },
-          {
-            projectId: "proj-1",
-            listId: "list-1",
-            title: "Fav 2",
-            type: "note",
-            isFavorite: true,
-          },
-          {
-            projectId: "proj-1",
-            listId: "list-1",
-            title: "Recent 1",
-            type: "note",
-            lastOpenedAt: new Date(Date.now() - 1000),
-          },
-          {
-            projectId: "proj-1",
-            listId: "list-1",
-            title: "Recent 2",
-            type: "note",
-            lastOpenedAt: new Date(Date.now() - 5000),
-          },
-        ]);
-        resolve();
-      }),
-    );
-
     // Other user's data
-    await new Promise<void>((resolve) =>
-      tenantContext.run({ ownerId: "test-user-2" }, async () => {
-        await ResourceModel.create([
-          {
-            projectId: "proj-1",
-            listId: "list-1",
-            title: "Fav User 2",
-            type: "note",
-            isFavorite: true,
-          },
-        ]);
-        resolve();
-      }),
-    );
+    await inTenant("test-user-2", async () => {
+      await ResourceModel.create([
+        {
+          projectId: "proj-1",
+          listId: "list-1",
+          title: "Fav User 2",
+          type: "note",
+          isFavorite: true,
+        },
+      ]);
+    });
   });
 
   afterAll(async () => {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await mongoServer.stop();
+    await teardownTestApp(ctx);
   });
 
   it("GET /api/user/favorites returns only favorite resources for the user", async () => {
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "GET",
       url: "/api/user/favorites",
     });
@@ -127,7 +88,7 @@ describe("User Endpoints", () => {
   });
 
   it("GET /api/user/recent returns recently opened resources", async () => {
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "GET",
       url: "/api/user/recent",
     });

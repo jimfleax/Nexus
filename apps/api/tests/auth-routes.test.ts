@@ -11,7 +11,6 @@ import Fastify from "fastify";
 import { authPlugin } from "../src/auth.js";
 import { authRoutes } from "../src/routes/auth.js";
 import { UserModel } from "../src/models/User.js";
-import { SignJWT } from "jose";
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { connectDB } from "../src/db.js";
@@ -197,5 +196,4 @@ describe("Auth Routes", () => {
 
     global.fetch = originalFetch;
   });
-
 });

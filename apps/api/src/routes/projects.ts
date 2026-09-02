@@ -1,21 +1,23 @@
 /**
  * @file projects.ts
  * @description Fastify plugin defining CRUD and cascade-delete routes for projects.
- * @architecture Tenant-isolated via the auth plugin; validates payloads with shared Zod schemas, slugifies names, and deletes lists, resources, and Drive files transactionally.
+ * @architecture Tenant-isolated via the auth plugin; validates payloads with shared Zod schemas.
+ *              Business logic delegated to project.service for testability.
  */
 
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { ProjectModel } from "../models/Project.js";
-import { KnowledgeListModel } from "../models/KnowledgeList.js";
-import { ResourceModel } from "../models/Resource.js";
-import mongoose from "mongoose";
-
 import {
   CreateProjectSchema,
   UpdateProjectSchema,
   ProjectSchema,
 } from "@nexus/shared";
+import {
+  listProjectsWithCounts,
+  createProject,
+  updateProject,
+  findProjectById,
+} from "../services/project.service.js";
 
 /**
  * @module projectRoutes
@@ -36,36 +38,8 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
         },
       },
     },
-    async (request, reply) => {
-      const projects = await ProjectModel.aggregate([
-        // $match with ownerId is auto-injected by the tenant plugin pre-aggregate hook
-        {
-          $lookup: {
-            from: "knowledgelists",
-            let: { projectId: { $toString: "$_id" } },
-            pipeline: [
-              {
-                $match: {
-                  $expr: { $eq: ["$projectId", "$$projectId"] },
-                },
-              },
-              { $count: "count" },
-            ],
-            as: "listData",
-          },
-        },
-        {
-          $addFields: {
-            id: { $toString: "$_id" },
-            listCount: {
-              $ifNull: [{ $arrayElemAt: ["$listData.count", 0] }, 0],
-            },
-          },
-        },
-        { $project: { listData: 0, __v: 0 } },
-        { $sort: { createdAt: -1 } },
-      ]);
-      return projects;
+    async (_request, _reply) => {
+      return listProjectsWithCounts();
     },
   );
 
@@ -86,19 +60,8 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const body = request.body;
-      const slug = body.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)+/g, "");
-
-      const project = new ProjectModel({
-        ...body,
-        slug,
-      });
-
       try {
-        await project.save();
+        const project = await createProject(request.body);
         return reply.status(201).send(project);
       } catch (error: any) {
         if (error.code === 11000) {
@@ -128,7 +91,7 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const project = await ProjectModel.findById(request.params.id);
+      const project = await findProjectById(request.params.id);
       if (!project) {
         return reply.status(404).send({ error: "Project not found" });
       }
@@ -155,22 +118,8 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const body = request.body;
-      const updates: any = { ...body };
-
-      if (body.name) {
-        updates.slug = body.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)+/g, "");
-      }
-
       try {
-        const project = await ProjectModel.findByIdAndUpdate(
-          request.params.id,
-          { $set: updates },
-          { new: true, runValidators: true },
-        );
+        const project = await updateProject(request.params.id, request.body);
 
         if (!project) {
           return reply.status(404).send({ error: "Project not found" });
@@ -205,10 +154,10 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
       },
     },
     async (request, reply) => {
-      const ownerId = (request as any).ownerId;
+      const ownerId = request.ownerId;
       const projectId = request.params.id;
 
-      const project = await ProjectModel.findById(projectId);
+      const project = await findProjectById(projectId);
       if (!project) {
         return reply.status(404).send({ error: "Project not found" });
       }

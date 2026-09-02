@@ -1,60 +1,37 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import Fastify from "fastify";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import { connectDB, tenantContext } from "../src/db.js";
-import mongoose from "mongoose";
-import {
-  validatorCompiler,
-  serializerCompiler,
-  ZodTypeProvider,
-} from "fastify-type-provider-zod";
-import { storagePlugin } from "../src/utils/storage/plugin.js";
-import { FakeStorageAdapter } from "../src/utils/storage/fake.js";
-import { deletionPlugin } from "../src/plugins/deletion.js";
+import { tenantContext } from "../src/db.js";
 import { projectRoutes } from "../src/routes/projects.js";
 import { ProjectModel } from "../src/models/Project.js";
 import { KnowledgeListModel } from "../src/models/KnowledgeList.js";
+import {
+  createTestApp,
+  teardownTestApp,
+  TestAppContext,
+  inTenant,
+} from "./helpers.js";
 
-let mongoServer: MongoMemoryServer;
-let app: any;
 const OWNER = "test-user-1";
 
 describe("GET /api/projects – listCount", () => {
+  let ctx: TestAppContext;
+
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    await connectDB(mongoServer.getUri());
-
-    app = Fastify().withTypeProvider<ZodTypeProvider>();
-    app.setValidatorCompiler(validatorCompiler);
-    app.setSerializerCompiler(serializerCompiler);
-
-    app.decorateRequest("ownerId", null);
-    app.register(storagePlugin, { adapter: new FakeStorageAdapter() });
-    app.register(deletionPlugin);
-
-    app.addHook("onRequest", (request: any, reply: any, done: any) => {
-      request.ownerId = OWNER;
-      tenantContext.run({ ownerId: OWNER }, () => done());
-    });
-
-    app.register(projectRoutes);
-    await app.ready();
+    ctx = await createTestApp({ routes: [projectRoutes] });
   });
 
   afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await teardownTestApp(ctx);
   });
 
   beforeEach(async () => {
-    await tenantContext.run({ ownerId: OWNER }, async () => {
+    await inTenant(OWNER, async () => {
       await ProjectModel.deleteMany({});
       await KnowledgeListModel.deleteMany({});
     });
   });
 
   it("returns listCount=0 for a project with no lists", async () => {
-    await tenantContext.run({ ownerId: OWNER }, async () => {
+    await inTenant(OWNER, async () => {
       await ProjectModel.create({
         ownerId: OWNER,
         name: "Empty Project",
@@ -62,7 +39,7 @@ describe("GET /api/projects – listCount", () => {
       });
     });
 
-    const res = await app.inject({ method: "GET", url: "/api/projects" });
+    const res = await ctx.app.inject({ method: "GET", url: "/api/projects" });
     expect(res.statusCode).toBe(200);
     const projects = JSON.parse(res.body);
     expect(projects).toHaveLength(1);
@@ -70,7 +47,7 @@ describe("GET /api/projects – listCount", () => {
   });
 
   it("returns correct listCount per project", async () => {
-    await tenantContext.run({ ownerId: OWNER }, async () => {
+    await inTenant(OWNER, async () => {
       const projectA = await ProjectModel.create({
         ownerId: OWNER,
         name: "Project A",
@@ -101,7 +78,7 @@ describe("GET /api/projects – listCount", () => {
       });
     });
 
-    const res = await app.inject({ method: "GET", url: "/api/projects" });
+    const res = await ctx.app.inject({ method: "GET", url: "/api/projects" });
     expect(res.statusCode).toBe(200);
     const projects: any[] = JSON.parse(res.body);
     expect(projects).toHaveLength(2);

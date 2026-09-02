@@ -1,23 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import Fastify from "fastify";
-import { MongoMemoryReplSet } from "mongodb-memory-server";
-import { connectDB, tenantContext } from "../src/db.js";
 import mongoose from "mongoose";
-import { storagePlugin } from "../src/utils/storage/plugin.js";
-import { FakeStorageAdapter } from "../src/utils/storage/fake.js";
-import { deletionPlugin } from "../src/plugins/deletion.js";
+import { tenantContext } from "../src/db.js";
 import { ProjectModel } from "../src/models/Project.js";
 import { KnowledgeListModel } from "../src/models/KnowledgeList.js";
 import { ResourceModel } from "../src/models/Resource.js";
+import { createTestApp, teardownTestApp, TestAppContext } from "./helpers.js";
 
-let mongoServer: MongoMemoryReplSet;
-let fakeAdapter: FakeStorageAdapter;
-let app: any;
+let ctx: TestAppContext;
 
 describe("DeletionPlugin", () => {
   beforeAll(async () => {
-    mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
-    await connectDB(mongoServer.getUri());
+    ctx = await createTestApp();
 
     await ProjectModel.createCollection();
     await ProjectModel.init();
@@ -25,21 +18,13 @@ describe("DeletionPlugin", () => {
     await KnowledgeListModel.init();
     await ResourceModel.createCollection();
     await ResourceModel.init();
-
-    app = Fastify();
-    fakeAdapter = new FakeStorageAdapter();
-    app.register(storagePlugin, { adapter: fakeAdapter });
-    app.register(deletionPlugin);
-    await app.ready();
   }, 60000);
 
   afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await teardownTestApp(ctx);
   });
 
   it("should cascade delete a project, its lists, and resources from DB and Storage", async () => {
-    // Setup fake data
     const ownerId = "test-user-1";
 
     await tenantContext.run({ ownerId }, async () => {
@@ -85,7 +70,7 @@ describe("DeletionPlugin", () => {
       });
 
       // Execute deletion
-      await app.deleter.deleteProject(project._id.toString(), ownerId);
+      await ctx.app.deleter.deleteProject(project._id.toString(), ownerId);
 
       // Verify DB
       expect(await ProjectModel.countDocuments({ _id: project._id })).toBe(0);
@@ -97,8 +82,8 @@ describe("DeletionPlugin", () => {
       ).toBe(0);
 
       // Verify Storage
-      expect(fakeAdapter.deletedFiles.has("file-1")).toBe(true);
-      expect(fakeAdapter.deletedFiles.has("file-2")).toBe(true);
+      expect(ctx.fakeStorage.deletedFiles.has("file-1")).toBe(true);
+      expect(ctx.fakeStorage.deletedFiles.has("file-2")).toBe(true);
     });
   });
 });

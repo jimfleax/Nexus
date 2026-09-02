@@ -1,84 +1,50 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import Fastify from "fastify";
-import { connectDB } from "../src/db.js";
-import { resourceRoutes } from "../src/routes/resources.js";
-import { ResourceModel } from "../src/models/Resource.js";
-import { KnowledgeListModel } from "../src/models/KnowledgeList.js";
-import { tenantContext } from "../src/db.js";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import {
-  validatorCompiler,
-  serializerCompiler,
-  ZodTypeProvider,
-} from "fastify-type-provider-zod";
-import { storagePlugin } from "../src/utils/storage/plugin.js";
-import { FakeStorageAdapter } from "../src/utils/storage/fake.js";
-import { deletionPlugin } from "../src/plugins/deletion.js";
+import { tenantContext } from "../src/db.js";
+import { resourceRoutes } from "../src/routes/resources.js";
+import { KnowledgeListModel } from "../src/models/KnowledgeList.js";
 import multipart from "@fastify/multipart";
 import FormData from "form-data";
-import fs from "fs";
-import path from "path";
+import {
+  createTestApp,
+  teardownTestApp,
+  TestAppContext,
+  inTenant,
+} from "./helpers.js";
 
-let mongoServer: MongoMemoryServer;
-let app: any;
-let fakeStorage: FakeStorageAdapter;
+let ctx: TestAppContext;
+let fakeListId: string;
+let fakeProjectId: string;
 
 describe("Resources Multipart Upload", () => {
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    await connectDB(mongoServer.getUri());
+    fakeListId = new mongoose.Types.ObjectId().toHexString();
+    fakeProjectId = new mongoose.Types.ObjectId().toHexString();
 
-    app = Fastify().withTypeProvider<ZodTypeProvider>();
-    app.setValidatorCompiler(validatorCompiler);
-    app.setSerializerCompiler(serializerCompiler);
-
-    app.register(multipart);
-
-    app.decorateRequest("ownerId", null);
-    fakeStorage = new FakeStorageAdapter();
-    app.register(storagePlugin, { adapter: fakeStorage });
-    app.register(deletionPlugin);
-
-    // Setup tenant context for each request
-    app.addHook("onRequest", (request: any, reply: any, done: any) => {
-      request.ownerId = "test-user-1";
-      tenantContext.run({ ownerId: "test-user-1" }, () => {
-        done();
-      });
+    ctx = await createTestApp({
+      extraPlugins: [{ plugin: multipart }],
+      routes: [resourceRoutes],
     });
 
-    app.register(resourceRoutes);
-    const listId = new mongoose.Types.ObjectId().toHexString();
-    const projectId = new mongoose.Types.ObjectId().toHexString();
-    app.decorate("testContext", { listId, projectId });
-
-    await new Promise<void>((resolve) =>
-      tenantContext.run({ ownerId: "test-user-1" }, async () => {
-        await KnowledgeListModel.create({
-          _id: listId,
-          projectId: projectId,
-          name: "Test List",
-          slug: "test-list",
-          position: 0,
-        });
-        resolve();
-      }),
-    );
-    await app.ready();
+    await inTenant("test-user-1", async () => {
+      await KnowledgeListModel.create({
+        _id: fakeListId,
+        projectId: fakeProjectId,
+        name: "Test List",
+        slug: "test-list",
+        position: 0,
+      });
+    });
   }, 60000);
 
   afterAll(async () => {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await mongoServer.stop();
+    await teardownTestApp(ctx);
   }, 60000);
 
   it("POST /api/resources accepts multipart and streams to storage", async () => {
-    const { listId, projectId } = app.testContext;
     const form = new FormData();
-    form.append("projectId", projectId);
-    form.append("listId", listId);
+    form.append("projectId", fakeProjectId);
+    form.append("listId", fakeListId);
     form.append("title", "Test Upload");
     form.append("type", "pdf");
     form.append("file", Buffer.from("fake pdf content"), {
@@ -86,7 +52,7 @@ describe("Resources Multipart Upload", () => {
       contentType: "application/pdf",
     });
 
-    const response = await app.inject({
+    const response = await ctx.app.inject({
       method: "POST",
       url: "/api/resources",
       headers: form.getHeaders(),
@@ -102,7 +68,7 @@ describe("Resources Multipart Upload", () => {
     expect(data.status).toBe("ready");
 
     // Verify it was stored in the fake adapter
-    const uploadMeta = fakeStorage.uploads.get(data.driveFileId);
+    const uploadMeta = ctx.fakeStorage.uploads.get(data.driveFileId);
     expect(uploadMeta).toBeDefined();
     expect(uploadMeta?.title).toBe("Test Upload");
     expect(uploadMeta?.mimeType).toBe("application/pdf");

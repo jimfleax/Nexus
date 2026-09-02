@@ -8,6 +8,7 @@ import fp from "fastify-plugin";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { jwtVerify } from "jose";
 import { tenantContext } from "./db.js";
+import "./types.js";
 
 /**
  * @desc    Verify a bearer token using standard JWS signature verification
@@ -96,8 +97,7 @@ export const authPlugin = fp(async (fastify) => {
             .send({ error: "Unauthorized: Missing sub in token" });
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (request as any).ownerId = ownerId;
+        request.ownerId = ownerId;
 
         const store = tenantContext.getStore();
         if (store) {

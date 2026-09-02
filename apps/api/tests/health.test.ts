@@ -1,21 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import Fastify from "fastify";
-import { authPlugin } from "../src/auth.js";
+import { FastifyInstance } from "fastify";
+import { createAuthTestApp } from "./helpers.js";
 
 describe("Health Route Access", () => {
-  let app: any;
+  let app: FastifyInstance;
 
   beforeAll(async () => {
-    app = Fastify();
-    app.register(authPlugin);
-
-    app.get("/health", async () => ({ ok: true, version: "0.1.0" }));
-    app.get("/api/protected", async (request: any) => ({
-      ok: true,
-      user: request.ownerId,
-    }));
-
-    await app.ready();
+    app = await createAuthTestApp();
   });
 
   afterAll(async () => {
