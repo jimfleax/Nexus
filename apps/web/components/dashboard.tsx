@@ -86,7 +86,7 @@ export function Dashboard() {
               className="border-white/20 bg-white/10"
               gridClassName="gap-3 md:grid-cols-3"
             />
-          ) : (
+          ) : projects.length > 0 ? (
             <MagicContainer
               className="grid gap-3 sm:grid-cols-2 md:grid-cols-3"
               glowColor="255, 255, 255"
@@ -95,6 +95,12 @@ export function Dashboard() {
                 <ProjectCard key={p.id} p={p} />
               ))}
             </MagicContainer>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-12 text-center backdrop-blur-sm">
+              <p className="text-white/80">
+                There are no projects, add one to see here.
+              </p>
+            </div>
           )}
         </section>
       </BackgroundGradientAnimation>

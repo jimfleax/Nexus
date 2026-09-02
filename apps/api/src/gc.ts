@@ -22,10 +22,14 @@ export async function runGarbageCollection() {
     const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
 
     // Find resources pending for > 30 mins
-    const staleResources = await ResourceModel.find({
-      status: "pending",
-      updatedAt: { $lt: thirtyMinsAgo },
-    });
+    const staleResources = await ResourceModel.find(
+      {
+        status: "pending",
+        updatedAt: { $lt: thirtyMinsAgo },
+      },
+      null,
+      { skipTenant: true },
+    );
 
     for (const resource of staleResources) {
       if (resource.driveFileId) {
@@ -52,7 +56,7 @@ export async function runGarbageCollection() {
       }
 
       // Delete the pending resource record
-      await ResourceModel.findByIdAndDelete(resource._id);
+      await ResourceModel.findByIdAndDelete(resource._id, { skipTenant: true });
     }
   } catch (error) {
     console.error("Garbage collection sweep failed:", error);

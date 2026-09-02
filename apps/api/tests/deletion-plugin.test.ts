@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import Fastify from "fastify";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { connectDB, tenantContext } from "../src/db.js";
 import mongoose from "mongoose";
 import { storagePlugin } from "../src/utils/storage/plugin.js";
@@ -10,21 +10,28 @@ import { ProjectModel } from "../src/models/Project.js";
 import { KnowledgeListModel } from "../src/models/KnowledgeList.js";
 import { ResourceModel } from "../src/models/Resource.js";
 
-let mongoServer: MongoMemoryServer;
+let mongoServer: MongoMemoryReplSet;
 let fakeAdapter: FakeStorageAdapter;
 let app: any;
 
 describe("DeletionPlugin", () => {
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
+    mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
     await connectDB(mongoServer.getUri());
+
+    await ProjectModel.createCollection();
+    await ProjectModel.init();
+    await KnowledgeListModel.createCollection();
+    await KnowledgeListModel.init();
+    await ResourceModel.createCollection();
+    await ResourceModel.init();
 
     app = Fastify();
     fakeAdapter = new FakeStorageAdapter();
     app.register(storagePlugin, { adapter: fakeAdapter });
     app.register(deletionPlugin);
     await app.ready();
-  });
+  }, 60000);
 
   afterAll(async () => {
     await mongoose.disconnect();
