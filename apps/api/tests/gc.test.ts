@@ -24,7 +24,7 @@ const mockDelete = vi.fn().mockResolvedValue({});
 vi.mock("googleapis", () => ({
   google: {
     auth: {
-      OAuth2: vi.fn().mockImplementation(function () {
+      OAuth2: vi.fn().mockImplementation(function (this: any) {
         this.setCredentials = vi.fn();
         this.getAccessToken = vi
           .fn()
@@ -38,7 +38,7 @@ vi.mock("googleapis", () => ({
 }));
 
 // Import after mock setup
-const { runGarbageCollection } = await import("../src/gc.js");
+import { runGarbageCollection } from "../src/gc.js";
 
 describe("GarbageCollection", () => {
   let mongoServer: MongoMemoryReplSet;

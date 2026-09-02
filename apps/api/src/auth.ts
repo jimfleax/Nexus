@@ -27,7 +27,7 @@ export async function verifyToken(token: string, secret: string) {
  * @description Fastify plugin that guards every route with bearer-token authentication and seeds the tenant context.
  */
 export const authPlugin = fp(async (fastify) => {
-  fastify.decorateRequest("ownerId", null);
+  fastify.decorateRequest("ownerId", "");
 
   // We set up the context in onRequest so it wraps the entire request lifecycle.
   // Then we authenticate and mutate the store in preHandler.

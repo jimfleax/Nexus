@@ -54,8 +54,8 @@ export interface CreateTestAppOptions {
    * Useful for adding multipart support or custom decorations.
    */
   extraPlugins?: Array<{
-    plugin: FastifyPluginAsync;
-    options?: Record<string, unknown>;
+    plugin: any;
+    options?: any;
   }>;
   /**
    * Routes to register after all plugins are ready.
@@ -106,7 +106,7 @@ export async function createTestApp(
   // 5. Mock auth: set ownerId on request and seed tenant context.
   //    Supports per-request override via x-test-owner header for
   //    tenant isolation tests.
-  app.decorateRequest("ownerId", null);
+  app.decorateRequest("ownerId", "");
   app.addHook("onRequest", (request: any, _reply: any, done: any) => {
     const effectiveOwnerId = request.headers["x-test-owner"] || ownerId;
     request.ownerId = effectiveOwnerId;
