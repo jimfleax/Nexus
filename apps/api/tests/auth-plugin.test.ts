@@ -42,3 +42,42 @@ beforeAll(async () => {
 afterAll(async () => {
   await app.close();
 });
+
+describe("Token extraction", () => {
+  it("extracts valid bearer token and sets ownerId", async () => {
+    const token = await mint({ sub: "user-1" });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ ok: true, user: "user-1" });
+  });
+
+  it("extracts valid cookie token and sets ownerId", async () => {
+    const token = await mint({ sub: "user-cookie" });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: { cookie: `nexus-session=${token}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ ok: true, user: "user-cookie" });
+  });
+
+  it("prioritizes Bearer token over cookie", async () => {
+    const bearerToken = await mint({ sub: "user-bearer" });
+    const cookieToken = await mint({ sub: "user-cookie" });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: {
+        authorization: `Bearer ${bearerToken}`,
+        cookie: `nexus-session=${cookieToken}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ ok: true, user: "user-bearer" });
+  });
+});
