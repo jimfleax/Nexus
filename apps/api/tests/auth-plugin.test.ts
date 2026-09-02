@@ -148,3 +148,48 @@ describe("Expiration and tolerance", () => {
     expect(res.statusCode).toBe(200);
   });
 });
+
+describe("Route bypasses and environment", () => {
+  it("bypasses auth for /health", async () => {
+    const res = await app.inject({ method: "GET", url: "/health" });
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("bypasses auth for /api/auth/* paths", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/auth/something" });
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("does not bypass for other paths", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/something" });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it("flows extracted ownerId into tenantContext store", async () => {
+    const token = await mint({ sub: "u1" });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().storeUser).toBe("u1");
+  });
+
+  it("returns 500 if AUTH_SECRET is unset", async () => {
+    const original = process.env.AUTH_SECRET;
+    delete process.env.AUTH_SECRET;
+    try {
+      const token = await mint({ sub: "u1" });
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/protected",
+        headers: { authorization: `Bearer ${token}` },
+      });
+      expect(res.statusCode).toBe(500);
+      expect(res.json().error).toBe("Internal Server Error");
+    } finally {
+      process.env.AUTH_SECRET = original;
+    }
+  });
+});
