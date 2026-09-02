@@ -33,10 +33,7 @@ export default function SignInPage() {
         </div>
 
         <div className="flex flex-col gap-3 p-8 pt-0">
-          <form
-            action={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/google`}
-            method="GET"
-          >
+          <form action="/api/auth/google" method="GET">
             <OAuthSubmitButton provider="google">
               <svg
                 className="mr-2 h-4 w-4"
@@ -57,10 +54,7 @@ export default function SignInPage() {
             </OAuthSubmitButton>
           </form>
 
-          <form
-            action={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/github`}
-            method="GET"
-          >
+          <form action="/api/auth/github" method="GET">
             <OAuthSubmitButton provider="github">
               <svg
                 className="mr-2 h-4 w-4"
