@@ -32,7 +32,7 @@ async function isSessionValid(request: NextRequest): Promise<boolean> {
 /**
  * @desc    Route guard: redirect unauthenticated users to /signin, authenticated users away from /signin
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isPublic = [

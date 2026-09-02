@@ -137,8 +137,10 @@ describe("Auth Routes", () => {
       },
     });
 
-    expect(res.statusCode).toBe(302);
-    expect(res.headers.location).toBe("http://localhost:3000/projects");
+    expect(res.statusCode).toBe(200);
+    expect(res.payload).toContain(
+      '<meta http-equiv="refresh" content="0;url=http://localhost:3000/projects">',
+    );
 
     const cookieHeader = Array.isArray(res.headers["set-cookie"])
       ? res.headers["set-cookie"].join(";")
@@ -193,8 +195,10 @@ describe("Auth Routes", () => {
       },
     });
 
-    expect(res.statusCode).toBe(302);
-    expect(res.headers.location).toBe("http://localhost:3000/projects");
+    expect(res.statusCode).toBe(200);
+    expect(res.payload).toContain(
+      '<meta http-equiv="refresh" content="0;url=http://localhost:3000/projects">',
+    );
 
     const cookieHeader = Array.isArray(res.headers["set-cookie"])
       ? res.headers["set-cookie"].join(";")

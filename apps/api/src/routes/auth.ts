@@ -22,13 +22,17 @@ function getSigningKey(): Uint8Array {
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days in seconds
 
 /** Emit the nexus-session Set-Cookie header */
+const cookieOptions = () =>
+  `HttpOnly; ${frontendUrl().startsWith("https://") ? "Secure; " : ""}SameSite=Lax; Path=/`;
+
+/** Emit the nexus-session Set-Cookie header */
 function sessionCookie(jwt: string): string {
-  return `nexus-session=${jwt}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${COOKIE_MAX_AGE}`;
+  return `nexus-session=${jwt}; ${cookieOptions()}; Max-Age=${COOKIE_MAX_AGE}`;
 }
 
 /** Clear the nexus-session cookie */
 function clearCookie(): string {
-  return "nexus-session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0";
+  return `nexus-session=; ${cookieOptions()}; Max-Age=0`;
 }
 
 const frontendUrl = () =>
@@ -116,7 +120,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     const state = crypto.randomBytes(16).toString("hex");
     reply.header(
       "Set-Cookie",
-      `oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=300`,
+      `oauth_state=${state}; ${cookieOptions()}; Max-Age=300`,
     );
 
     const params = new URLSearchParams({
@@ -153,10 +157,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
 
-    reply.header(
-      "Set-Cookie",
-      `oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
-    );
+    reply.header("Set-Cookie", `oauth_state=; ${cookieOptions()}; Max-Age=0`);
 
     try {
       const clientId = process.env.AUTH_GOOGLE_ID!;
@@ -219,8 +220,17 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
         image: profile.picture ?? null,
       });
 
+      // Return a 200 OK with HTML redirect instead of 302 Found.
+      // Next.js rewrites use fetch() which natively follows 3xx redirects,
+      // dropping the Set-Cookie headers on the intermediate response.
       reply.header("Set-Cookie", sessionCookie(jwt));
-      return reply.redirect(`${frontendUrl()}/projects`);
+      reply.type("text/html");
+      return reply.send(`
+        <html>
+          <head><meta http-equiv="refresh" content="0;url=${frontendUrl()}/projects"></head>
+          <body>Redirecting... <script>window.location.href="${frontendUrl()}/projects"</script></body>
+        </html>
+      `);
     } catch (err) {
       fastify.log.error(err, "Google OAuth callback error");
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
@@ -246,7 +256,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     const state = crypto.randomBytes(16).toString("hex");
     reply.header(
       "Set-Cookie",
-      `oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=300`,
+      `oauth_state=${state}; ${cookieOptions()}; Max-Age=300`,
     );
 
     const params = new URLSearchParams({
@@ -281,10 +291,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
 
-    reply.header(
-      "Set-Cookie",
-      `oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
-    );
+    reply.header("Set-Cookie", `oauth_state=; ${cookieOptions()}; Max-Age=0`);
 
     try {
       const clientId = process.env.AUTH_GITHUB_ID!;
@@ -390,8 +397,15 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
         image: profile.avatar_url ?? null,
       });
 
+      // Return a 200 OK with HTML redirect instead of 302 Found.
       reply.header("Set-Cookie", sessionCookie(jwt));
-      return reply.redirect(`${frontendUrl()}/projects`);
+      reply.type("text/html");
+      return reply.send(`
+        <html>
+          <head><meta http-equiv="refresh" content="0;url=${frontendUrl()}/projects"></head>
+          <body>Redirecting... <script>window.location.href="${frontendUrl()}/projects"</script></body>
+        </html>
+      `);
     } catch (err) {
       fastify.log.error(err, "GitHub OAuth callback error");
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
