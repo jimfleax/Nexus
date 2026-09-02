@@ -137,16 +137,8 @@ describe("Auth Routes", () => {
       },
     });
 
-    expect(res.statusCode).toBe(200);
-    expect(res.payload).toContain(
-      '<meta http-equiv="refresh" content="0;url=http://localhost:3000/projects">',
-    );
-
-    const cookieHeader = Array.isArray(res.headers["set-cookie"])
-      ? res.headers["set-cookie"].join(";")
-      : res.headers["set-cookie"] || "";
-
-    expect(cookieHeader).toContain("nexus-session=");
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain("/api/auth/sync?token=");
 
     const user = await (UserModel as any)
       .findOne({ ownerId: "google_mock-google-id" })
@@ -195,16 +187,8 @@ describe("Auth Routes", () => {
       },
     });
 
-    expect(res.statusCode).toBe(200);
-    expect(res.payload).toContain(
-      '<meta http-equiv="refresh" content="0;url=http://localhost:3000/projects">',
-    );
-
-    const cookieHeader = Array.isArray(res.headers["set-cookie"])
-      ? res.headers["set-cookie"].join(";")
-      : res.headers["set-cookie"] || "";
-
-    expect(cookieHeader).toContain("nexus-session=");
+    expect(res.statusCode).toBe(302);
+    expect(res.headers.location).toContain("/api/auth/sync?token=");
 
     const user = await (UserModel as any)
       .findOne({ ownerId: "github_12345" })
@@ -212,23 +196,6 @@ describe("Auth Routes", () => {
     expect(user).not.toBeNull();
 
     global.fetch = originalFetch;
-  });
-
-  it("POST /api/auth/signout should clear cookie", async () => {
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/auth/signout",
-    });
-
-    expect(res.statusCode).toBe(200);
-    expect(JSON.parse(res.payload)).toEqual({ ok: true });
-
-    const cookieHeader = Array.isArray(res.headers["set-cookie"])
-      ? res.headers["set-cookie"].join(";")
-      : res.headers["set-cookie"] || "";
-
-    expect(cookieHeader).toContain("nexus-session=;");
-    expect(cookieHeader).toContain("Max-Age=0");
   });
 
   it("GET /api/auth/me should return 401 without cookie", async () => {

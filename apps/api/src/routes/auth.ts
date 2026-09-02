@@ -220,17 +220,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
         image: profile.picture ?? null,
       });
 
-      // Return a 200 OK with HTML redirect instead of 302 Found.
-      // Next.js rewrites use fetch() which natively follows 3xx redirects,
-      // dropping the Set-Cookie headers on the intermediate response.
-      reply.header("Set-Cookie", sessionCookie(jwt));
-      reply.type("text/html");
-      return reply.send(`
-        <html>
-          <head><meta http-equiv="refresh" content="0;url=${frontendUrl()}/projects"></head>
-          <body>Redirecting... <script>window.location.href="${frontendUrl()}/projects"</script></body>
-        </html>
-      `);
+      return reply.redirect(`${frontendUrl()}/api/auth/sync?token=${jwt}`);
     } catch (err) {
       fastify.log.error(err, "Google OAuth callback error");
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
@@ -397,15 +387,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
         image: profile.avatar_url ?? null,
       });
 
-      // Return a 200 OK with HTML redirect instead of 302 Found.
-      reply.header("Set-Cookie", sessionCookie(jwt));
-      reply.type("text/html");
-      return reply.send(`
-        <html>
-          <head><meta http-equiv="refresh" content="0;url=${frontendUrl()}/projects"></head>
-          <body>Redirecting... <script>window.location.href="${frontendUrl()}/projects"</script></body>
-        </html>
-      `);
+      return reply.redirect(`${frontendUrl()}/api/auth/sync?token=${jwt}`);
     } catch (err) {
       fastify.log.error(err, "GitHub OAuth callback error");
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
@@ -457,15 +439,5 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       fastify.log.warn(err, "nexus-session JWT verification failed");
       return reply.status(401).send({ error: "Invalid or expired session" });
     }
-  });
-
-  /**
-   * @desc    Sign out by clearing the nexus-session cookie
-   * @route   POST /api/auth/signout
-   * @access  Public
-   */
-  fastify.post("/api/auth/signout", async (_request, reply) => {
-    reply.header("Set-Cookie", clearCookie());
-    return reply.send({ ok: true });
   });
 });
