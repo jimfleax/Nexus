@@ -70,39 +70,35 @@ export function Dashboard() {
           Continue where you left off in your knowledge workspace.
         </p>
 
-        <section className="mt-10 relative z-20">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-serif text-xl text-white">Projects</h2>
-            <Link
-              href="/projects"
-              className="text-sm font-medium text-[#dec9e9] hover:text-white hover:underline"
-            >
-              View all ({projects.length})
-            </Link>
-          </div>
-          {projectsLoading ? (
-            <ProjectGridSkeleton
-              count={3}
-              className="border-white/20 bg-white/10"
-              gridClassName="gap-3 md:grid-cols-3"
-            />
-          ) : projects.length > 0 ? (
-            <MagicContainer
-              className="grid gap-3 sm:grid-cols-2 md:grid-cols-3"
-              glowColor="255, 255, 255"
-            >
-              {projects.map((p) => (
-                <ProjectCard key={p.id} p={p} />
-              ))}
-            </MagicContainer>
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-12 text-center backdrop-blur-sm">
-              <p className="text-white/80">
-                There are no projects, add one to see here.
-              </p>
+        {(projectsLoading || projects.length > 0) && (
+          <section className="mt-10 relative z-20">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-serif text-xl text-white">Projects</h2>
+              <Link
+                href="/projects"
+                className="text-sm font-medium text-[#dec9e9] hover:text-white hover:underline"
+              >
+                View all ({projects.length})
+              </Link>
             </div>
-          )}
-        </section>
+            {projectsLoading ? (
+              <ProjectGridSkeleton
+                count={3}
+                className="border-white/20 bg-white/10"
+                gridClassName="gap-3 md:grid-cols-3"
+              />
+            ) : (
+              <MagicContainer
+                className="grid gap-3 sm:grid-cols-2 md:grid-cols-3"
+                glowColor="255, 255, 255"
+              >
+                {projects.map((p) => (
+                  <ProjectCard key={p.id} p={p} />
+                ))}
+              </MagicContainer>
+            )}
+          </section>
+        )}
       </BackgroundGradientAnimation>
 
       <section className="mt-12 mb-12">

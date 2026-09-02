@@ -21,6 +21,7 @@ import {
   CaretLeft,
   CaretRight,
   Plus,
+  ArrowSquareOut,
   FolderOpen,
 } from "@phosphor-icons/react";
 import { useProjects } from "@/hooks/use-projects";
@@ -29,7 +30,11 @@ import { ProfileModal } from "./profile-modal";
 import { CommandMenu } from "./command-menu";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import {
   Sheet,
   SheetContent,
@@ -52,6 +57,7 @@ const navigation = [
   [BookOpen, "Home", "/"],
   [Clock, "Recent", "/recent"],
   [Star, "Favorites", "/favorites"],
+  [FolderOpen, "Projects", "/projects"],
 ] as const;
 
 /* ─── Sidebar content ─────────────────────────────────── */
@@ -206,7 +212,7 @@ function SidebarContent({
               title="Open all projects"
               className="ml-2 flex size-5 items-center justify-center rounded-md text-[#815ac0] transition-colors hover:bg-[#dec9e9] hover:text-[#6247aa]"
             >
-              <FolderOpen className="size-3.5" weight="bold" />
+              <ArrowSquareOut className="size-3.5" weight="bold" />
             </Link>
             <div className="flex-1" />
             <CreateProjectDialog
