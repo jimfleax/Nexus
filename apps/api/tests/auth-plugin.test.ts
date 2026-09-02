@@ -119,3 +119,32 @@ describe("Invalid or missing tokens", () => {
     expect(res.json().error).toBe("Unauthorized: Missing sub in token");
   });
 });
+
+describe("Expiration and tolerance", () => {
+  it("rejects expired token beyond tolerance", async () => {
+    const token = await mint(
+      { sub: "u1" },
+      { exp: Math.floor(Date.now() / 1000) - 60 },
+    );
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it("accepts token within 30s clock tolerance", async () => {
+    // expired 20 seconds ago, still within 30s tolerance
+    const token = await mint(
+      { sub: "u1" },
+      { exp: Math.floor(Date.now() / 1000) - 20 },
+    );
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(200);
+  });
+});
