@@ -81,3 +81,41 @@ describe("Token extraction", () => {
     expect(res.json()).toMatchObject({ ok: true, user: "user-bearer" });
   });
 });
+
+describe("Invalid or missing tokens", () => {
+  it("rejects missing tokens", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/protected" });
+    expect(res.statusCode).toBe(401);
+    expect(res.json().error).toBe("Unauthorized: Missing or invalid token");
+  });
+
+  it("rejects non-Bearer authorization header", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: { authorization: "Basic abc" },
+    });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it("rejects malformed token", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: { authorization: "Bearer not.a.jwt" },
+    });
+    expect(res.statusCode).toBe(401);
+    expect(res.json().error).toBe("Unauthorized: Invalid token");
+  });
+
+  it("rejects token missing sub", async () => {
+    const token = await mint({ email: "x@y.z" }); // no sub
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/protected",
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(401);
+    expect(res.json().error).toBe("Unauthorized: Missing sub in token");
+  });
+});
