@@ -112,7 +112,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.status(500).send({ error: "Google OAuth not configured" });
     }
 
-    const redirectUri = `${apiUrl()}/api/auth/callback/google`;
+    const redirectUri = `${frontendUrl()}/api/auth/callback/google`;
     const state = crypto.randomBytes(16).toString("hex");
     reply.header(
       "Set-Cookie",
@@ -161,7 +161,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     try {
       const clientId = process.env.AUTH_GOOGLE_ID!;
       const clientSecret = process.env.AUTH_GOOGLE_SECRET!;
-      const redirectUri = `${apiUrl()}/api/auth/callback/google`;
+      const redirectUri = `${frontendUrl()}/api/auth/callback/google`;
 
       // 1. Exchange code for tokens
       const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
@@ -242,7 +242,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.status(500).send({ error: "GitHub OAuth not configured" });
     }
 
-    const redirectUri = `${apiUrl()}/api/auth/callback/github`;
+    const redirectUri = `${frontendUrl()}/api/auth/callback/github`;
     const state = crypto.randomBytes(16).toString("hex");
     reply.header(
       "Set-Cookie",
@@ -289,7 +289,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     try {
       const clientId = process.env.AUTH_GITHUB_ID!;
       const clientSecret = process.env.AUTH_GITHUB_SECRET!;
-      const redirectUri = `${apiUrl()}/api/auth/callback/github`;
+      const redirectUri = `${frontendUrl()}/api/auth/callback/github`;
 
       // 1. Exchange code for access token
       const tokenRes = await fetch(GITHUB_TOKEN_URL, {
