@@ -26,7 +26,7 @@ export function formatBytes(bytes: number | null | undefined): string {
     return "—";
   }
   if (bytes === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB", "TB"];
+  const units = ["B", "KB", "MB", "GB", "TB", "PB"];
   const i = Math.min(
     Math.floor(Math.log(bytes) / Math.log(1024)),
     units.length - 1,
@@ -63,7 +63,9 @@ export function formatFilenameToTitle(
   const withSpaces = withoutExt.replace(/[-_]/g, " ");
 
   // Split camelCase and PascalCase (insert space before uppercase letters)
-  const withCamelSplit = withSpaces.replace(/([a-z])([A-Z])/g, "$1 $2");
+  const withCamelSplit = withSpaces
+    .replace(/([a-z])([A-Z])/g, (m, p1, p2) => `${p1} ${p2.toLowerCase()}`)
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
 
   // Collapse multiple spaces and trim
   const singleSpaced = withCamelSplit.replace(/\s+/g, " ").trim();
