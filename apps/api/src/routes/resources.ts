@@ -103,11 +103,9 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
 
       const parsedBody = CreateResourceSchema.safeParse(body);
       if (!parsedBody.success) {
-        return reply
-          .status(400)
-          .send({
-            error: "Invalid payload: " + parsedBody.error.message,
-          } as any);
+        return reply.status(400).send({
+          error: "Invalid payload: " + parsedBody.error.message,
+        } as any);
       }
 
       body = parsedBody.data;
@@ -116,11 +114,9 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       // Validate list membership via service
       const list = await validateListMembership(body.listId, body.projectId);
       if (!list) {
-        return reply
-          .status(404)
-          .send({
-            error: "Knowledge List not found in the specified project",
-          } as any);
+        return reply.status(404).send({
+          error: "Knowledge List not found in the specified project",
+        } as any);
       }
 
       // Check title uniqueness via service
@@ -145,11 +141,9 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
 
       if (isFileUpload) {
         if (!fileStream) {
-          return reply
-            .status(400)
-            .send({
-              error: "File stream required for this resource type",
-            } as any);
+          return reply.status(400).send({
+            error: "File stream required for this resource type",
+          } as any);
         }
         try {
           const mType =
@@ -330,7 +324,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
   );
 
   /**
-   * @desc    Toggle a resource's favorite flag server-side (reads current state, flips it)
+   * @desc    Set a resource's favorite flag
    * @route   PUT /api/resources/:id/favorite
    * @access  Private
    */
@@ -339,14 +333,17 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         params: z.object({ id: z.string() }),
+        body: z.object({ isFavorite: z.boolean() }),
         response: {
           200: ResourceSchema,
+          400: z.object({ error: z.string() }),
           404: z.object({ error: z.string() }),
         },
       },
     },
     async (request, reply) => {
-      const updated = await toggleFavoriteResource(request.params.id);
+      const { isFavorite } = request.body;
+      const updated = await updateResource(request.params.id, { isFavorite });
       if (!updated)
         return reply.status(404).send({ error: "Resource not found" });
 
