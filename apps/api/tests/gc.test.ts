@@ -30,6 +30,8 @@ vi.mock("googleapis", () => ({
 let mongoServer: MongoMemoryReplSet;
 
 beforeAll(async () => {
+  process.env.AUTH_GOOGLE_ID = "test-id";
+  process.env.AUTH_GOOGLE_SECRET = "test-secret";
   mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   await connectDB(mongoServer.getUri());
   await ResourceModel.init();

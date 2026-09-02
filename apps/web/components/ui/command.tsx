@@ -1,10 +1,10 @@
+"use client";
+
 /**
  * @file command.tsx
  * @description Command menu primitives built on cmdk + Base UI Dialog. Provides CommandDialog, CommandInput, CommandList, CommandGroup, CommandItem, CommandEmpty, CommandSeparator, and CommandShortcut.
  * @architecture UI molecule wrapping cmdk primitives with the project's Base UI Dialog and purple/lavender theme tokens.
  */
-"use client";
-
 import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
 import { MagnifyingGlass } from "@phosphor-icons/react";

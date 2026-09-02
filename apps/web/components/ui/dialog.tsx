@@ -1,17 +1,21 @@
+"use client";
+
 /**
  * @file dialog.tsx
  * @description Modal dialog primitives built on Base UI's Dialog (Root, Trigger, Portal, Close, Overlay, Content, Header, Footer, Title, Description).
  * @architecture Generic UI molecule used by confirm/edit/create dialogs across the app; Content composes portal + overlay + popup.
  */
-"use client";
-
 import * as React from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { X } from "@phosphor-icons/react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 /**
  * @desc    Controlled dialog root

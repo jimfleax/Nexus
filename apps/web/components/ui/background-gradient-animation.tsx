@@ -1,9 +1,10 @@
+"use client";
+
 /**
  * @file background-gradient-animation.tsx
  * @description Animated gradient backdrop with drifting colored blobs and an interactive pointer glow, themed purple for Nexus.
  * @architecture Client component applying CSS custom props for the palette and animating blob layers on the provided color variables; pointer tracking uses requestAnimationFrame easing.
  */
-"use client";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 

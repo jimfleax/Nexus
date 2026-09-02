@@ -10,7 +10,8 @@ import {
 } from "../use-projects";
 import { TestWrapper } from "../../tests/test-utils";
 import { apiClient } from "../../lib/api-client";
-import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { projectKeys } from "@/lib/query-keys";
 
 vi.mock("@/lib/api-client", () => ({
   apiClient: {
@@ -37,6 +38,7 @@ describe("use-projects hooks", () => {
   describe("useProjects", () => {
     it("calls apiClient.projects.list() and returns data", async () => {
       const mockProjects = [{ id: "p1", name: "P1" }];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(apiClient.projects.list).mockResolvedValue(mockProjects as any);
 
       const { result } = renderHook(() => useProjects(), {
@@ -51,6 +53,7 @@ describe("use-projects hooks", () => {
 
   describe("useProject", () => {
     it("is disabled when id is falsy and enabled when provided", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(apiClient.projects.get).mockResolvedValue({ id: "p1" } as any);
 
       const { result, rerender } = renderHook(({ id }) => useProject(id), {
@@ -74,10 +77,12 @@ describe("use-projects hooks", () => {
       // Mock both mutation and the refetch
       vi.mocked(apiClient.projects.create).mockResolvedValue({
         id: "p2",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       vi.mocked(apiClient.projects.list).mockResolvedValue([
         { id: "p1" },
         { id: "p2" },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ] as any);
 
       // We need to render a component that uses BOTH the query and mutation to see refetch
@@ -95,6 +100,7 @@ describe("use-projects hooks", () => {
       await waitFor(() => expect(result.current.projects.isSuccess).toBe(true));
       expect(apiClient.projects.list).toHaveBeenCalledTimes(1);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       result.current.create.mutate({ name: "New" } as any);
 
       await waitFor(() => expect(result.current.create.isSuccess).toBe(true));
@@ -102,13 +108,14 @@ describe("use-projects hooks", () => {
 
       // Invalidate is called
       expect(result.current.invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects"],
+        queryKey: projectKeys.all(),
       });
     });
 
     it("useUpdateProject calls update and invalidates list and detail keys", async () => {
       vi.mocked(apiClient.projects.update).mockResolvedValue({
         id: "p1",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       const { result } = renderHook(
@@ -129,14 +136,15 @@ describe("use-projects hooks", () => {
       });
 
       expect(result.current.invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects"],
+        queryKey: projectKeys.all(),
       });
       expect(result.current.invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects", "p1"],
+        queryKey: projectKeys.detail("p1"),
       });
     });
 
     it("useDeleteProject calls delete and removes detail key", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(apiClient.projects.delete).mockResolvedValue(undefined as any);
 
       const { result } = renderHook(
@@ -156,10 +164,10 @@ describe("use-projects hooks", () => {
       expect(apiClient.projects.delete).toHaveBeenCalledWith("p1");
 
       expect(result.current.invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects"],
+        queryKey: projectKeys.all(),
       });
       expect(result.current.removeSpy).toHaveBeenCalledWith({
-        queryKey: ["projects", "p1"],
+        queryKey: projectKeys.detail("p1"),
       });
     });
   });

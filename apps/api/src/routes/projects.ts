@@ -11,6 +11,7 @@ import {
   CreateProjectSchema,
   UpdateProjectSchema,
   ProjectSchema,
+  ErrorResponseSchema,
 } from "@nexus/shared";
 import {
   listProjectsWithCounts,
@@ -55,22 +56,13 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
         body: CreateProjectSchema,
         response: {
           201: ProjectSchema,
-          409: z.object({ error: z.string() }),
+          409: ErrorResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      try {
-        const project = await createProject(request.body);
-        return reply.status(201).send(project);
-      } catch (error: any) {
-        if (error.code === 11000) {
-          return reply
-            .status(409)
-            .send({ error: "Project with this name already exists" });
-        }
-        throw error;
-      }
+      const project = await createProject(request.body);
+      return reply.status(201).send(project);
     },
   );
 
@@ -86,14 +78,17 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
         params: z.object({ id: z.string() }),
         response: {
           200: ProjectSchema,
-          404: z.object({ error: z.string() }),
+          404: ErrorResponseSchema,
         },
       },
     },
     async (request, reply) => {
       const project = await findProjectById(request.params.id);
       if (!project) {
-        return reply.status(404).send({ error: "Project not found" });
+        return reply.status(404).send({
+          ok: false,
+          error: { code: "NOT_FOUND", message: "Project not found" },
+        });
       }
       return project;
     },
@@ -112,28 +107,22 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
         body: UpdateProjectSchema,
         response: {
           200: ProjectSchema,
-          404: z.object({ error: z.string() }),
-          409: z.object({ error: z.string() }),
+          404: ErrorResponseSchema,
+          409: ErrorResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      try {
-        const project = await updateProject(request.params.id, request.body);
+      const project = await updateProject(request.params.id, request.body);
 
-        if (!project) {
-          return reply.status(404).send({ error: "Project not found" });
-        }
-
-        return project;
-      } catch (error: any) {
-        if (error.code === 11000) {
-          return reply
-            .status(409)
-            .send({ error: "Project with this name already exists" });
-        }
-        throw error;
+      if (!project) {
+        return reply.status(404).send({
+          ok: false,
+          error: { code: "NOT_FOUND", message: "Project not found" },
+        });
       }
+
+      return project;
     },
   );
 
@@ -149,7 +138,7 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
         params: z.object({ id: z.string() }),
         response: {
           204: z.null(),
-          404: z.object({ error: z.string() }),
+          404: ErrorResponseSchema,
         },
       },
     },
@@ -159,7 +148,10 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
 
       const project = await findProjectById(projectId);
       if (!project) {
-        return reply.status(404).send({ error: "Project not found" });
+        return reply.status(404).send({
+          ok: false,
+          error: { code: "NOT_FOUND", message: "Project not found" },
+        });
       }
 
       await server.deleter.deleteProject(projectId, ownerId);

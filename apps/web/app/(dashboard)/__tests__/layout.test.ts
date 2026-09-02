@@ -30,6 +30,7 @@ const mockCookie = (value: string | undefined) => {
   vi.mocked(cookies).mockResolvedValue({
     get: (name: string) =>
       name === "nexus-session" && value ? { name, value } : undefined,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 };
 
@@ -60,6 +61,7 @@ describe("Dashboard Layout", () => {
       mockCookie("valid.token");
       vi.mocked(jwtVerify).mockResolvedValue({
         payload: { sub: "u1", name: "N", email: "e@x", image: "img" },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       const user = await getSessionUser();
@@ -70,6 +72,7 @@ describe("Dashboard Layout", () => {
       mockCookie("valid.token");
       vi.mocked(jwtVerify).mockResolvedValue({
         payload: { name: "N" }, // missing sub
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       expect(await getSessionUser()).toBeNull();
@@ -79,6 +82,7 @@ describe("Dashboard Layout", () => {
       mockCookie("valid.token");
       vi.mocked(jwtVerify).mockResolvedValue({
         payload: { sub: "u1" },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       expect(await getSessionUser()).toEqual({
@@ -105,6 +109,7 @@ describe("Dashboard Layout", () => {
 
     it("verifies with clockTolerance: 30", async () => {
       mockCookie("valid.token");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(jwtVerify).mockResolvedValue({ payload: { sub: "u1" } } as any);
 
       await getSessionUser();
@@ -128,9 +133,11 @@ describe("Dashboard Layout", () => {
       mockCookie(undefined); // getSessionUser will return null
 
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await DashboardLayout({ children: "child" } as any);
         // should not reach here
         expect.unreachable("Layout should have thrown redirect");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         expect(e.message).toBe("REDIRECT");
         expect(redirect).toHaveBeenCalledWith("/signin");
@@ -141,8 +148,10 @@ describe("Dashboard Layout", () => {
       mockCookie("valid");
       vi.mocked(jwtVerify).mockResolvedValue({
         payload: { sub: "u1", name: "N", email: "e@x", image: "img" },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const el = (await DashboardLayout({ children: "child" } as any)) as any;
 
       expect(redirect).not.toHaveBeenCalled();

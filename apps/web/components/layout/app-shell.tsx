@@ -1,10 +1,10 @@
+"use client";
+
 /**
  * @file app-shell.tsx
  * @description Application frame: collapsible sidebar, mobile sheet navigation, Ctrl-K command palette, and page transitions.
  * @architecture Client shell rendered by the dashboard layout. Sidebar collapse state persists to localStorage; sidebar content (nav, projects, profile) is reused on desktop and mobile.
  */
-"use client";
-
 import { useState, useEffect } from "react";
 
 import Link from "next/link";
@@ -28,13 +28,9 @@ import { useProjects } from "@/hooks/use-projects";
 import { SidebarProject } from "./sidebar-project";
 import { ProfileModal } from "./profile-modal";
 import { CommandMenu } from "./command-menu";
-import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
+import { CreateProjectDialog } from "@/components/projects/project-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
+import { TooltipButton } from "@/components/ui/tooltip-button";
 import {
   Sheet,
   SheetContent,
@@ -119,20 +115,12 @@ function SidebarContent({
         </Link>
 
         {!collapsed && (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button
-                  onClick={onToggleCollapse}
-                  aria-label="Collapse sidebar"
-                  className="flex size-7 items-center justify-center rounded-md text-[#9163cb] transition-colors hover:bg-[#dec9e9] hover:text-[#6247aa]"
-                />
-              }
-            >
-              <CaretLeft className="size-3.5" />
-            </TooltipTrigger>
-            <TooltipContent>Collapse sidebar</TooltipContent>
-          </Tooltip>
+          <TooltipButton
+            icon={<CaretLeft className="size-3.5" />}
+            label="Collapse sidebar"
+            onClick={onToggleCollapse}
+            buttonClassName="flex size-7 items-center justify-center rounded-md text-[#9163cb] transition-colors hover:bg-[#dec9e9] hover:text-[#6247aa]"
+          />
         )}
       </div>
 
@@ -333,20 +321,12 @@ export function AppShell({
 
         {/* Floating pill — half outside the right border when collapsed */}
         {collapsed && (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button
-                  onClick={() => setCollapsed(false)}
-                  aria-label="Expand sidebar"
-                  className="absolute top-[22px] -right-3 z-30 flex size-6 items-center justify-center rounded-full border border-[#dec9e9] bg-[#f8f4fb] text-[#9163cb] shadow-sm transition-colors hover:bg-[#dec9e9] hover:text-[#6247aa]"
-                />
-              }
-            >
-              <CaretRight className="size-3" />
-            </TooltipTrigger>
-            <TooltipContent>Expand sidebar</TooltipContent>
-          </Tooltip>
+          <TooltipButton
+            icon={<CaretRight className="size-3" />}
+            label="Expand sidebar"
+            onClick={() => setCollapsed(false)}
+            buttonClassName="absolute top-[22px] -right-3 z-30 flex size-6 items-center justify-center rounded-full border border-[#dec9e9] bg-[#f8f4fb] text-[#9163cb] shadow-sm transition-colors hover:bg-[#dec9e9] hover:text-[#6247aa]"
+          />
         )}
       </motion.aside>
 

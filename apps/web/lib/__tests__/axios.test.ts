@@ -4,9 +4,11 @@ import { api } from "../axios";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const errorInterceptor = (api.interceptors.response as any).handlers[0]
   .rejected;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function makeError(status: number | undefined, data: any, message = "boom") {
   return {
     isAxiosError: true,
@@ -53,6 +55,7 @@ describe("Axios Interceptor", () => {
   });
 
   describe("401 signout flow", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let mockWindow: any;
 
     beforeEach(() => {

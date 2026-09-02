@@ -17,6 +17,7 @@ import {
   validateListMembership,
   createResource,
   updateResource,
+  queryResources,
 } from "../src/services/resource.service.js";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 
@@ -194,6 +195,31 @@ describe("ResourceService", () => {
         const fakeId = new mongoose.Types.ObjectId().toHexString();
         const result = await updateResource(fakeId, { title: "Nope" });
         expect(result).toBeNull();
+      });
+    });
+  });
+
+  describe("queryResources", () => {
+    it("should filter, sort, and omit content by default", async () => {
+      await tenantContext.run({ ownerId: OWNER }, async () => {
+        const resources = await queryResources(
+          { projectId },
+          { sort: { createdAt: -1 } },
+        );
+        expect(resources.length).toBeGreaterThan(0);
+        expect((resources[0] as any).content).toBeUndefined();
+      });
+    });
+
+    it("should allow overriding select and limit", async () => {
+      await tenantContext.run({ ownerId: OWNER }, async () => {
+        const resources = await queryResources(
+          { projectId },
+          { select: "title type", limit: 1 },
+        );
+        expect(resources).toHaveLength(1);
+        expect((resources[0] as any).type).toBeDefined();
+        expect((resources[0] as any).createdAt).toBeUndefined();
       });
     });
   });

@@ -1,14 +1,15 @@
+"use client";
+
 /**
  * @file page.tsx
  * @description Settings page: reader preferences (font, size, line height, width) backed by the ReaderSettingsProvider, with a live preview.
  */
-"use client";
-
 import {
   ArrowCounterClockwise,
   SlidersHorizontal,
   TextT,
 } from "@phosphor-icons/react";
+import { PageHeader } from "@/components/ui/page-header";
 import { motion } from "motion/react";
 import {
   useReaderSettings,
@@ -80,21 +81,22 @@ export default function SettingsPage() {
   ) => setReaderSettings({ ...readerSettings, [key]: value });
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-sm text-[#815ac0]">Preferences</p>
-          <h1 className="mt-1 font-serif text-4xl tracking-tight">
-            Reading settings
-          </h1>
-          <p className="mt-3 max-w-xl text-[#815ac0]">
+      <PageHeader
+        className="border-none pb-0"
+        kicker={<p className="text-sm text-[#815ac0]">Preferences</p>}
+        title={<span className="mt-1 block">Reading settings</span>}
+        subtitle={
+          <span className="mt-3 block max-w-xl text-[#815ac0]">
             Make long-form resources feel right for the way you read.
-          </p>
-        </div>
-        <Button variant="outline" onClick={resetReaderSettings}>
-          <ArrowCounterClockwise />
-          Reset defaults
-        </Button>
-      </div>
+          </span>
+        }
+        actions={
+          <Button variant="outline" onClick={resetReaderSettings}>
+            <ArrowCounterClockwise />
+            Reset defaults
+          </Button>
+        }
+      />
       <div className="mt-9 grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
         <div className="space-y-6">
           <Card>

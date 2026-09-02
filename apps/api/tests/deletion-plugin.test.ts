@@ -10,6 +10,8 @@ let ctx: TestAppContext;
 
 describe("DeletionPlugin", () => {
   beforeAll(async () => {
+    process.env.AUTH_GOOGLE_ID = "test-id";
+    process.env.AUTH_GOOGLE_SECRET = "test-secret";
     ctx = await createTestApp();
 
     await ProjectModel.createCollection();

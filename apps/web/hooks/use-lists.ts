@@ -4,13 +4,15 @@
  * @architecture Wraps apiClient list calls with per-project cache keys and invalidates dependent queries after mutations.
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type {
   CreateKnowledgeListInput,
   UpdateKnowledgeListInput,
   ReorderKnowledgeListInput,
 } from "@nexus/shared";
+import { listKeys } from "@/lib/query-keys";
+import { useCacheInvalidatingMutation } from "./use-cache-mutation";
 
 /**
  * @desc    Query all lists in a project
@@ -18,7 +20,7 @@ import type {
  */
 export function useLists(projectId: string) {
   return useQuery({
-    queryKey: ["lists", projectId],
+    queryKey: listKeys.byProject(projectId),
     queryFn: () => apiClient.lists.list(projectId),
     enabled: !!projectId,
   });
@@ -31,7 +33,7 @@ export function useLists(projectId: string) {
  */
 export function useList(projectId: string, listId: string) {
   return useQuery({
-    queryKey: ["lists", projectId, listId],
+    queryKey: listKeys.byProjectAndId(projectId, listId),
     queryFn: () => apiClient.lists.get(projectId, listId),
     enabled: !!projectId && !!listId,
   });
@@ -41,8 +43,7 @@ export function useList(projectId: string, listId: string) {
  * @desc    Mutation that creates a list in a project and invalidates its list cache
  */
 export function useCreateList() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: ({
       projectId,
       input,
@@ -50,11 +51,7 @@ export function useCreateList() {
       projectId: string;
       input: CreateKnowledgeListInput;
     }) => apiClient.lists.create(projectId, input),
-    onSuccess: (data, variables) => {
-      return queryClient.invalidateQueries({
-        queryKey: ["lists", variables.projectId],
-      });
-    },
+    invalidate: (variables) => [listKeys.byProject(variables.projectId)],
   });
 }
 
@@ -62,8 +59,7 @@ export function useCreateList() {
  * @desc    Mutation that updates a list and refreshes the project and single-list caches
  */
 export function useUpdateList() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: ({
       projectId,
       listId,
@@ -73,16 +69,10 @@ export function useUpdateList() {
       listId: string;
       input: UpdateKnowledgeListInput;
     }) => apiClient.lists.update(projectId, listId, input),
-    onSuccess: (data, variables) => {
-      return Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["lists", variables.projectId],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["lists", variables.projectId, variables.listId],
-        }),
-      ]);
-    },
+    invalidate: (variables) => [
+      listKeys.byProject(variables.projectId),
+      listKeys.byProjectAndId(variables.projectId, variables.listId),
+    ],
   });
 }
 
@@ -90,8 +80,7 @@ export function useUpdateList() {
  * @desc    Mutation that deletes a list and invalidates the project's list cache
  */
 export function useDeleteList() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: ({
       projectId,
       listId,
@@ -99,11 +88,7 @@ export function useDeleteList() {
       projectId: string;
       listId: string;
     }) => apiClient.lists.delete(projectId, listId),
-    onSuccess: (data, variables) => {
-      return queryClient.invalidateQueries({
-        queryKey: ["lists", variables.projectId],
-      });
-    },
+    invalidate: (variables) => [listKeys.byProject(variables.projectId)],
   });
 }
 
@@ -111,8 +96,7 @@ export function useDeleteList() {
  * @desc    Mutation that reorders lists and invalidates the project's list cache
  */
 export function useReorderLists() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: ({
       projectId,
       input,
@@ -120,11 +104,6 @@ export function useReorderLists() {
       projectId: string;
       input: ReorderKnowledgeListInput;
     }) => apiClient.lists.reorder(projectId, input),
-    // Optimistic update can be added here if needed, but invalidation is fine for now
-    onSuccess: (data, variables) => {
-      return queryClient.invalidateQueries({
-        queryKey: ["lists", variables.projectId],
-      });
-    },
+    invalidate: (variables) => [listKeys.byProject(variables.projectId)],
   });
 }

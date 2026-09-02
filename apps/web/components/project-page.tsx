@@ -1,9 +1,10 @@
+"use client";
+
 /**
  * @file project-page.tsx
  * @description Project detail view: breadcrumb, header with create/delete actions, and the ordered list of collections with reordering.
  * @architecture Client component; lazy-loads create dialogs and swaps list positions locally before persisting via useReorderLists.
  */
-"use client";
 import React, { Suspense } from "react";
 import type { Project } from "@nexus/shared";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,26 +13,18 @@ import { ProjectListCard } from "@/components/project-list-card";
 import { useRouter } from "next/navigation";
 import { useDeleteProject } from "@/hooks/use-projects";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { PageHeader } from "@/components/ui/page-header";
+import { PageBreadcrumb } from "@/components/ui/page-breadcrumb";
 import { Trash } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import Link from "next/link";
-
 const CreateListDialog = React.lazy(() =>
-  import("@/components/lists/create-list-dialog").then((mod) => ({
+  import("@/components/lists/list-dialog").then((mod) => ({
     default: mod.CreateListDialog,
   })),
 );
 const CreateResourceDialog = React.lazy(() =>
-  import("@/components/resources/create-resource-dialog").then((mod) => ({
+  import("@/components/resources/resource-dialog").then((mod) => ({
     default: mod.CreateResourceDialog,
   })),
 );
@@ -71,55 +64,44 @@ export function ProjectPage({ project }: { project: Project }) {
   return (
     <>
       <div className="mb-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink render={<Link href="/projects" />}>
-                Projects
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{project.name}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageBreadcrumb trail={[]} leaf={project.name} />
       </div>
-      <div className="flex flex-wrap items-start justify-between gap-5 border-b border-[#dec9e9] pb-8">
-        <div>
-          <div className="text-xl text-[#6247aa]">{project.icon}</div>
-          <h1 className="mt-2 font-serif text-4xl tracking-tight">
-            {project.name}
-          </h1>
-          <p className="mt-3 max-w-2xl leading-6 text-[#6247aa]">
+      <PageHeader
+        className="pb-8"
+        kicker={<div className="text-xl text-[#6247aa]">{project.icon}</div>}
+        title={<span className="mt-2 block">{project.name}</span>}
+        subtitle={
+          <span className="mt-3 block max-w-2xl leading-6">
             {project.description}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Suspense fallback={<Skeleton className="h-[38px] w-[130px]" />}>
-            <CreateResourceDialog projectId={project.id} />
-          </Suspense>
-          <Suspense fallback={<Skeleton className="h-[38px] w-[100px]" />}>
-            <CreateListDialog projectId={project.id} />
-          </Suspense>
-          <ConfirmDialog
-            title="Delete Project"
-            description="Are you sure you want to delete this project? This action cannot be undone."
-            isLoading={isDeletingProject}
-            onConfirm={() =>
-              deleteProject(project.id, {
-                onSuccess: () => router.push("/projects"),
-              })
-            }
-            trigger={
-              <Button variant="destructive" size="lg" className="gap-2">
-                <Trash className="size-4" />
-                Delete
-              </Button>
-            }
-          />
-        </div>
-      </div>
+          </span>
+        }
+        actions={
+          <div className="flex gap-2">
+            <Suspense fallback={<Skeleton className="h-[38px] w-[130px]" />}>
+              <CreateResourceDialog projectId={project.id} />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-[38px] w-[100px]" />}>
+              <CreateListDialog projectId={project.id} />
+            </Suspense>
+            <ConfirmDialog
+              title="Delete Project"
+              description="Are you sure you want to delete this project? This action cannot be undone."
+              isLoading={isDeletingProject}
+              onConfirm={() =>
+                deleteProject(project.id, {
+                  onSuccess: () => router.push("/projects"),
+                })
+              }
+              trigger={
+                <Button variant="destructive" size="lg" className="gap-2">
+                  <Trash className="size-4" />
+                  Delete
+                </Button>
+              }
+            />
+          </div>
+        }
+      />
       <section className="mt-8">
         <h2 className="mb-3 font-serif text-xl">
           Collections{" "}
@@ -148,8 +130,12 @@ export function ProjectPage({ project }: { project: Project }) {
           </div>
         ) : (
           <div className="py-12 text-center border border-dashed border-[#dec9e9] rounded-2xl">
-            <h3 className="font-serif text-lg text-[#6247aa]">No collections yet</h3>
-            <p className="mt-1 text-sm text-[#815ac0]">Create a collection to organize your resources.</p>
+            <h3 className="font-serif text-lg text-[#6247aa]">
+              No collections yet
+            </h3>
+            <p className="mt-1 text-sm text-[#815ac0]">
+              Create a collection to organize your resources.
+            </p>
           </div>
         )}
       </section>

@@ -1,15 +1,17 @@
+"use client";
+import { resourceUrl } from "@/lib/urls";
 /**
  * @file page.tsx
  * @description Search page: full-text search across the workspace driven by the ?q= query param.
  */
-"use client";
 
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
 import { apiClient } from "@/lib/api-client";
+import { Skeleton } from "boneyard-js/react";
 import type { Resource } from "@nexus/shared";
-import { ListSkeleton } from "@/components/ui/data-skeletons";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { searchKeys } from "@/lib/query-keys";
 import { useProject } from "@/hooks/use-projects";
 import { useList } from "@/hooks/use-lists";
 
@@ -24,8 +26,9 @@ function SearchResultItem({ r }: { r: Resource }) {
 
   return (
     <Link
-      href={`/projects/${r.projectId}/lists/${r.listId}/resources/${r.id}`}
+      href={resourceUrl(r.projectId, r.listId, r.id)}
       className="block py-5 hover:bg-[#f8f4fb]"
+      data-boneyard="search-result"
     >
       <h2 className="font-medium">{r.title}</h2>
       {r.description && (
@@ -67,7 +70,7 @@ export default function Search({
   }, [query]);
 
   const { data: results = [], isLoading: loading } = useQuery({
-    queryKey: ["search", query],
+    queryKey: searchKeys.query(query),
     queryFn: () => apiClient.search.query(query),
     enabled: !!query,
     placeholderData: keepPreviousData,
@@ -93,8 +96,10 @@ export default function Search({
         </p>
       )}
       {loading && (
-        <div className="mt-4 max-w-3xl divide-y divide-[#dec9e9]">
-          <ListSkeleton rows={3} />
+        <div className="mt-4 max-w-3xl divide-y divide-[#dec9e9] flex flex-col gap-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} name="search-result" />
+          ))}
         </div>
       )}
       <div className="mt-4 max-w-3xl divide-y divide-[#dec9e9]">

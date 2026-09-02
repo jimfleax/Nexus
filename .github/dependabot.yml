@@ -1,0 +1,62 @@
+version: 2
+
+updates:
+  # ── npm monorepo deps (apps/api, apps/web, packages/shared via root lockfile) ──
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    groups:
+      types:
+        patterns: ["@types/*"]
+      testing:
+        patterns:
+          [
+            "vitest",
+            "playwright",
+            "@testing-library/*",
+            "mongodb-memory-server",
+            "tsx",
+          ]
+      linting:
+        patterns:
+          [
+            "eslint*",
+            "prettier",
+            "@typescript-eslint/*",
+            "typescript",
+            "tailwind*",
+            "@tailwindcss/*",
+            "eslint-config-next",
+          ]
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+        exclude-patterns:
+          [
+            "@types/*",
+            "vitest",
+            "playwright",
+            "eslint*",
+            "prettier",
+            "@typescript-eslint/*",
+          ]
+
+  # ── GitHub Actions workflow deps ──
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]

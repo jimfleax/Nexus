@@ -1,10 +1,10 @@
+"use client";
+
 /**
  * @file context-menu.tsx
  * @description Right-click context menu primitives (shadcn base-nova style) built on Base UI's ContextMenu.
  * @architecture Generic UI molecule used to attach right-click action menus to list rows; content composes portal + positioner + popup.
  */
-"use client";
-
 import * as React from "react";
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu";
 

@@ -1,9 +1,9 @@
+"use client";
+
 /**
  * @file error.tsx
  * @description Global error boundary for the app, showing a friendly fallback when a render fails.
  */
-"use client";
-
 import { ErrorState } from "@/components/ui/error-state";
 
 /**

@@ -81,3 +81,18 @@ export function formatFilenameToTitle(
   }
   return capitalized;
 }
+
+export function parseTags(input: string): string[] {
+  return input
+    .split(/[,#\s]+/)
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function formatLongDate(date: string | Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(date));
+}

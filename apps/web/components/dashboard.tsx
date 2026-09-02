@@ -1,27 +1,25 @@
+"use client";
+
 /**
  * @file dashboard.tsx
  * @description Home dashboard: gradient hero greeting with project grid, quick-add notch, and a recent-resources section.
  * @architecture Client component composing hero and recent sections from useProjects, recent query, and shared cards.
  */
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import { ResourceCard } from "@/components/resource-card";
-import { apiClient } from "@/lib/api-client";
-import { useQuery } from "@tanstack/react-query";
 import { useProjects } from "@/hooks/use-projects";
+import { useRecentResources } from "@/hooks/use-recent-resources";
 import { ProjectCard } from "@/components/project-card";
+import { formatLongDate } from "@/lib/utils";
 
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  ListSkeleton,
-  ProjectGridSkeleton,
-} from "@/components/ui/data-skeletons";
+import { Skeleton } from "boneyard-js/react";
 import { QuickAddNotch } from "@/components/layout/quick-add-notch";
 import { MagicContainer } from "@/components/ui/magic-card";
 import { BookOpen } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 
 /**
  * @desc    Time-of-day greeting for the hero
@@ -40,16 +38,15 @@ function getGreeting() {
  */
 export function Dashboard() {
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
-  const { data: recentResources = [], isLoading: recentLoading } = useQuery({
-    queryKey: ["recentResources"],
-    queryFn: () => apiClient.user.recent(),
-  });
+  const { data: recentResources = [], isLoading: recentLoading } =
+    useRecentResources();
 
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  }).format(new Date());
+  const formattedDate = formatLongDate(new Date());
+
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
     <div>
@@ -58,19 +55,25 @@ export function Dashboard() {
         className="p-8 relative z-20 w-full h-full"
       >
         <div className="flex items-start justify-between relative z-30">
-          <p className="text-sm font-medium tracking-wide text-white/80 uppercase">
+          <p
+            suppressHydrationWarning
+            className="text-sm font-medium tracking-wide text-white/80 uppercase"
+          >
             {formattedDate}
           </p>
           <QuickAddNotch />
         </div>
-        <h1 className="mt-1 font-serif text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 drop-shadow-sm [text-shadow:_0_4px_24px_rgb(255_255_255_/_20%)] relative z-20">
+        <h1
+          suppressHydrationWarning
+          className="mt-1 font-serif text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 drop-shadow-sm [text-shadow:_0_4px_24px_rgb(255_255_255_/_20%)] relative z-20"
+        >
           {getGreeting()}
         </h1>
         <p className="mt-2 text-white/80 relative z-20">
           Continue where you left off in your knowledge workspace.
         </p>
 
-        {(projectsLoading || projects.length > 0) && (
+        {(!isMounted || projectsLoading || projects.length > 0) && (
           <section className="mt-10 relative z-20">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-serif text-xl text-white">Projects</h2>
@@ -82,11 +85,11 @@ export function Dashboard() {
               </Link>
             </div>
             {projectsLoading ? (
-              <ProjectGridSkeleton
-                count={3}
-                className="border-white/20 bg-white/10"
-                gridClassName="gap-3 md:grid-cols-3"
-              />
+              <div className="gap-3 md:grid-cols-3 grid">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} name="project-card" />
+                ))}
+              </div>
             ) : (
               <MagicContainer
                 className="grid gap-3 sm:grid-cols-2 md:grid-cols-3"
@@ -111,9 +114,18 @@ export function Dashboard() {
             See all
           </Link>
         </div>
-        <div className="border-y border-[#dec9e9]">
+        <div
+          className={cn(
+            "border-y border-[#dec9e9]",
+            recentResources.length === 0 && "border-0",
+          )}
+        >
           {recentLoading ? (
-            <ListSkeleton rows={3} />
+            <div className="flex flex-col gap-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} name="resource-card" />
+              ))}
+            </div>
           ) : recentResources.length ? (
             recentResources.map((r, index) => (
               <ResourceCard key={r.id} resource={r} index={index} />

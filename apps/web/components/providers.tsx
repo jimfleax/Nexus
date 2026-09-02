@@ -1,15 +1,16 @@
+"use client";
+
 /**
  * @file providers.tsx
  * @description Client provider stack for the dashboard: TanStack Query cache, reader settings, and the sonner toaster.
  * @architecture Root client wrapper mounted in the dashboard layout; configures query defaults (5-min stale time, no retry on 401).
  */
-"use client";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { useState } from "react";
 import { ReaderSettingsProvider } from "./reader-settings-provider";
+import { GlobalBootLoader } from "./global-boot-loader";
 
 /**
  * @desc    Wrap children with the query, reader-settings, and toast providers
@@ -39,6 +40,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ReaderSettingsProvider>
+        <GlobalBootLoader />
         {children}
         <Toaster position="bottom-right" richColors />
       </ReaderSettingsProvider>

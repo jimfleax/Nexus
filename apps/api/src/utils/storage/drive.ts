@@ -7,6 +7,7 @@
 import { IStorageAdapter, StorageQuota, StorageError } from "./types.js";
 import { UserModel } from "../../models/User.js";
 import { google } from "googleapis";
+import { buildOAuthClient } from "../google/oauth.js";
 
 /**
  * @class DriveStorageAdapter
@@ -34,11 +35,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
       throw new StorageError("Google Drive integration not configured");
     }
 
-    const oauth2Client = new google.auth.OAuth2(
-      this.clientId,
-      this.clientSecret,
-    );
-    oauth2Client.setCredentials({ refresh_token: user.driveRefreshToken });
+    const oauth2Client = buildOAuthClient(user.driveRefreshToken);
 
     return {
       drive: google.drive({ version: "v3", auth: oauth2Client }),

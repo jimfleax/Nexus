@@ -25,6 +25,7 @@ import {
 
 import { storagePlugin } from "./utils/storage/plugin.js";
 import { deletionPlugin } from "./plugins/deletion.js";
+import { errorHandlerPlugin } from "./plugins/errorHandler.js";
 
 import { infoRoutes } from "./routes/info.js";
 
@@ -33,6 +34,7 @@ const fastify = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 
+fastify.register(errorHandlerPlugin);
 fastify.register(storagePlugin, {
   clientId: process.env.AUTH_GOOGLE_ID,
   clientSecret: process.env.AUTH_GOOGLE_SECRET,

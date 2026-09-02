@@ -1,10 +1,10 @@
+"use client";
+
 /**
  * @file reader-settings-provider.tsx
  * @description Context provider for reader typography preferences (font, size, line height, width), persisted to localStorage and applied to the document root.
  * @architecture Client provider exposing readerSettings/setReaderSettings/resetReaderSettings; writes CSS custom props (--reader-font-size, --reader-line-height) and the data-reader-font attribute consumed by reader styles.
  */
-"use client";
-
 import { createContext, useContext, useEffect, useState } from "react";
 
 export type ReaderFont =

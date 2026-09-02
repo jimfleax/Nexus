@@ -9,7 +9,7 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { UserModel } from "../models/User.js";
-import { google } from "googleapis";
+import { buildOAuthClient } from "../utils/google/oauth.js";
 import {
   CreateResourceSchema,
   UpdateResourceSchema,
@@ -27,6 +27,12 @@ import {
   updateResource,
   toggleFavoriteResource,
 } from "../services/resource.service.js";
+import { FastifyReply } from "fastify";
+
+/** Send a 404 with the raw `{ error }` shape matching this route file's existing responses. */
+function notFoundReply(reply: FastifyReply, message = "Resource not found") {
+  return reply.status(404).send({ error: message });
+}
 
 /**
  * @module resourceRoutes
@@ -200,9 +206,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     async (request, reply) => {
       const resource = await findResourceById(request.params.id);
-      if (!resource) {
-        return reply.status(404).send({ error: "Resource not found" });
-      }
+      if (!resource) return notFoundReply(reply);
       return resource;
     },
   );
@@ -225,9 +229,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     async (request, reply) => {
       const resource = await findResourceContent(request.params.id);
-      if (!resource) {
-        return reply.status(404).send({ error: "Resource not found" });
-      }
+      if (!resource) return notFoundReply(reply);
 
       reply.header("Content-Type", "text/plain; charset=utf-8");
       return reply.send(resource.content || "");
@@ -256,7 +258,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
 
       const resource = await findResourceById(id);
       if (!resource || !resource.driveFileId) {
-        return reply.status(404).send({ error: "Resource or file not found" });
+        return notFoundReply(reply, "Resource or file not found");
       }
 
       const user = await UserModel.findOne({ ownerId });
@@ -264,11 +266,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         return reply.status(400).send({ error: "Google Drive not configured" });
       }
 
-      const oauth2Client = new google.auth.OAuth2(
-        process.env.AUTH_GOOGLE_ID,
-        process.env.AUTH_GOOGLE_SECRET,
-      );
-      oauth2Client.setCredentials({ refresh_token: user.driveRefreshToken });
+      const oauth2Client = buildOAuthClient(user.driveRefreshToken);
 
       const accessTokenRes = await oauth2Client.getAccessToken();
       const accessToken = accessTokenRes.token;
@@ -344,8 +342,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
     async (request, reply) => {
       const { isFavorite } = request.body;
       const updated = await updateResource(request.params.id, { isFavorite });
-      if (!updated)
-        return reply.status(404).send({ error: "Resource not found" });
+      if (!updated) return notFoundReply(reply);
 
       return updated;
     },
@@ -371,8 +368,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       const resource = await updateResource(request.params.id, {
         lastOpenedAt: new Date(),
       });
-      if (!resource)
-        return reply.status(404).send({ error: "Resource not found" });
+      if (!resource) return notFoundReply(reply);
       return resource;
     },
   );
@@ -400,9 +396,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       const body = request.body;
 
       const resource = await findResourceById(request.params.id);
-      if (!resource) {
-        return reply.status(404).send({ error: "Resource not found" });
-      }
+      if (!resource) return notFoundReply(reply);
 
       if (body.listId) {
         // Validate the new list exists
@@ -465,9 +459,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       const ownerId = request.ownerId;
       const resource = await findResourceById(request.params.id);
 
-      if (!resource) {
-        return reply.status(404).send({ error: "Resource not found" });
-      }
+      if (!resource) return notFoundReply(reply);
 
       await server.deleter.deleteResource(request.params.id, ownerId);
 

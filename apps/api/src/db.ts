@@ -29,8 +29,10 @@ export const connectDB = async (uri: string, retries = 3): Promise<void> => {
         console.error(`MongoDB connection failed after ${retries} attempts.`);
         throw err;
       }
-      console.warn(`MongoDB connection attempt ${attempt} failed, retrying in 5 seconds...`);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      console.warn(
+        `MongoDB connection attempt ${attempt} failed, retrying in 5 seconds...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
 };

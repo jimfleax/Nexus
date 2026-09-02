@@ -8,6 +8,7 @@
 import { KnowledgeListModel } from "../models/KnowledgeList.js";
 import { ProjectModel } from "../models/Project.js";
 import { slugify } from "./slugify.js";
+import { updateById } from "./db-utils.js";
 
 /**
  * @desc    List all knowledge lists for a project, ordered by position
@@ -80,10 +81,7 @@ export async function updateList(
     updates.slug = slugify(input.name);
   }
 
-  return KnowledgeListModel.findByIdAndUpdate(id, { $set: updates }, {
-    new: true,
-    runValidators: true,
-  } as any);
+  return updateById(KnowledgeListModel, id, updates);
 }
 
 /**

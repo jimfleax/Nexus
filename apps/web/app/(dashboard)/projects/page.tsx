@@ -1,21 +1,22 @@
+"use client";
+import { projectUrl } from "@/lib/urls";
 /**
  * @file page.tsx
  * @description Projects page: grid of the user's projects as animated magic cards with a lazy-loaded create dialog.
  */
-"use client";
 
 import React, { Suspense } from "react";
 import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "boneyard-js/react";
 import { MagicContainer, MagicCard } from "@/components/ui/magic-card";
-import { ProjectGridSkeleton } from "@/components/ui/data-skeletons";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { useProjects } from "@/hooks/use-projects";
 import { useLists } from "@/hooks/use-lists";
 import type { Project } from "@nexus/shared";
 
 const CreateProjectDialog = React.lazy(() =>
-  import("@/components/projects/create-project-dialog").then((mod) => ({
+  import("@/components/projects/project-dialog").then((mod) => ({
     default: mod.CreateProjectDialog,
   })),
 );
@@ -31,13 +32,14 @@ function ProjectItem({ p }: { p: Project }) {
   return (
     <MagicCard
       as={Link}
-      href={`/projects/${p.id}`}
+      href={projectUrl(p.id)}
       key={p.id}
       enableStars={true}
       enableTilt={true}
       enableMagnetism={true}
       clickEffect={true}
       className="group flex flex-col justify-between rounded-2xl border border-[#dec9e9] bg-white p-5 transition hover:shadow-xs"
+      data-boneyard="project-card"
     >
       <div>
         <span className="text-xl text-[#6247aa]">{p.icon}</span>
@@ -62,26 +64,28 @@ export default function ProjectsPage() {
 
   return (
     <>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#dec9e9] pb-7">
-        <div>
-          <h1 className="font-serif text-4xl tracking-tight">Projects</h1>
-          <p className="mt-2 text-[#6247aa]">
-            Your knowledge contexts, collected in one place.
-          </p>
-        </div>
-        <Suspense fallback={<Skeleton className="h-[38px] w-[120px]" />}>
-          <CreateProjectDialog />
-        </Suspense>
-      </div>
+      <PageHeader
+        title="Projects"
+        subtitle="Your knowledge contexts, collected in one place."
+        actions={
+          <Suspense fallback={<Skeleton name="create-project-btn" />}>
+            <CreateProjectDialog />
+          </Suspense>
+        }
+      />
 
       {isLoading ? (
-        <ProjectGridSkeleton gridClassName="mt-8" />
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} name="project-card" />
+          ))}
+        </div>
       ) : projects.length === 0 ? (
         <EmptyState
           title="No projects yet"
           description="Create your first project to start organizing your knowledge contexts."
           action={
-            <Suspense fallback={<Skeleton className="h-[38px] w-[120px]" />}>
+            <Suspense fallback={<Skeleton name="create-project-btn" />}>
               <CreateProjectDialog />
             </Suspense>
           }

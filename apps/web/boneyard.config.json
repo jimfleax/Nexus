@@ -1,0 +1,5 @@
+{
+  "outDir": "./components/bones",
+  "registryPath": "./components/bones/registry.ts",
+  "url": "http://localhost:3000"
+}

@@ -7,6 +7,18 @@
 
 import { ResourceModel } from "../models/Resource.js";
 import { KnowledgeListModel } from "../models/KnowledgeList.js";
+import { updateById } from "./db-utils.js";
+
+/** Build a resource query with a default omission of heavy content and optional sort/limit/select. */
+export function queryResources(
+  filter: Record<string, unknown>,
+  opts: { sort?: Record<string, 1 | -1>; limit?: number; select?: string } = {},
+) {
+  let query = ResourceModel.find(filter).select(opts.select ?? "-content");
+  if (opts.sort) query = query.sort(opts.sort as any);
+  if (opts.limit !== undefined) query = query.limit(opts.limit);
+  return query;
+}
 
 /**
  * @desc    List resources in a project, optionally filtered by list, omitting heavy content
@@ -22,7 +34,7 @@ export async function listResourcesByProject(
   if (listId) {
     filter.listId = listId;
   }
-  return ResourceModel.find(filter).select("-content").sort({ createdAt: -1 });
+  return queryResources(filter, { sort: { createdAt: -1 } });
 }
 
 /**
@@ -129,10 +141,7 @@ export async function updateResource(
   id: string,
   updates: Record<string, unknown>,
 ) {
-  return ResourceModel.findByIdAndUpdate(id, { $set: updates }, {
-    new: true,
-    runValidators: true,
-  } as any);
+  return updateById(ResourceModel, id, updates);
 }
 
 /**

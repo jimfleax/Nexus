@@ -91,6 +91,10 @@ export async function createTestApp(
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
+  // 2.5 Register global error handler
+  const { errorHandlerPlugin } = await import("../src/plugins/errorHandler.js");
+  app.register(errorHandlerPlugin);
+
   // 3. Register fake storage + deletion plugin
   const fakeStorage = new FakeStorageAdapter();
   app.register(storagePlugin, { adapter: fakeStorage });

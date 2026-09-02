@@ -63,7 +63,7 @@ export function ResourceViewer({ resource }: { resource: Resource }) {
       content = resource.content ? (
         <MarkdownViewer content={resource.content} />
       ) : (
-        <TextViewer title={resource.title} content={resource.content} />
+        <TextViewer resource={resource} />
       );
       break;
     case "pdf": {
@@ -72,37 +72,25 @@ export function ResourceViewer({ resource }: { resource: Resource }) {
         (resource.driveFileId
           ? `/api/v1/resources/${resource.id}/file`
           : undefined);
-      content = <PdfViewer title={resource.title} url={pdfUrl} />;
+      content = <PdfViewer resource={resource} url={pdfUrl} />;
       break;
     }
     case "image":
-      content = (
-        <ImageViewer
-          title={resource.title}
-          url={resource.url}
-          alt={resource.description}
-        />
-      );
+      content = <ImageViewer resource={resource} />;
       break;
     case "url":
-      content = <WebResourceViewer title={resource.title} url={resource.url} />;
+      content = <WebResourceViewer resource={resource} />;
       break;
     case "chat":
-      content = (
-        <ChatViewer title={resource.title} content={resource.content} />
-      );
+      content = <ChatViewer resource={resource} />;
       break;
     case "text":
     case "note":
     case "ebook":
-      content = (
-        <TextViewer title={resource.title} content={resource.content} />
-      );
+      content = <TextViewer resource={resource} />;
       break;
     default:
-      content = (
-        <TextViewer title={resource.title} content={resource.content} />
-      );
+      content = <TextViewer resource={resource} />;
       break;
   }
 

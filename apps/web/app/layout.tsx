@@ -6,6 +6,7 @@
 
 import type { Metadata } from "next";
 import "./globals.css";
+import "@/components/bones/registry";
 import {
   Sora,
   Nunito,

@@ -1,12 +1,14 @@
+"use client";
+
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { UserIdentity } from "@/components/ui/user-identity";
+
 /**
  * @file profile-modal.tsx
  * @description Profile dialog showing the session user plus workspace usage metrics (Drive storage, resource/project counts, storage by type).
  * @architecture Dialog triggered from the sidebar user banner; metrics load via useUserMetrics inside a Suspense boundary.
  */
-"use client";
-
 import { Suspense } from "react";
-import Image from "next/image";
 import { SignOut } from "@phosphor-icons/react";
 import {
   HardDrives,
@@ -24,50 +26,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "boneyard-js/react";
 import { Button } from "@/components/ui/button";
 import { cn, formatBytes } from "@/lib/utils";
 import { useUserMetrics } from "@/hooks/use-user-metrics";
-import { toast } from "sonner";
-
-/**
- * @constant TYPE_LABELS
- * @desc    Human-readable labels for resource types in the storage breakdown
- */
-const TYPE_LABELS: Record<string, string> = {
-  markdown: "Markdown",
-  pdf: "PDF",
-  image: "Image",
-  ebook: "E-book",
-  text: "Text",
-};
-
-/**
- * @constant TYPE_COLORS
- * @desc    Accent color per resource type for the storage breakdown legend
- */
-const TYPE_COLORS: Record<string, string> = {
-  markdown: "bg-[#9163cb]",
-  pdf: "bg-[#6247aa]",
-  image: "bg-[#815ac0]",
-  ebook: "bg-[#a06cd5]",
-  text: "bg-[#dec9e9]",
-};
+import { signOut } from "@/lib/auth";
+import {} from "sonner";
+import { RESOURCE_LABELS, RESOURCE_COLORS } from "@/lib/resource-meta";
 
 /**
  * @desc    Skeleton fallback while metrics load
  */
 function MetricSkeleton() {
-  return (
-    <div className="flex flex-col gap-3" aria-busy="true">
-      <Skeleton className="h-16 w-full rounded-xl" />
-      <div className="grid grid-cols-2 gap-3">
-        <Skeleton className="h-16 rounded-xl" />
-        <Skeleton className="h-16 rounded-xl" />
-      </div>
-      <Skeleton className="h-32 w-full rounded-xl" />
-    </div>
-  );
+  return <Skeleton name="profile-metrics" />;
 }
 
 /**
@@ -80,7 +51,7 @@ function MetricContent() {
   const totalByType = Object.values(data.byType).reduce((sum, n) => sum + n, 0);
 
   return (
-    <>
+    <div className="flex flex-col gap-3" data-boneyard="profile-metrics">
       {/* Storage */}
       {data.drive.connected ? (
         <div className="rounded-xl border border-[#dec9e9] bg-[#f8f4fb] p-3">
@@ -94,7 +65,7 @@ function MetricContent() {
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#dec9e9]">
             <div
-              className="h-full rounded-full bg-[linear-gradient(90deg,#6247aa,#a06cd5)]"
+              className="h-full rounded-full bg-nexus-gradient"
               style={
                 data.drive.limit
                   ? {
@@ -169,15 +140,15 @@ function MetricContent() {
                   <span
                     className={cn(
                       "size-2.5 shrink-0 rounded-sm",
-                      TYPE_COLORS[type] || "bg-[#dec9e9]",
+                      RESOURCE_COLORS[type] || "bg-[#dec9e9]",
                     )}
                   />
                   <span className="w-20 text-[#6247aa]">
-                    {TYPE_LABELS[type] || type}
+                    {RESOURCE_LABELS[type] || type}
                   </span>
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#dec9e9]">
                     <div
-                      className="h-full rounded-full bg-[linear-gradient(90deg,#6247aa,#a06cd5)]"
+                      className="h-full rounded-full bg-nexus-gradient"
                       style={{ width: `${(size / totalByType) * 100}%` }}
                     />
                   </div>
@@ -196,7 +167,7 @@ function MetricContent() {
           </div>
         )
       )}
-    </>
+    </div>
   );
 }
 
@@ -223,28 +194,10 @@ export function ProfileModal({
               collapsed ? "justify-center" : "gap-3",
             )}
           >
-            {user.image ? (
-              <Image
-                src={user.image}
-                alt={user.name || "User"}
-                width={32}
-                height={32}
-                className="shrink-0 rounded-full"
-              />
+            {collapsed ? (
+              <UserAvatar user={user} className="size-8" />
             ) : (
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#6247aa] text-white">
-                {user.name?.[0]?.toUpperCase() || "U"}
-              </span>
-            )}
-            {!collapsed && (
-              <span className="flex flex-col overflow-hidden">
-                <span className="truncate text-sm font-medium text-[#6247aa]">
-                  {user.name}
-                </span>
-                <span className="truncate text-xs text-[#9163cb]">
-                  {user.email}
-                </span>
-              </span>
+              <UserIdentity user={user} className="gap-3 w-full" />
             )}
           </button>
         }
@@ -260,19 +213,7 @@ export function ProfileModal({
         <div className="grid gap-6 sm:grid-cols-[220px_1fr]">
           {/* ── Profile side ── */}
           <div className="flex flex-col items-center gap-3 rounded-xl border border-[#dec9e9] p-4 text-center">
-            {user.image ? (
-              <Image
-                src={user.image}
-                alt={user.name || "User"}
-                width={72}
-                height={72}
-                className="shrink-0 rounded-full"
-              />
-            ) : (
-              <span className="flex size-[72px] shrink-0 items-center justify-center rounded-full bg-[linear-gradient(40deg,#6247aa,#4a3285)] text-2xl font-semibold text-white">
-                {user.name?.[0]?.toUpperCase() || "U"}
-              </span>
-            )}
+            <UserAvatar user={user} className="size-[72px]" />
             <div className="flex flex-col gap-1">
               <span className="text-base font-semibold text-[#6247aa]">
                 {user.name}
@@ -299,14 +240,7 @@ export function ProfileModal({
               confirmText="Logout"
               cancelText="Cancel"
               isDestructive
-              onConfirm={() =>
-                fetch("/api/auth/signout", { method: "POST" })
-                  .then((res) => {
-                    if (res.ok) window.location.href = "/signin";
-                    else toast.error("Failed to sign out");
-                  })
-                  .catch(() => toast.error("Failed to sign out"))
-              }
+              onConfirm={() => void signOut()}
             />
           </div>
 

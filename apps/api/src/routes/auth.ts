@@ -8,9 +8,16 @@
 
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
-import crypto from "node:crypto";
 import { SignJWT } from "jose";
 import { findOrCreateUser, updateSettings } from "../services/user.service.js";
+import {
+  frontendUrl,
+  generateState,
+  setStateCookie,
+  getStateFromCookie,
+  clearStateCookie,
+  exchangeCodeForToken,
+} from "../utils/oauth.js";
 
 /** Build the HMAC-SHA256 signing key from AUTH_SECRET */
 function getSigningKey(): Uint8Array {
@@ -18,13 +25,6 @@ function getSigningKey(): Uint8Array {
   if (!secret) throw new Error("AUTH_SECRET is not configured");
   return new TextEncoder().encode(secret);
 }
-
-/** Helper to emit secure cookie attributes */
-const cookieOptions = () =>
-  `HttpOnly; ${frontendUrl().startsWith("https://") ? "Secure; " : ""}SameSite=Lax; Path=/`;
-
-const frontendUrl = () =>
-  (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
 
 /* ─── Google OAuth constants ────────────────────────────── */
 
@@ -84,11 +84,8 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     }
 
     const redirectUri = `${frontendUrl()}/api/auth/callback/google`;
-    const state = crypto.randomBytes(16).toString("hex");
-    reply.header(
-      "Set-Cookie",
-      `oauth_state=${state}; ${cookieOptions()}; Max-Age=300`,
-    );
+    const state = generateState();
+    setStateCookie(reply, "oauth_state", state);
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -116,16 +113,14 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
 
-    const cookieHeader = request.headers.cookie ?? "";
-    const match = cookieHeader.match(/(?:^|;\s*)oauth_state=([^;]+)/);
-    const stateCookie = match?.[1];
+    const stateCookie = getStateFromCookie(request, "oauth_state");
 
     if (!stateCookie || stateCookie !== state) {
       fastify.log.warn("Google OAuth state mismatch");
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
 
-    reply.header("Set-Cookie", `oauth_state=; ${cookieOptions()}; Max-Age=0`);
+    clearStateCookie(reply, "oauth_state");
 
     try {
       const clientId = process.env.AUTH_GOOGLE_ID!;
@@ -133,16 +128,12 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       const redirectUri = `${frontendUrl()}/api/auth/callback/google`;
 
       // 1. Exchange code for tokens
-      const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          code,
-          client_id: clientId,
-          client_secret: clientSecret,
-          redirect_uri: redirectUri,
-          grant_type: "authorization_code",
-        }),
+      const tokenRes = await exchangeCodeForToken(GOOGLE_TOKEN_URL, {
+        code,
+        clientId,
+        clientSecret,
+        redirectUri,
+        grant_type: "authorization_code",
       });
 
       if (!tokenRes.ok) {
@@ -220,11 +211,8 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     }
 
     const redirectUri = `${frontendUrl()}/api/auth/callback/github`;
-    const state = crypto.randomBytes(16).toString("hex");
-    reply.header(
-      "Set-Cookie",
-      `oauth_state=${state}; ${cookieOptions()}; Max-Age=300`,
-    );
+    const state = generateState();
+    setStateCookie(reply, "oauth_state", state);
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -249,16 +237,14 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
 
-    const cookieHeader = request.headers.cookie ?? "";
-    const match = cookieHeader.match(/(?:^|;\s*)oauth_state=([^;]+)/);
-    const stateCookie = match?.[1];
+    const stateCookie = getStateFromCookie(request, "oauth_state");
 
     if (!stateCookie || stateCookie !== state) {
       fastify.log.warn("GitHub OAuth state mismatch");
       return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
     }
 
-    reply.header("Set-Cookie", `oauth_state=; ${cookieOptions()}; Max-Age=0`);
+    clearStateCookie(reply, "oauth_state");
 
     try {
       const clientId = process.env.AUTH_GITHUB_ID!;
@@ -266,19 +252,18 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       const redirectUri = `${frontendUrl()}/api/auth/callback/github`;
 
       // 1. Exchange code for access token
-      const tokenRes = await fetch(GITHUB_TOKEN_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+      const tokenRes = await exchangeCodeForToken(
+        GITHUB_TOKEN_URL,
+        {
+          code,
+          clientId,
+          clientSecret,
+          redirectUri,
+        },
+        {
           Accept: "application/json",
         },
-        body: new URLSearchParams({
-          code,
-          client_id: clientId,
-          client_secret: clientSecret,
-          redirect_uri: redirectUri,
-        }),
-      });
+      );
 
       if (!tokenRes.ok) {
         fastify.log.error(

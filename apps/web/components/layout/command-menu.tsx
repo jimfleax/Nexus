@@ -1,14 +1,20 @@
+"use client";
+
+import { searchUrl } from "@/lib/urls";
 /**
  * @file command-menu.tsx
  * @description Command palette triggered by Ctrl+K: user info, live search suggestions, navigation, and actions.
  * @architecture Client component rendered by AppShell; manages its own Ctrl+K listener, debounced search via apiClient.search.suggestions, and opens existing create dialogs via controlled open state.
  */
-"use client";
-
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { searchKeys } from "@/lib/query-keys";
+import { STALE_SHORT } from "@/lib/query-config";
+import { signOut } from "@/lib/auth";
 import {
   House,
   Star,
@@ -32,10 +38,9 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { apiClient } from "@/lib/api-client";
-import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
-import { CreateListDialog } from "@/components/lists/create-list-dialog";
-import { CreateResourceDialog } from "@/components/resources/create-resource-dialog";
+import { CreateProjectDialog } from "@/components/projects/project-dialog";
+import { CreateListDialog } from "@/components/lists/list-dialog";
+import { CreateResourceDialog } from "@/components/resources/resource-dialog";
 import {
   Dialog,
   DialogContent,
@@ -79,24 +84,13 @@ export function CommandMenu({ user }: { user?: User }) {
   }, []);
 
   /* ── Live search suggestions (debounced) ─────────── */
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  );
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  useEffect(() => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 150);
-    return () => clearTimeout(debounceRef.current);
-  }, [search]);
+  const debouncedSearch = useDebouncedValue(search);
 
   const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery({
-    queryKey: ["search-suggestions", debouncedSearch],
+    queryKey: searchKeys.suggestions(debouncedSearch),
     queryFn: () => apiClient.search.suggestions(debouncedSearch),
     enabled: debouncedSearch.length >= 2,
-    staleTime: 30_000,
+    staleTime: STALE_SHORT,
   });
 
   /* ── Navigation handler ──────────────────────────── */
@@ -112,7 +106,7 @@ export function CommandMenu({ user }: { user?: User }) {
   const handleSearchSubmit = useCallback(() => {
     if (!search.trim()) return;
     setOpen(false);
-    router.push(`/search?q=${encodeURIComponent(search.trim())}`);
+    router.push(searchUrl(search.trim()));
   }, [search, router]);
 
   /* ── Open create dialog (close palette first) ────── */
@@ -130,18 +124,7 @@ export function CommandMenu({ user }: { user?: User }) {
   const handleLogout = useCallback(() => {
     setLogoutConfirmOpen(false);
     setOpen(false);
-    fetch("/api/auth/signout", { method: "POST" })
-      .then((res) => {
-        if (res.ok) window.location.href = "/signin";
-        else {
-          import("sonner").then(({ toast }) =>
-            toast.error("Failed to sign out"),
-          );
-        }
-      })
-      .catch(() => {
-        import("sonner").then(({ toast }) => toast.error("Failed to sign out"));
-      });
+    void signOut();
   }, []);
 
   return (
@@ -201,7 +184,7 @@ export function CommandMenu({ user }: { user?: User }) {
                   value={`search:${title}`}
                   onSelect={() => {
                     setOpen(false);
-                    router.push(`/search?q=${encodeURIComponent(title)}`);
+                    router.push(searchUrl(title));
                   }}
                 >
                   <MagnifyingGlass className="text-[#815ac0]" />

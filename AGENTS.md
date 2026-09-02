@@ -31,11 +31,12 @@ API expects `MONGODB_URI` (and other env vars) in `apps/api/.env`. Web expects `
 # From repo root
 npm run build:all      # build all workspaces (builds shared first in Docker context; locally run shared build manually if needed)
 npm run lint:all       # lint all workspaces
-npm run test:all       # run all tests (vitest in api)
+npm run test:all       # run all tests (vitest in api + web)
 
 # Single workspace
 npm run dev -w apps/api
 npm run test -w apps/api          # vitest run (all api tests)
+npm run test -w apps/web          # vitest run (web hooks/lib/route tests)
 npx vitest run tests/health.test.ts   # single test file (from apps/api)
 
 # Lint targets (from run.sh — lint each workspace from its own dir for config resolution)
@@ -47,6 +48,7 @@ npx vitest run tests/health.test.ts   # single test file (from apps/api)
 ## Auth flow
 
 - Auth is JWT-based (jose), not Auth.js session-based despite the naming.
+- API token from the `Authorization: Bearer` header, else falls back to the `nexus-session` cookie.
 - Session stored as `nexus-session` HttpOnly cookie, verified with `AUTH_SECRET`.
 - API auth plugin (`apps/api/src/auth.ts`) skips `/health` and `/api/auth/*`.
 - Dashboard layout (`apps/web/app/(dashboard)/layout.tsx`) verifies the cookie server-side and redirects to `/signin` if invalid.
@@ -64,7 +66,8 @@ Next.js rewrites (`apps/web/next.config.ts`): unmatched `/api/*` requests fall t
 
 - API tests use **Vitest** + `mongodb-memory-server` (real Mongo in-process).
 - Tests are in `apps/api/tests/`. Pattern: standalone Fastify instances with `app.inject()` — no external services needed.
-- `apps/web` has no test suite currently.
+- API `vitest.config.ts` sets `fileParallelism: false` — don't re-enable parallelism, it triggers flaky transaction errors under memory-server replica sets.
+- Web also has a vitest suite (`apps/web/vitest.config.ts`) covering hooks, libs, and Route Handler tests.
 
 ## Lint / Format
 

@@ -6,6 +6,7 @@
 
 import axios from "axios";
 import { toast } from "sonner";
+import { signOut } from "@/lib/auth";
 
 /**
  * @constant {AxiosInstance} api
@@ -30,12 +31,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         toast.error("Session expired. Please sign in again.");
-        fetch("/api/auth/signout", { method: "POST" })
-          .then((res) => {
-            if (res.ok) window.location.href = "/signin";
-            else toast.error("Failed to sign out");
-          })
-          .catch(() => toast.error("Failed to sign out"));
+        void signOut();
       }
     } else if (error.response?.status !== 404) {
       toast.error(message);

@@ -10,6 +10,7 @@ import { ResourceModel } from "../models/Resource.js";
 import { ProjectModel } from "../models/Project.js";
 import { KnowledgeListModel } from "../models/KnowledgeList.js";
 import { IStorageAdapter } from "../utils/storage/types.js";
+import { queryResources } from "./resource.service.js";
 
 /**
  * @constant {readonly string[]} STORAGE_BEARING_TYPES
@@ -79,9 +80,7 @@ export async function updateSettings(
  * @returns {Promise<Array>} Favorited resources, newest updated first
  */
 export async function getFavorites() {
-  return ResourceModel.find({ isFavorite: true })
-    .select("-content")
-    .sort({ updatedAt: -1 });
+  return queryResources({ isFavorite: true }, { sort: { updatedAt: -1 } });
 }
 
 /**
@@ -90,10 +89,10 @@ export async function getFavorites() {
  * @returns {Promise<Array>} Recent resources
  */
 export async function getRecent(limit = 10) {
-  return ResourceModel.find()
-    .select("-content")
-    .sort({ lastOpenedAt: -1, updatedAt: -1 })
-    .limit(limit);
+  return queryResources(
+    {},
+    { sort: { lastOpenedAt: -1, updatedAt: -1 }, limit },
+  );
 }
 
 /**

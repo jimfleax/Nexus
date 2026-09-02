@@ -1,11 +1,11 @@
+"use client";
+
 /**
  * @file error-state.tsx
  * @description Error-state surface with severity-themed icon badge, title, description, and optional actions.
  *              Supports inline use (nested in pages/sections) and a fullPage variant for route-level fallbacks.
  * @architecture Generic UI atom sibling to EmptyState; severity maps to the app's neutral purple or destructive red palette.
  */
-"use client";
-
 import type { Icon } from "@phosphor-icons/react";
 import { WarningCircle } from "@phosphor-icons/react";
 import { useState, type ReactNode } from "react";

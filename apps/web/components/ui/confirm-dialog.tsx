@@ -1,9 +1,9 @@
+"use client";
+
 /**
  * @file confirm-dialog.tsx
  * @description Modal confirmation wrapper: clicking an arbitrary trigger element opens a dialog with confirm/cancel actions.
  */
-"use client";
-
 import * as React from "react";
 import {
   Dialog,
@@ -50,10 +50,7 @@ export function ConfirmDialog({
   open: openProp,
   onOpenChange,
 }: ConfirmDialogProps) {
-  const [openState, setOpenState] = React.useState(false);
-  const isControlled = openProp !== undefined;
-  const open = isControlled ? openProp : openState;
-  const setOpen = isControlled ? onOpenChange || (() => {}) : setOpenState;
+  const { open, setOpen } = useControllableOpen(openProp, onOpenChange);
 
   return (
     <Dialog

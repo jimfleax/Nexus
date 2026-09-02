@@ -1,8 +1,9 @@
+"use client";
+
 /**
  * @file page.tsx
  * @description Resource reader page: resolves project/list/resource ids from the URL and renders the resource view.
  */
-"use client";
 import { useParams } from "next/navigation";
 import { ResourcePage } from "@/components/resource-page";
 

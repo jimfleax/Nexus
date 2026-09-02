@@ -1,9 +1,9 @@
+"use client";
+
 /**
  * @file oauth-submit-button.tsx
  * @description Client-side submit button for provider OAuth sign-in forms. Uses React's useFormStatus to show a spinner while the server action is pending.
  */
-"use client";
-
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";

@@ -36,6 +36,10 @@ beforeAll(async () => {
   app = Fastify().withTypeProvider<ZodTypeProvider>();
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+
+  const { errorHandlerPlugin } = await import("../src/plugins/errorHandler.js");
+  app.register(errorHandlerPlugin);
+
   app.decorateRequest("ownerId", null);
   app.addHook("onRequest", (request: any, reply: any, done: any) => {
     const ownerId = request.headers["x-test-owner"] || "test-user-1";
@@ -157,7 +161,8 @@ describe("PATCH error paths and renaming", () => {
       payload: { name: "Other" },
     }); // slug "other" exists
     expect(res.statusCode).toBe(409);
-    expect(res.json().error).toBe("Project with this name already exists");
+    expect(res.json().ok).toBe(false);
+    expect(res.json().error.code).toBe("CONFLICT_ERROR");
   });
 
   it("keeps slug unchanged when patching description only", async () => {
@@ -200,14 +205,17 @@ describe("POST slugification, validation and collisions", () => {
     expect(res.statusCode).toBe(400); // Zod max(100)
   });
 
-  it("returns 500 when name produces empty slug (current bug behavior)", async () => {
-    // "!!!" -> "" -> Mongoose requires slug -> unhandled validation error -> 500
+  it("returns 400 for name that produces empty slug (Mongoose validation caught)", async () => {
+    // "!!!" slugifies to "" which fails Mongoose schema minLength validation
+    // The global error handler now correctly surfaces this as 400, not 500
     const res = await app.inject({
       method: "POST",
       url: "/api/projects",
       payload: { name: "!!!" },
     });
-    expect(res.statusCode).toBe(500);
+    expect(res.statusCode).toBe(400);
+    expect(res.json().ok).toBe(false);
+    expect(res.json().error.code).toBe("VALIDATION_ERROR");
   });
 
   it("returns 409 POSTing duplicate name in same tenant", async () => {

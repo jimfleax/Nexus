@@ -1,9 +1,9 @@
+"use client";
+
 /**
  * @file file-picker.tsx
  * @description Drag-and-drop file selection control with click-to-browse, optional accept filter, and remove action.
  */
-"use client";
-
 import React, { useState, useRef } from "react";
 import { UploadSimple, File, X } from "@phosphor-icons/react";
 

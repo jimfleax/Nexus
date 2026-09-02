@@ -9,7 +9,7 @@ import { FastifyInstance } from "fastify";
 import { ResourceModel } from "../models/Resource.js";
 import { KnowledgeListModel } from "../models/KnowledgeList.js";
 import { ProjectModel } from "../models/Project.js";
-import mongoose from "mongoose";
+import { withTransaction } from "../utils/transactions.js";
 
 /**
  * @interface IDeleter
@@ -42,9 +42,7 @@ export const deletionPlugin = fp(
           .map((r) => r.driveFileId)
           .filter(Boolean) as string[];
 
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
+        await withTransaction(async (session) => {
           await ResourceModel.deleteMany({ projectId }, { session });
           await KnowledgeListModel.deleteMany({ projectId }, { session });
           await ProjectModel.deleteOne({ _id: projectId }, { session });
@@ -52,13 +50,7 @@ export const deletionPlugin = fp(
           if (driveFileIds.length > 0) {
             await server.storage.deleteFiles(ownerId, driveFileIds);
           }
-          await session.commitTransaction();
-        } catch (error) {
-          await session.abortTransaction();
-          throw error;
-        } finally {
-          session.endSession();
-        }
+        });
       },
       /**
        * @desc    Delete a knowledge list, its resources, and their Drive files in a transaction
@@ -74,22 +66,14 @@ export const deletionPlugin = fp(
           .map((r) => r.driveFileId)
           .filter(Boolean) as string[];
 
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
+        await withTransaction(async (session) => {
           await ResourceModel.deleteMany({ listId }, { session });
           await KnowledgeListModel.deleteOne({ _id: listId }, { session });
 
           if (driveFileIds.length > 0) {
             await server.storage.deleteFiles(ownerId, driveFileIds);
           }
-          await session.commitTransaction();
-        } catch (error) {
-          await session.abortTransaction();
-          throw error;
-        } finally {
-          session.endSession();
-        }
+        });
       },
       /**
        * @desc    Delete a single resource and its Drive file if present
@@ -101,21 +85,13 @@ export const deletionPlugin = fp(
         const resource = await ResourceModel.findById(resourceId);
         if (!resource) return;
 
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
+        await withTransaction(async (session) => {
           await ResourceModel.deleteOne({ _id: resourceId }, { session });
 
           if (resource.driveFileId) {
             await server.storage.deleteFiles(ownerId, [resource.driveFileId]);
           }
-          await session.commitTransaction();
-        } catch (error) {
-          await session.abortTransaction();
-          throw error;
-        } finally {
-          session.endSession();
-        }
+        });
       },
     };
     server.decorate("deleter", deleter);

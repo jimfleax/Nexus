@@ -7,6 +7,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type { CreateResourceInput, UpdateResourceInput } from "@nexus/shared";
+import { resourceKeys, recentKeys } from "@/lib/query-keys";
+import { useCacheInvalidatingMutation } from "./use-cache-mutation";
 
 /**
  * @desc    Query all resources in a project's list
@@ -15,7 +17,7 @@ import type { CreateResourceInput, UpdateResourceInput } from "@nexus/shared";
  */
 export function useResources(projectId: string, listId: string) {
   return useQuery({
-    queryKey: ["resources", projectId, listId],
+    queryKey: resourceKeys.byProjectAndList(projectId, listId),
     queryFn: () => apiClient.resources.list(projectId, listId),
     enabled: !!projectId && !!listId,
   });
@@ -33,7 +35,7 @@ export function useResource(
   resourceId: string,
 ) {
   return useQuery({
-    queryKey: ["resources", projectId, listId, resourceId],
+    queryKey: resourceKeys.detail(projectId, listId, resourceId),
     queryFn: () => apiClient.resources.get(resourceId),
     enabled: !!resourceId,
   });
@@ -43,8 +45,7 @@ export function useResource(
  * @desc    Mutation that creates a resource in a list and invalidates the list's resource cache
  */
 export function useCreateResource() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: ({
       projectId,
       listId,
@@ -54,14 +55,10 @@ export function useCreateResource() {
       listId: string;
       input: CreateResourceInput & { file?: File; mimeType?: string };
     }) => apiClient.resources.create(projectId, listId, input),
-    onSuccess: (data, variables) => {
-      return Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["resources", variables.projectId, variables.listId],
-        }),
-        queryClient.invalidateQueries({ queryKey: ["resources"] }),
-      ]);
-    },
+    invalidate: (variables) => [
+      resourceKeys.byProjectAndList(variables.projectId, variables.listId),
+      resourceKeys.all(),
+    ],
   });
 }
 
@@ -69,8 +66,7 @@ export function useCreateResource() {
  * @desc    Mutation that updates a resource and invalidates the resource cache
  */
 export function useUpdateResource() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: ({
       resourceId,
       input,
@@ -78,9 +74,7 @@ export function useUpdateResource() {
       resourceId: string;
       input: UpdateResourceInput;
     }) => apiClient.resources.update(resourceId, input),
-    onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ["resources"] });
-    },
+    invalidate: [resourceKeys.all()],
   });
 }
 
@@ -88,25 +82,22 @@ export function useUpdateResource() {
  * @desc    Mutation that deletes a resource and invalidates the resource cache
  */
 export function useDeleteResource() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: (resourceId: string) => apiClient.resources.delete(resourceId),
-    onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ["resources"] });
-    },
+    invalidate: [resourceKeys.all()],
   });
 }
-
-/**
- * @desc    Mutation that finalizes a Drive upload for a resource and invalidates the resource cache
- */
 
 /**
  * @desc    Mutation to mark a resource as opened
  */
 export function useMarkOpened() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (resourceId: string) =>
       apiClient.resources.markOpened(resourceId),
+    onSuccess: () => {
+      return queryClient.invalidateQueries({ queryKey: recentKeys.all() });
+    },
   });
 }

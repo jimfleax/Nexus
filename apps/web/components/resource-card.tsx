@@ -6,7 +6,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import {
@@ -16,25 +15,14 @@ import {
   Link as LinkIcon,
   ChatText,
   Notebook,
-  Star,
 } from "@phosphor-icons/react";
 import type { Resource } from "@nexus/shared";
-import { useFavorites } from "@/hooks/use-favorites";
-import { Button } from "@/components/ui/button";
 import { useDeleteResource, useUpdateResource } from "@/hooks/use-resources";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { RenameDialog } from "@/components/ui/rename-dialog";
 import { EditResourceDialog } from "@/components/resources/edit-resource-dialog";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+import { EntityContextMenu } from "@/components/ui/entity-context-menu";
 import { formatDate } from "@/lib/utils";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { InfoDialog } from "@/components/ui/info-dialog";
+import { FavoriteButton } from "@/components/ui/favorite-button";
+import { TagChips } from "@/components/ui/tag-chips";
 
 /**
  * @constant icons
@@ -63,16 +51,11 @@ export function ResourceCard({
   resource: Resource;
   index?: number;
 }) {
-  const { favorites, toggle } = useFavorites();
   const reduceMotion = useReducedMotion();
   const router = useRouter();
   const { mutate: deleteResource } = useDeleteResource();
   const { mutateAsync: updateResource, isPending: isRenaming } =
     useUpdateResource();
-  const [renameOpen, setRenameOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [infoOpen, setInfoOpen] = useState(false);
   const Icon = icons[resource.type];
   const href = `/projects/${resource.projectId}/lists/${resource.listId}/resources/${resource.id}`;
 
@@ -87,141 +70,76 @@ export function ResourceCard({
   const handleDelete = () => {
     deleteResource(resource.id, {
       onSuccess: () =>
-        router.push(
-          `/projects/${resource.projectId}/lists/${resource.listId}`,
-        ),
+        router.push(`/projects/${resource.projectId}/lists/${resource.listId}`),
     });
   };
 
   return (
     <>
-      <ContextMenu>
-        <ContextMenuTrigger
-          render={
-            <motion.article
-              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{
-                duration: 0.28,
-                delay: Math.min(index * 0.035, 0.18),
-                ease: "easeOut",
-              }}
-              whileHover={reduceMotion ? undefined : { x: 3 }}
-              className="group flex gap-3 border-b border-[#dec9e9] py-4 last:border-b-0"
-            >
-              <Link
-                href={href}
-                className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#dec9e9] text-[#6247aa] transition-colors group-hover:bg-[#dec9e9]"
-                aria-label={`Open ${resource.title}`}
-              >
-                <Icon className="size-4" />
-              </Link>
-              <div className="min-w-0 flex-1">
-                <Link
-                  href={href}
-                  className="font-medium text-[#6247aa] transition-colors hover:text-[#6247aa]"
-                >
-                  {resource.title}
-                </Link>
-                <p className="mt-1 truncate text-sm text-[#6247aa]">
-                  {resource.description}
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#6247aa]">
-                  <span className="capitalize">{resource.type}</span>
-                  {resource.readingTime && (
-                    <>
-                      <span>·</span>
-                      <span>{resource.readingTime}</span>
-                    </>
-                  )}
-                  {resource.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-md bg-[#6247aa] px-1.5 py-0.5 text-white"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  <span className="ml-auto">
-                    Modified {formatDate(resource.updatedAt)}
-                  </span>
-                </div>
-              </div>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      onClick={() => toggle(resource.id)}
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`${favorites.has(resource.id) ? "Remove" : "Add"} ${resource.title} ${favorites.has(resource.id) ? "from" : "to"} favorites`}
-                      className={`mt-0.5 ${favorites.has(resource.id) ? "text-[#6247aa]" : "text-[#b185db] opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
-                    />
-                  }
-                >
-                  <Star
-                    className={`size-4 ${favorites.has(resource.id) ? "fill-current" : ""}`}
-                  />
-                </TooltipTrigger>
-                <TooltipContent>
-                  {favorites.has(resource.id)
-                    ? "Remove from favorites"
-                    : "Add to favorites"}
-                </TooltipContent>
-              </Tooltip>
-            </motion.article>
-          }
-        />
-        <ContextMenuContent>
-          <ContextMenuItem onClick={() => router.push(href)}>
-            Open
-          </ContextMenuItem>
-          <ContextMenuItem onClick={() => setRenameOpen(true)}>
-            Rename
-          </ContextMenuItem>
-          <ContextMenuItem onClick={() => setEditOpen(true)}>
-            Edit
-          </ContextMenuItem>
-          <ContextMenuItem onClick={() => setInfoOpen(true)}>Info</ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem
-            variant="destructive"
-            onClick={() => setDeleteOpen(true)}
+      <EntityContextMenu
+        entityKind="resource"
+        openHref={href}
+        rename={{
+          name: resource.title,
+          title: "Rename resource",
+          label: "Title",
+          isPending: isRenaming,
+          onSubmit: handleRename,
+        }}
+        editDialog={<EditResourceDialog resource={resource} />}
+        deleteDialog={{
+          title: "Delete Resource",
+          description: "Are you sure you want to delete this resource?",
+          onConfirm: handleDelete,
+        }}
+        info={{ id: resource.id, type: "resource" }}
+      >
+        <motion.article
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{
+            duration: 0.28,
+            delay: Math.min(index * 0.035, 0.18),
+            ease: "easeOut",
+          }}
+          whileHover={reduceMotion ? undefined : { x: 3 }}
+          className="group flex gap-3 border-b border-[#dec9e9] py-4 last:border-b-0"
+        >
+          <Link
+            href={href}
+            className="grid size-10 shrink-0 place-items-center rounded-lg bg-[#dec9e9] text-[#6247aa] transition-colors group-hover:bg-[#dec9e9]"
+            aria-label={`Open ${resource.title}`}
           >
-            Delete
-          </ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
-
-      <RenameDialog
-        open={renameOpen}
-        onOpenChange={setRenameOpen}
-        name={resource.title}
-        title="Rename resource"
-        label="Title"
-        isPending={isRenaming}
-        onSubmit={handleRename}
-      />
-      <EditResourceDialog
-        resource={resource}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-      />
-      <ConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        title="Delete Resource"
-        description="Are you sure you want to delete this resource?"
-        onConfirm={handleDelete}
-        confirmText="Delete"
-      />
-      <InfoDialog
-        open={infoOpen}
-        onOpenChange={setInfoOpen}
-        type="resource"
-        id={resource.id}
-      />
+            <Icon className="size-4" />
+          </Link>
+          <div className="min-w-0 flex-1">
+            <Link
+              href={href}
+              className="font-medium text-[#6247aa] transition-colors hover:text-[#6247aa]"
+            >
+              {resource.title}
+            </Link>
+            <p className="mt-1 truncate text-sm text-[#6247aa]">
+              {resource.description}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#6247aa]">
+              <span className="capitalize">{resource.type}</span>
+              {resource.readingTime && (
+                <>
+                  <span>·</span>
+                  <span>{resource.readingTime}</span>
+                </>
+              )}
+              <TagChips tags={resource.tags} />
+              <span className="ml-auto">
+                Modified {formatDate(resource.updatedAt)}
+              </span>
+            </div>
+          </div>
+          <FavoriteButton resourceId={resource.id} variant="icon" />
+        </motion.article>
+      </EntityContextMenu>
     </>
   );
 }

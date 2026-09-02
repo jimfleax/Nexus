@@ -8,7 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useInfo } from "@/hooks/use-info";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatBytes } from "@/lib/utils";
+import { capitalizeType } from "@/lib/resource-meta";
 import { InfoDto } from "@nexus/shared";
 
 type InfoDialogProps = {
@@ -40,14 +41,18 @@ export function InfoDialog({ open, onOpenChange, type, id }: InfoDialogProps) {
 
               {info.description && (
                 <>
-                  <span className="font-semibold text-[#6247aa]">Description:</span>
+                  <span className="font-semibold text-[#6247aa]">
+                    Description:
+                  </span>
                   <span className="break-words">{info.description}</span>
                 </>
               )}
 
               {info.type === "project" && info.listCount !== undefined && (
                 <>
-                  <span className="font-semibold text-[#6247aa]">Collections:</span>
+                  <span className="font-semibold text-[#6247aa]">
+                    Collections:
+                  </span>
                   <span>{info.listCount}</span>
                 </>
               )}
@@ -55,7 +60,9 @@ export function InfoDialog({ open, onOpenChange, type, id }: InfoDialogProps) {
               {(info.type === "project" || info.type === "list") &&
                 info.resourceCount !== undefined && (
                   <>
-                    <span className="font-semibold text-[#6247aa]">Resources:</span>
+                    <span className="font-semibold text-[#6247aa]">
+                      Resources:
+                    </span>
                     <span>{info.resourceCount}</span>
                   </>
                 )}
@@ -63,25 +70,31 @@ export function InfoDialog({ open, onOpenChange, type, id }: InfoDialogProps) {
               {info.type === "resource" && (
                 <>
                   <span className="font-semibold text-[#6247aa]">Type:</span>
-                  <span className="capitalize">{info.resourceType}</span>
+                  <span>{capitalizeType(info.resourceType)}</span>
 
                   {info.size !== undefined && (
                     <>
-                      <span className="font-semibold text-[#6247aa]">Size:</span>
-                      <span>{(info.size / 1024).toFixed(2)} KB</span>
+                      <span className="font-semibold text-[#6247aa]">
+                        Size:
+                      </span>
+                      <span>{formatBytes(info.size)}</span>
                     </>
                   )}
 
                   {info.status && (
                     <>
-                      <span className="font-semibold text-[#6247aa]">Status:</span>
+                      <span className="font-semibold text-[#6247aa]">
+                        Status:
+                      </span>
                       <span className="capitalize">{info.status}</span>
                     </>
                   )}
 
                   {info.readingTime && (
                     <>
-                      <span className="font-semibold text-[#6247aa]">Reading Time:</span>
+                      <span className="font-semibold text-[#6247aa]">
+                        Reading Time:
+                      </span>
                       <span>{info.readingTime}</span>
                     </>
                   )}

@@ -7,13 +7,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type { CreateProjectInput, UpdateProjectInput } from "@nexus/shared";
+import { projectKeys } from "@/lib/query-keys";
+import { useCacheInvalidatingMutation } from "./use-cache-mutation";
 
 /**
  * @desc    Query all projects
  */
 export function useProjects() {
   return useQuery({
-    queryKey: ["projects"],
+    queryKey: projectKeys.all(),
     queryFn: () => apiClient.projects.list(),
   });
 }
@@ -24,7 +26,7 @@ export function useProjects() {
  */
 export function useProject(id: string) {
   return useQuery({
-    queryKey: ["projects", id],
+    queryKey: projectKeys.detail(id),
     queryFn: () => apiClient.projects.get(id),
     enabled: !!id,
   });
@@ -34,12 +36,9 @@ export function useProject(id: string) {
  * @desc    Mutation that creates a project and invalidates the project list
  */
 export function useCreateProject() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: (input: CreateProjectInput) => apiClient.projects.create(input),
-    onSuccess: () => {
-      return queryClient.invalidateQueries({ queryKey: ["projects"] });
-    },
+    invalidate: [projectKeys.all()],
   });
 }
 
@@ -47,16 +46,13 @@ export function useCreateProject() {
  * @desc    Mutation that updates a project and refreshes the affected cache entries
  */
 export function useUpdateProject() {
-  const queryClient = useQueryClient();
-  return useMutation({
+  return useCacheInvalidatingMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateProjectInput }) =>
       apiClient.projects.update(id, input),
-    onSuccess: (data, variables) => {
-      return Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["projects"] }),
-        queryClient.invalidateQueries({ queryKey: ["projects", variables.id] }),
-      ]);
-    },
+    invalidate: (variables) => [
+      projectKeys.all(),
+      projectKeys.detail(variables.id),
+    ],
   });
 }
 
@@ -68,8 +64,8 @@ export function useDeleteProject() {
   return useMutation({
     mutationFn: (id: string) => apiClient.projects.delete(id),
     onSuccess: (data, id) => {
-      queryClient.removeQueries({ queryKey: ["projects", id] });
-      return queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.removeQueries({ queryKey: projectKeys.detail(id) });
+      return queryClient.invalidateQueries({ queryKey: projectKeys.all() });
     },
   });
 }

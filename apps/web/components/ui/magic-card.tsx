@@ -1,10 +1,10 @@
+"use client";
+
 /**
  * @file magic-card.tsx
  * @description Animated card effects (spotlight, border glow, tilt, magnetism, ripple, star particles) driven by GSAP, with a container that tracks the cursor.
  * @architecture Client components using CSS variables injected per card and GSAP tweens attached to pointer events; animations auto-disable on mobile.
  */
-"use client";
-
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";

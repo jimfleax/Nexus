@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatBytes, formatDate, formatFilenameToTitle } from "../utils";
+import { cn, formatBytes, formatDate, formatFilenameToTitle } from "../utils";
 
 describe("Web Utils", () => {
   describe("formatBytes", () => {
@@ -9,7 +9,9 @@ describe("Web Utils", () => {
 
     it("handles null/undefined/NaN", () => {
       // The function signature takes number, so we cast to any for edge cases
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(formatBytes(null as any)).toBe("—");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(formatBytes(undefined as any)).toBe("—");
       expect(formatBytes(NaN)).toBe("—");
     });
@@ -41,7 +43,9 @@ describe("Web Utils", () => {
 
   describe("formatDate", () => {
     it("handles null/undefined/invalid", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(formatDate(null as any)).toBe("—");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(formatDate(undefined as any)).toBe("—");
       expect(formatDate("not-a-date")).toBe("—");
     });
@@ -127,5 +131,26 @@ describe("Web Utils", () => {
     it("trims leading and trailing spaces", () => {
       expect(formatFilenameToTitle(" file .txt")).toBe("File");
     });
+  });
+});
+describe("cn", () => {
+  it("should merge class names", () => {
+    const result = cn("foo", "bar");
+    expect(result).toBe("foo bar");
+  });
+
+  it("should handle conditional classes", () => {
+    const isHidden = false as boolean;
+    const result = cn("base", isHidden && "hidden", "extra");
+    expect(result).toBe("base extra");
+  });
+
+  it("should resolve Tailwind conflicts", () => {
+    const result = cn("px-4 py-2", "px-8");
+    expect(result).toBe("py-2 px-8");
+  });
+
+  it("should return empty string for no inputs", () => {
+    expect(cn()).toBe("");
   });
 });

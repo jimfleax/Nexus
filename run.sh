@@ -277,7 +277,7 @@ run_lint() {
       overall=1
     fi
   done <<'EOF'
-apps/web|app components lib hooks auth.ts proxy.ts next.config.ts|Web
+apps/web|app components lib hooks next.config.ts|Web
 apps/api|src|API
 packages/shared|src|Shared
 EOF

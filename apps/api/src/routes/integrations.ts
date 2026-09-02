@@ -6,15 +6,15 @@
 
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
-import crypto from "node:crypto";
 import { updateSettings } from "../services/user.service.js";
-
-const frontendUrl = () =>
-  (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
-
-/** Helper to emit secure cookie attributes */
-const cookieOptions = () =>
-  `HttpOnly; ${frontendUrl().startsWith("https://") ? "Secure; " : ""}SameSite=Lax; Path=/`;
+import {
+  frontendUrl,
+  generateState,
+  setStateCookie,
+  getStateFromCookie,
+  clearStateCookie,
+  exchangeCodeForToken,
+} from "../utils/oauth.js";
 
 export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
   /**
@@ -29,12 +29,9 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
     }
 
     const redirectUri = `${frontendUrl()}/api/integrations/google-drive/callback`;
-    const state = crypto.randomBytes(16).toString("hex");
+    const state = generateState();
 
-    reply.header(
-      "Set-Cookie",
-      `integration_state=${state}; ${cookieOptions()}; Max-Age=300`,
-    );
+    setStateCookie(reply, "integration_state", state);
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -64,33 +61,27 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
         return reply.redirect(`${frontendUrl()}/?error=drive_auth_failed`);
       }
 
-      const cookieHeader = request.headers.cookie ?? "";
-      const match = cookieHeader.match(/(?:^|;\s*)integration_state=([^;]+)/);
-      const stateCookie = match?.[1];
+      const stateCookie = getStateFromCookie(request, "integration_state");
 
       if (!stateCookie || stateCookie !== state) {
         return reply.redirect(`${frontendUrl()}/?error=state_mismatch`);
       }
-      reply.header(
-        "Set-Cookie",
-        `integration_state=; ${cookieOptions()}; Max-Age=0`,
-      );
+      clearStateCookie(reply, "integration_state");
 
       const clientId = process.env.AUTH_GOOGLE_ID!;
       const clientSecret = process.env.AUTH_GOOGLE_SECRET!;
       const redirectUri = `${frontendUrl()}/api/integrations/google-drive/callback`;
 
-      const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
+      const tokenRes = await exchangeCodeForToken(
+        "https://oauth2.googleapis.com/token",
+        {
           code,
-          client_id: clientId,
-          client_secret: clientSecret,
-          redirect_uri: redirectUri,
+          clientId,
+          clientSecret,
+          redirectUri,
           grant_type: "authorization_code",
-        }),
-      });
+        },
+      );
 
       if (!tokenRes.ok) {
         return reply.redirect(`${frontendUrl()}/?error=drive_token_failed`);

@@ -41,7 +41,8 @@ describe("Error Paths", () => {
         url: `/api/projects/${fakeId}`,
       });
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.payload).error).toBe("Project not found");
+      expect(JSON.parse(response.payload).ok).toBe(false);
+      expect(JSON.parse(response.payload).error.code).toBe("NOT_FOUND");
     });
 
     it("PATCH /api/projects/:id returns 404 for nonexistent project", async () => {
@@ -93,7 +94,8 @@ describe("Error Paths", () => {
         payload: { name: "Orphan List" },
       });
       expect(response.statusCode).toBe(404);
-      expect(JSON.parse(response.payload).error).toBe("Project not found");
+      expect(JSON.parse(response.payload).ok).toBe(false);
+      expect(JSON.parse(response.payload).error.code).toBe("NOT_FOUND");
     });
 
     it("GET /api/lists/:id returns 404 for nonexistent list", async () => {
@@ -248,6 +250,7 @@ describe("Error Paths", () => {
       const response = await ctx.app.inject({
         method: "PUT",
         url: `/api/resources/${fakeId}/favorite`,
+        payload: { isFavorite: true },
       });
       expect(response.statusCode).toBe(404);
     });

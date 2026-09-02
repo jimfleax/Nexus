@@ -19,6 +19,7 @@ describe("Misc queries", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("useFavorites queries", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(apiClient.user.favorites).mockResolvedValue([] as any);
     const { result } = renderHook(() => useFavorites(), {
       wrapper: TestWrapper,
@@ -28,6 +29,7 @@ describe("Misc queries", () => {
   });
 
   it("useUserMetrics queries", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(apiClient.user.metrics).mockResolvedValue({} as any);
     const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
       <TestWrapper>

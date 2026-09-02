@@ -1,3 +1,4 @@
+import { projectUrl, listUrl } from "@/lib/urls";
 /**
  * @file sidebar-project.tsx
  * @description Sidebar entry for a project, expanding its lists when active.
@@ -22,13 +23,13 @@ export function SidebarProject({
   pathname: string;
   onNavigate?: () => void;
 }) {
-  const isActive = pathname.startsWith(`/projects/${project.id}`);
+  const isActive = pathname.startsWith(projectUrl(project.id));
   const { data: lists = [] } = useLists(project.id);
 
   return (
     <div>
       <Link
-        href={`/projects/${project.id}`}
+        href={projectUrl(project.id)}
         onClick={onNavigate}
         className={`flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors ${
           isActive
@@ -50,7 +51,7 @@ export function SidebarProject({
           {lists.map((list) => (
             <Link
               key={list.id}
-              href={`/projects/${project.id}/lists/${list.id}`}
+              href={listUrl(project.id, list.id)}
               onClick={onNavigate}
               className="block rounded px-2 py-1.5 text-xs text-[#6247aa] transition-colors hover:underline hover:underline-offset-2"
             >

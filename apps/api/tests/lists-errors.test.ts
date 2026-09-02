@@ -37,6 +37,10 @@ beforeAll(async () => {
   app = Fastify().withTypeProvider<ZodTypeProvider>();
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+
+  const { errorHandlerPlugin } = await import("../src/plugins/errorHandler.js");
+  app.register(errorHandlerPlugin);
+
   app.decorateRequest("ownerId", null);
   app.addHook("onRequest", (request: any, reply: any, done: any) => {
     const ownerId = request.headers["x-test-owner"] || "test-user-1";

@@ -10,6 +10,7 @@ import {
   useMarkOpened,
 } from "../use-resources";
 import { TestWrapper } from "../../tests/test-utils";
+import { resourceKeys, recentKeys } from "@/lib/query-keys";
 import { apiClient } from "../../lib/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -54,6 +55,7 @@ describe("use-resources hooks", () => {
   it("useCreateResource invalidates specific list resources and all resources", async () => {
     vi.mocked(apiClient.resources.create).mockResolvedValue({
       id: "r1",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     const { result } = renderHook(
       () => {
@@ -69,21 +71,23 @@ describe("use-resources hooks", () => {
     result.current.create.mutate({
       projectId: "p1",
       listId: "l1",
-      data: {} as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      input: {} as any,
     });
     await waitFor(() => expect(result.current.create.isSuccess).toBe(true));
 
     expect(result.current.spy).toHaveBeenCalledWith({
-      queryKey: ["resources", "p1", "l1"],
+      queryKey: resourceKeys.byProjectAndList("p1", "l1"),
     });
     expect(result.current.spy).toHaveBeenCalledWith({
-      queryKey: ["resources"],
+      queryKey: resourceKeys.all(),
     });
   });
 
   it("useUpdateResource invalidates resources", async () => {
     vi.mocked(apiClient.resources.update).mockResolvedValue({
       id: "r1",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     const { result } = renderHook(
       () => {
@@ -96,15 +100,17 @@ describe("use-resources hooks", () => {
       { wrapper: TestWrapper },
     );
 
-    result.current.update.mutate({ resourceId: "r1", data: {} });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    result.current.update.mutate({ resourceId: "r1", input: {} as any });
     await waitFor(() => expect(result.current.update.isSuccess).toBe(true));
 
     expect(result.current.spy).toHaveBeenCalledWith({
-      queryKey: ["resources"],
+      queryKey: resourceKeys.all(),
     });
   });
 
   it("useDeleteResource invalidates resources", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(apiClient.resources.delete).mockResolvedValue(undefined as any);
     const { result } = renderHook(
       () => {
@@ -121,12 +127,13 @@ describe("use-resources hooks", () => {
     await waitFor(() => expect(result.current.del.isSuccess).toBe(true));
 
     expect(result.current.spy).toHaveBeenCalledWith({
-      queryKey: ["resources"],
+      queryKey: resourceKeys.all(),
     });
   });
 
-  it("useMarkOpened calls markOpened but does NO invalidation", async () => {
+  it("useMarkOpened calls markOpened and invalidates recent feed", async () => {
     vi.mocked(apiClient.resources.markOpened).mockResolvedValue(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       undefined as any,
     );
     const { result } = renderHook(
@@ -144,6 +151,8 @@ describe("use-resources hooks", () => {
     await waitFor(() => expect(result.current.mark.isSuccess).toBe(true));
 
     expect(apiClient.resources.markOpened).toHaveBeenCalledWith("r1");
-    expect(result.current.spy).not.toHaveBeenCalled();
+    expect(result.current.spy).toHaveBeenCalledWith({
+      queryKey: recentKeys.all(),
+    });
   });
 });

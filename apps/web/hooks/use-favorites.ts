@@ -6,6 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { favoriteKeys } from "@/lib/query-keys";
 
 /**
  * @desc    Hook returning the favorite resource IDs and a toggle handler
@@ -14,7 +15,7 @@ export function useFavorites() {
   const queryClient = useQueryClient();
 
   const { data: resources = [], isLoading } = useQuery({
-    queryKey: ["favorites"],
+    queryKey: favoriteKeys.all(),
     queryFn: () => apiClient.user.favorites(),
   });
 
@@ -25,11 +26,11 @@ export function useFavorites() {
       apiClient.resources.toggleFavorite(resourceId),
     onMutate: async (resourceId) => {
       // Optimistic update
-      await queryClient.cancelQueries({ queryKey: ["favorites"] });
-      const previousFavorites = queryClient.getQueryData(["favorites"]);
+      await queryClient.cancelQueries({ queryKey: favoriteKeys.all() });
+      const previousFavorites = queryClient.getQueryData(favoriteKeys.all());
 
       queryClient.setQueryData(
-        ["favorites"],
+        favoriteKeys.all(),
         (old: { id: string }[] | undefined) => {
           if (!old) return old;
           const exists = old.some((r: { id: string }) => r.id === resourceId);
@@ -44,15 +45,16 @@ export function useFavorites() {
       return { previousFavorites };
     },
     onError: (err, newTodo, context) => {
-      queryClient.setQueryData(["favorites"], context?.previousFavorites);
+      queryClient.setQueryData(favoriteKeys.all(), context?.previousFavorites);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      queryClient.invalidateQueries({ queryKey: favoriteKeys.all() });
     },
   });
 
   return {
     favorites,
+    resources,
     isLoading,
     toggle: (id: string) => toggleMutation.mutate(id),
   };

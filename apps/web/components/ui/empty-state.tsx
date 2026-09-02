@@ -1,11 +1,15 @@
+"use client";
+
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
 /**
  * @file empty-state.tsx
  * @description Empty-state placeholder with icon, title, description, and optional action.
  */
-"use client";
-
 import type { Icon } from "@phosphor-icons/react";
-import { FolderOpen } from "@phosphor-icons/react";
+import { FolderOpen, FileX } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +50,48 @@ export function EmptyState({
         </p>
       )}
       {action && <div className="mt-5 flex justify-center">{action}</div>}
+    </div>
+  );
+}
+
+export function NotFound({
+  title,
+  description,
+  backUrl = "/projects",
+}: {
+  title: string;
+  description: string;
+  backUrl?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="mb-4 rounded-full bg-[#dec9e9] p-4 text-[#6247aa]">
+        <FileX className="size-8" />
+      </div>
+      <h2 className="font-serif text-2xl text-[#6247aa]">{title}</h2>
+      <p className="mt-2 text-[#9163cb]">{description}</p>
+      <Link
+        href={backUrl}
+        className={buttonVariants({
+          variant: "outline",
+          className: "mt-6 border-[#dec9e9] text-[#6247aa]",
+        })}
+      >
+        Go back
+      </Link>
+    </div>
+  );
+}
+
+export function DetailPageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-6 w-24" />
+        <Skeleton className="h-4 w-4" />
+        <Skeleton className="h-6 w-32" />
+      </div>
+      <Skeleton className="h-[400px] w-full rounded-2xl" />
     </div>
   );
 }

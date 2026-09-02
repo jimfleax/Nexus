@@ -12,7 +12,9 @@ import {
   UpdateKnowledgeListSchema,
   ReorderKnowledgeListSchema,
   KnowledgeListSchema,
+  ErrorResponseSchema,
 } from "@nexus/shared";
+import { NotFoundError } from "../utils/errors.js";
 import {
   listByProject,
   findListById,
@@ -58,14 +60,14 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
         params: z.object({ id: z.string() }),
         response: {
           200: KnowledgeListSchema,
-          404: z.object({ error: z.string() }),
+          404: ErrorResponseSchema,
         },
       },
     },
     async (request, reply) => {
       const list = await findListById(request.params.id);
       if (!list) {
-        return reply.status(404).send({ error: "List not found" });
+        throw new NotFoundError("List", request.params.id);
       }
       return list;
     },
@@ -84,8 +86,8 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
         body: CreateKnowledgeListSchema.omit({ projectId: true }),
         response: {
           201: KnowledgeListSchema,
-          404: z.object({ error: z.string() }),
-          409: z.object({ error: z.string() }),
+          404: ErrorResponseSchema,
+          409: ErrorResponseSchema,
         },
       },
     },
@@ -95,12 +97,7 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
         return reply.status(201).send(list);
       } catch (error: any) {
         if (error.message === "Project not found") {
-          return reply.status(404).send({ error: "Project not found" });
-        }
-        if (error.code === 11000) {
-          return reply.status(409).send({
-            error: "List with this name already exists in the project",
-          });
+          throw new NotFoundError("Project", request.params.projectId);
         }
         throw error;
       }
@@ -120,28 +117,19 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
         body: UpdateKnowledgeListSchema,
         response: {
           200: KnowledgeListSchema,
-          404: z.object({ error: z.string() }),
-          409: z.object({ error: z.string() }),
+          404: ErrorResponseSchema,
+          409: ErrorResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      try {
-        const list = await updateList(request.params.id, request.body);
+      const list = await updateList(request.params.id, request.body);
 
-        if (!list) {
-          return reply.status(404).send({ error: "List not found" });
-        }
-
-        return list;
-      } catch (error: any) {
-        if (error.code === 11000) {
-          return reply.status(409).send({
-            error: "List with this name already exists in the project",
-          });
-        }
-        throw error;
+      if (!list) {
+        throw new NotFoundError("List", request.params.id);
       }
+
+      return list;
     },
   );
 
@@ -157,7 +145,7 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
         params: z.object({ id: z.string() }),
         response: {
           204: z.null(),
-          404: z.object({ error: z.string() }),
+          404: ErrorResponseSchema,
         },
       },
     },
@@ -167,7 +155,7 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
 
       const list = await findListById(listId);
       if (!list) {
-        return reply.status(404).send({ error: "List not found" });
+        throw new NotFoundError("List", listId);
       }
 
       await server.deleter.deleteList(listId, ownerId);

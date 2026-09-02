@@ -35,10 +35,15 @@ export const infoRoutes: FastifyPluginAsyncZod = async (server) => {
 
       if (type === "project") {
         const project = await ProjectModel.findById(id);
-        if (!project) return reply.status(404).send({ error: "Project not found" });
+        if (!project)
+          return reply.status(404).send({ error: "Project not found" });
 
-        const listCount = await KnowledgeListModel.countDocuments({ projectId: id });
-        const resourceCount = await ResourceModel.countDocuments({ projectId: id });
+        const listCount = await KnowledgeListModel.countDocuments({
+          projectId: id,
+        });
+        const resourceCount = await ResourceModel.countDocuments({
+          projectId: id,
+        });
 
         return {
           id: project.id,
@@ -54,7 +59,9 @@ export const infoRoutes: FastifyPluginAsyncZod = async (server) => {
         const list = await KnowledgeListModel.findById(id);
         if (!list) return reply.status(404).send({ error: "List not found" });
 
-        const resourceCount = await ResourceModel.countDocuments({ listId: id });
+        const resourceCount = await ResourceModel.countDocuments({
+          listId: id,
+        });
 
         return {
           id: list.id,
@@ -67,7 +74,8 @@ export const infoRoutes: FastifyPluginAsyncZod = async (server) => {
         };
       } else if (type === "resource") {
         const resource = await ResourceModel.findById(id);
-        if (!resource) return reply.status(404).send({ error: "Resource not found" });
+        if (!resource)
+          return reply.status(404).send({ error: "Resource not found" });
 
         return {
           id: resource.id,
@@ -83,6 +91,6 @@ export const infoRoutes: FastifyPluginAsyncZod = async (server) => {
           readingTime: resource.readingTime,
         };
       }
-    }
+    },
   );
 };

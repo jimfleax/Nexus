@@ -62,6 +62,8 @@ let rBId: string;
 const deleteResource = vi.fn().mockResolvedValue(undefined);
 
 beforeAll(async () => {
+  process.env.AUTH_GOOGLE_ID = "test-id";
+  process.env.AUTH_GOOGLE_SECRET = "test-secret";
   mongoServer = await MongoMemoryServer.create();
   await connectDB(mongoServer.getUri());
 

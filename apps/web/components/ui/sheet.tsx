@@ -1,17 +1,21 @@
+"use client";
+
 /**
  * @file sheet.tsx
  * @description Slide-over panel primitives (Root, Trigger, Close, Portal, Overlay, Content, Header, Footer, Title) built on Base UI's Dialog.
  * @architecture Generic UI molecule; Content anchors a popup to any side and composes portal + overlay + optional close button.
  */
-"use client";
-
 import * as React from "react";
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { X } from "@phosphor-icons/react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 /**
  * @desc    Controlled sheet root

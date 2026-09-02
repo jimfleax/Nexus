@@ -8,6 +8,13 @@ import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { ResourceModel } from "../models/Resource.js";
 import { ResourceSchema } from "@nexus/shared";
+import { queryResources } from "../services/resource.service.js";
+
+const scopeFilter = (ownerId: string, projectId?: string) => {
+  const filter: any = { ownerId };
+  if (projectId) filter.projectId = projectId;
+  return filter;
+};
 
 /**
  * @module searchRoutes
@@ -37,20 +44,16 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
       const ownerId = (request as any).ownerId;
 
       const filter: any = {
-        ownerId, // enforced here manually to be absolutely safe, though plugin handles it
+        ...scopeFilter(ownerId, projectId),
         $text: { $search: q },
       };
-
-      if (projectId) {
-        filter.projectId = projectId;
-      }
 
       // Sort by text score
       const resources = await ResourceModel.find(filter, {
         score: { $meta: "textScore" },
       })
         .select("-content") // omit heavy content
-        .sort({ score: { $meta: "textScore" } })
+        .sort({ score: { $meta: "textScore" } as any })
         .limit(50);
 
       return resources;
@@ -86,19 +89,11 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
       const ownerId = (request as any).ownerId;
 
       const filter: any = {
-        ownerId,
+        ...scopeFilter(ownerId, projectId),
         title: { $regex: q, $options: "i" },
       };
 
-      if (projectId) {
-        filter.projectId = projectId;
-      }
-
-      const suggestions = await ResourceModel.find(filter)
-        .select("title type")
-        .limit(10);
-
-      return suggestions;
+      return queryResources(filter, { select: "title type", limit: 10 });
     },
   );
 
@@ -123,16 +118,12 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
       const { projectId } = request.query;
       const ownerId = (request as any).ownerId;
 
-      const filter: any = { ownerId, isFavorite: true };
-      if (projectId) {
-        filter.projectId = projectId;
-      }
+      const filter: any = {
+        ...scopeFilter(ownerId, projectId),
+        isFavorite: true,
+      };
 
-      const resources = await ResourceModel.find(filter)
-        .select("-content")
-        .sort({ updatedAt: -1 });
-
-      return resources;
+      return queryResources(filter, { sort: { updatedAt: -1 } });
     },
   );
 
@@ -157,17 +148,12 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
       const { projectId } = request.query;
       const ownerId = (request as any).ownerId;
 
-      const filter: any = { ownerId, lastOpenedAt: { $exists: true } };
-      if (projectId) {
-        filter.projectId = projectId;
-      }
+      const filter: any = {
+        ...scopeFilter(ownerId, projectId),
+        lastOpenedAt: { $exists: true },
+      };
 
-      const resources = await ResourceModel.find(filter)
-        .select("-content")
-        .sort({ lastOpenedAt: -1 })
-        .limit(20);
-
-      return resources;
+      return queryResources(filter, { sort: { lastOpenedAt: -1 }, limit: 20 });
     },
   );
 };

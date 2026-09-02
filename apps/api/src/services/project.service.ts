@@ -8,6 +8,7 @@
 import { ProjectModel } from "../models/Project.js";
 import { KnowledgeListModel } from "../models/KnowledgeList.js";
 import { slugify } from "./slugify.js";
+import { updateById } from "./db-utils.js";
 
 /**
  * @desc    List all projects for the current tenant, enriched with list counts via aggregation
@@ -77,10 +78,7 @@ export async function updateProject(
     updates.slug = slugify(input.name);
   }
 
-  return ProjectModel.findByIdAndUpdate(id, { $set: updates }, {
-    new: true,
-    runValidators: true,
-  } as any);
+  return updateById(ProjectModel, id, updates);
 }
 
 /**

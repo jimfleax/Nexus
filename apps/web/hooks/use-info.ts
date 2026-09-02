@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/axios";
+import { apiClient } from "@/lib/api-client";
+import { infoKeys } from "@/lib/query-keys";
+import { STALE_MEDIUM } from "@/lib/query-config";
 import type { InfoDto } from "@nexus/shared";
 
 /**
@@ -12,17 +14,12 @@ import type { InfoDto } from "@nexus/shared";
 export function useInfo(
   type: "project" | "list" | "resource",
   id: string,
-  enabled: boolean = true
+  enabled: boolean = true,
 ) {
   return useQuery<InfoDto>({
-    queryKey: ["info", type, id],
-    queryFn: async () => {
-      const response = await api.get("/info", {
-        params: { type, id },
-      });
-      return response.data;
-    },
+    queryKey: infoKeys.byTypeAndId(type, id),
+    queryFn: () => apiClient.info.get(type, id),
     enabled: enabled && !!id,
-    staleTime: 60 * 1000,
+    staleTime: STALE_MEDIUM,
   });
 }

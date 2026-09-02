@@ -1,18 +1,22 @@
+"use client";
+
 /**
  * @file quick-add-notch.tsx
  * @description Floating quick-add button opening a menu to create a project, list, or resource.
  * @architecture Client widget used on the dashboard hero; closes on click-outside or Escape and drives the underlying create dialogs via controlled open state.
  */
-"use client";
-
 import React, { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Plus, FolderPlus, ListPlus, FilePlus } from "@phosphor-icons/react";
 
-import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
-import { CreateListDialog } from "@/components/lists/create-list-dialog";
-import { CreateResourceDialog } from "@/components/resources/create-resource-dialog";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { CreateProjectDialog } from "@/components/projects/project-dialog";
+import { CreateListDialog } from "@/components/lists/list-dialog";
+import { CreateResourceDialog } from "@/components/resources/resource-dialog";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 /**
  * @desc    Render the quick-add menu and its controlled create dialogs

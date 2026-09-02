@@ -16,6 +16,7 @@ import type {
   CreateResourceInput,
   UpdateResourceInput,
   UserMetricsDto,
+  InfoDto,
 } from "@nexus/shared";
 import { api } from "./axios";
 
@@ -298,6 +299,20 @@ export const apiClient = {
      */
     async metrics(): Promise<UserMetricsDto> {
       const { data } = await api.get<UserMetricsDto>("/user/metrics");
+      return data;
+    },
+  },
+  /**
+   * @description Info endpoints.
+   */
+  info: {
+    async get(
+      type: "project" | "list" | "resource",
+      id: string,
+    ): Promise<InfoDto> {
+      const { data } = await api.get<InfoDto>("/info", {
+        params: { type, id },
+      });
       return data;
     },
   },

@@ -7,6 +7,7 @@
 import { ResourceModel } from "./models/Resource.js";
 import { UserModel } from "./models/User.js";
 import { google } from "googleapis";
+import { buildOAuthClient } from "./utils/google/oauth.js";
 
 let isGCRunning = false;
 
@@ -37,13 +38,7 @@ export async function runGarbageCollection() {
         try {
           const user = await UserModel.findOne({ ownerId: resource.ownerId });
           if (user && user.driveRefreshToken) {
-            const oauth2Client = new google.auth.OAuth2(
-              process.env.AUTH_GOOGLE_ID,
-              process.env.AUTH_GOOGLE_SECRET,
-            );
-            oauth2Client.setCredentials({
-              refresh_token: user.driveRefreshToken,
-            });
+            const oauth2Client = buildOAuthClient(user.driveRefreshToken);
             const drive = google.drive({ version: "v3", auth: oauth2Client });
             await drive.files.delete({ fileId: resource.driveFileId });
           }

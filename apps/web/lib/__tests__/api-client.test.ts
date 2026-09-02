@@ -3,18 +3,17 @@ import { apiClient } from "../api-client";
 import { api } from "../axios";
 
 describe("apiClient", () => {
-  let getSpy: any;
-  let postSpy: any;
-  let patchSpy: any;
-  let putSpy: any;
-  let deleteSpy: any;
+  let getSpy: ReturnType<typeof vi.spyOn>;
+  let postSpy: ReturnType<typeof vi.spyOn>;
+  let patchSpy: ReturnType<typeof vi.spyOn>;
+  let putSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     getSpy = vi.spyOn(api, "get").mockResolvedValue({ data: [] });
     postSpy = vi.spyOn(api, "post").mockResolvedValue({ data: [] });
     patchSpy = vi.spyOn(api, "patch").mockResolvedValue({ data: [] });
     putSpy = vi.spyOn(api, "put").mockResolvedValue({ data: [] });
-    deleteSpy = vi.spyOn(api, "delete").mockResolvedValue({ data: [] });
+    void vi.spyOn(api, "delete").mockResolvedValue({ data: [] });
   });
 
   afterEach(() => {
@@ -33,7 +32,9 @@ describe("apiClient", () => {
     });
 
     it("create calls POST /projects", async () => {
-      await apiClient.projects.create({ name: "P" } as any);
+      await apiClient.projects.create({ name: "P" } as Parameters<
+        typeof apiClient.projects.create
+      >[0]);
       expect(postSpy).toHaveBeenCalledWith("/projects", { name: "P" });
     });
   });
