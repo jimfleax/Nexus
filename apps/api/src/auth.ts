@@ -17,7 +17,7 @@ import { tenantContext } from "./db.js";
  */
 export async function verifyToken(token: string, secret: string) {
   const key = new TextEncoder().encode(secret);
-  const { payload } = await jwtVerify(token, key);
+  const { payload } = await jwtVerify(token, key, { clockTolerance: 30 });
   return payload;
 }
 

@@ -30,7 +30,7 @@ async function getSessionUser(): Promise<{
     if (!secret) return null;
 
     const key = new TextEncoder().encode(secret);
-    const { payload } = await jwtVerify(token, key);
+    const { payload } = await jwtVerify(token, key, { clockTolerance: 30 }); // Allow 30s clock skew
 
     if (!payload.sub) return null;
 
@@ -40,7 +40,8 @@ async function getSessionUser(): Promise<{
       email: (payload.email as string) ?? null,
       image: (payload.image as string) ?? null,
     };
-  } catch {
+  } catch (err) {
+    console.error("JWT Verification failed in layout.tsx:", err);
     return null;
   }
 }
