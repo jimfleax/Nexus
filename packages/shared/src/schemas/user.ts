@@ -11,7 +11,7 @@ import { z } from "zod";
  * @description Serialized user settings DTO.
  */
 export const UserSettingsSchema = z.object({
-  driveRefreshToken: z.string().optional(),
+  driveRefreshToken: z.string().nullable().optional(),
 });
 
 /**
@@ -19,7 +19,7 @@ export const UserSettingsSchema = z.object({
  * @description Validation contract for updating user settings.
  */
 export const UpdateUserSettingsSchema = z.object({
-  driveRefreshToken: z.string().optional(),
+  driveRefreshToken: z.string().nullable().optional(),
 });
 
 /**
