@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MagicContainer, MagicCard } from "@/components/ui/magic-card";
 import { ProjectGridSkeleton } from "@/components/ui/data-skeletons";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useProjects } from "@/hooks/use-projects";
 import { useLists } from "@/hooks/use-lists";
 import type { Project } from "@nexus/shared";
@@ -75,6 +76,17 @@ export default function ProjectsPage() {
 
       {isLoading ? (
         <ProjectGridSkeleton gridClassName="mt-8" />
+      ) : projects.length === 0 ? (
+        <EmptyState
+          title="No projects yet"
+          description="Create your first project to start organizing your knowledge contexts."
+          action={
+            <Suspense fallback={<Skeleton className="h-[38px] w-[120px]" />}>
+              <CreateProjectDialog />
+            </Suspense>
+          }
+          className="mt-12"
+        />
       ) : (
         <MagicContainer
           className="mt-8 grid gap-4 sm:grid-cols-2"
