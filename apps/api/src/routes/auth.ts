@@ -31,9 +31,11 @@ function clearCookie(): string {
   return "nexus-session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0";
 }
 
-const frontendUrl = () => process.env.FRONTEND_URL || "http://localhost:3000";
+const frontendUrl = () =>
+  (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
 
-const apiUrl = () => process.env.API_URL || "http://localhost:8080";
+const apiUrl = () =>
+  (process.env.API_URL || "http://localhost:8080").replace(/\/+$/, "");
 
 /* ─── Google OAuth constants ────────────────────────────── */
 

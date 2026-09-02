@@ -89,11 +89,11 @@ export const authPlugin = fp(async (fastify) => {
   fastify.addHook(
     "preHandler",
     async (request: FastifyRequest, reply: FastifyReply) => {
+      // Extract the matched route path (e.g. "/api/auth/google"), falling back to parsed url path
+      const routeUrl = request.routeOptions?.url || request.url.split("?")[0];
+
       // Public routes — skip auth entirely
-      if (
-        request.url.split("?")[0] === "/health" ||
-        request.url.startsWith("/api/auth/")
-      ) {
+      if (routeUrl === "/health" || routeUrl.startsWith("/api/auth/")) {
         return;
       }
 
