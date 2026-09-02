@@ -275,7 +275,7 @@ export const apiClient = {
      * @returns {Promise<Resource[]>} The favorites
      */
     async favorites(): Promise<Resource[]> {
-      const { data } = await api.get<Resource[]>("/favorites");
+      const { data } = await api.get<Resource[]>("/user/favorites");
       return data;
     },
     /**
@@ -283,7 +283,7 @@ export const apiClient = {
      * @returns {Promise<Resource[]>} The recent resources
      */
     async recent(): Promise<Resource[]> {
-      const { data } = await api.get<Resource[]>("/recent");
+      const { data } = await api.get<Resource[]>("/user/recent");
       return data;
     },
     /**
@@ -291,7 +291,7 @@ export const apiClient = {
      * @returns {Promise<UserMetricsDto>} Aggregate storage and count metrics
      */
     async metrics(): Promise<UserMetricsDto> {
-      const { data } = await api.get<UserMetricsDto>("/metrics");
+      const { data } = await api.get<UserMetricsDto>("/user/metrics");
       return data;
     },
   },
