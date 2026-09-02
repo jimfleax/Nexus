@@ -124,9 +124,11 @@ function MetricContent() {
             size="sm"
             variant="outline"
             className="w-full border-[#dec9e9] text-[#6247aa]"
-            asChild
+            onClick={() =>
+              (window.location.href = "/api/integrations/google-drive")
+            }
           >
-            <a href="/api/integrations/google-drive">Connect Google Drive</a>
+            Connect Google Drive
           </Button>
         </div>
       )}
