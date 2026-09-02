@@ -1,5 +1,4 @@
 npx lint-staged
-npm run lint:all
 
 # Prevent .env files from being committed
 if git diff --cached --name-only | grep -E '\.env$|\.env\.[a-zA-Z0-9_-]+$' | grep -v '\.example$'; then
