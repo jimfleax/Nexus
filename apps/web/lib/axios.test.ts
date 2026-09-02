@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 // Mock sonner toast — import after mock to get the mocked version
 vi.mock("sonner", () => ({
@@ -42,11 +42,17 @@ import { api } from "./axios";
 
 function makeAxiosError(
   status: number,
-  data: any = {},
+  data: unknown = {},
   message = "Request failed",
 ): AxiosError {
   return {
-    response: { status, data, headers: {}, config: {} as any, statusText: "" },
+    response: {
+      status,
+      data,
+      headers: {},
+      config: {} as InternalAxiosRequestConfig,
+      statusText: "",
+    },
     message,
     config: {} as InternalAxiosRequestConfig,
     isAxiosError: true,

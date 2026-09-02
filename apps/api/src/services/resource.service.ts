@@ -144,6 +144,6 @@ export async function toggleFavoriteResource(id: string) {
   return ResourceModel.findByIdAndUpdate(
     id,
     [{ $set: { isFavorite: { $not: "$isFavorite" } } }],
-    { new: true } as any,
+    { returnDocument: "after", updatePipeline: true } as any,
   );
 }

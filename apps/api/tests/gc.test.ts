@@ -280,8 +280,14 @@ describe("GarbageCollection", () => {
       resolveFirstSweep = res;
     });
 
+    let deleteCalledResolve: () => void;
+    const deleteCalledPromise = new Promise<void>((res) => {
+      deleteCalledResolve = res;
+    });
+
     mockDelete.mockImplementation(async () => {
       deleteCallCount++;
+      deleteCalledResolve();
       await lockPromise;
       return {};
     });
@@ -290,7 +296,7 @@ describe("GarbageCollection", () => {
     const p1 = runGarbageCollection();
 
     // Wait until the delay/Drive deletion is reached (meaning the first sweep holds the lock)
-    await new Promise((r) => setTimeout(r, 10));
+    await deleteCalledPromise;
 
     // Invoke the second sweep
     const p2 = runGarbageCollection();
