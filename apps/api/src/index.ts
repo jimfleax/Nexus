@@ -14,6 +14,7 @@ import { listRoutes } from "./routes/lists.js";
 import { resourceRoutes } from "./routes/resources.js";
 import { userRoutes } from "./routes/user.js";
 import { searchRoutes } from "./routes/search.js";
+import { integrationRoutes } from "./routes/integrations.js";
 import { runGarbageCollection } from "./gc.js";
 
 import {
@@ -41,6 +42,7 @@ fastify.register(deletionPlugin);
 // Auth routes remain public because authPlugin skips URLs beginning with /api/auth/, not because of registration order
 fastify.register(authRoutes);
 fastify.register(authPlugin);
+fastify.register(integrationRoutes);
 fastify.register(projectRoutes);
 fastify.register(listRoutes);
 fastify.register(resourceRoutes);

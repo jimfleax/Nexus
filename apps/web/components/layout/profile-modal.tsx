@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { cn, formatBytes } from "@/lib/utils";
 import { useUserMetrics } from "@/hooks/use-user-metrics";
 import { toast } from "sonner";
@@ -114,9 +115,19 @@ function MetricContent() {
           </p>
         </div>
       ) : (
-        <div className="flex items-center gap-2 rounded-xl border border-[#dec9e9] bg-[#f8f4fb] p-3 text-xs text-[#9163cb]">
-          <CloudSlash className="size-4" />
-          Google Drive not connected.
+        <div className="flex flex-col gap-3 rounded-xl border border-[#dec9e9] bg-[#f8f4fb] p-3 text-xs text-[#9163cb]">
+          <div className="flex items-center gap-2">
+            <CloudSlash className="size-4 shrink-0" />
+            <span>Google Drive not connected.</span>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full border-[#dec9e9] text-[#6247aa]"
+            asChild
+          >
+            <a href="/api/integrations/google-drive">Connect Google Drive</a>
+          </Button>
         </div>
       )}
 
