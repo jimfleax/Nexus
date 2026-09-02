@@ -15,7 +15,7 @@ import { Providers } from "@/components/providers";
 /**
  * @desc    Verify the nexus-session JWT and return the decoded user payload, or null if invalid
  */
-async function getSessionUser(): Promise<{
+export async function getSessionUser(): Promise<{
   id: string;
   name: string | null;
   email: string | null;
