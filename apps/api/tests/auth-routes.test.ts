@@ -198,41 +198,4 @@ describe("Auth Routes", () => {
     global.fetch = originalFetch;
   });
 
-  it("GET /api/auth/me should return 401 without cookie", async () => {
-    const res = await app.inject({
-      method: "GET",
-      url: "/api/auth/me",
-    });
-
-    expect(res.statusCode).toBe(401);
-  });
-
-  it("GET /api/auth/me should return user info with valid cookie", async () => {
-    const ownerId = "google_123";
-    await UserModel.create([{ ownerId }], { skipTenant: true } as any);
-
-    const key = new TextEncoder().encode(process.env.AUTH_SECRET);
-    const token = await new SignJWT({
-      sub: ownerId,
-      email: "test@example.com",
-      name: "Test User",
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("30d")
-      .sign(key);
-
-    const res = await app.inject({
-      method: "GET",
-      url: "/api/auth/me",
-      headers: {
-        cookie: `nexus-session=${token}`,
-      },
-    });
-
-    expect(res.statusCode).toBe(200);
-    const payload = JSON.parse(res.payload);
-    expect(payload.id).toBe(ownerId);
-    expect(payload.email).toBe("test@example.com");
-    expect(payload.name).toBe("Test User");
-  });
 });

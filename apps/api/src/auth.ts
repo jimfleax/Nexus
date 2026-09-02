@@ -1,67 +1,24 @@
 /**
  * @file auth.ts
- * @description Bearer-token authentication plugin that verifies JWS/JWE session tokens and attaches the authenticated ownerId to every request.
- * @architecture Injects ownerId into the request via an AsyncLocalStorage tenant context, supporting both raw JWS verification and Auth.js/NextAuth session-token decryption as a fallback.
+ * @description Bearer-token authentication plugin that verifies JWS session tokens and attaches the authenticated ownerId to every request.
+ * @architecture Injects ownerId into the request via an AsyncLocalStorage tenant context.
  */
 
 import fp from "fastify-plugin";
-import { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { jwtVerify, jwtDecrypt } from "jose";
-import { hkdf } from "node:crypto";
-import { promisify } from "node:util";
+import { FastifyRequest, FastifyReply } from "fastify";
+import { jwtVerify } from "jose";
 import { tenantContext } from "./db.js";
 
-const hkdfAsync = promisify(hkdf);
-
 /**
- * @desc    Derive the decryption key used for Auth.js encrypted session tokens via HKDF
- * @param   {string} secret - The Auth.js secret from which the key is derived
- * @param   {string} salt - The cookie-name-derived HKDF salt
- * @returns {Promise<Uint8Array>} The 64-byte HKDF-generated encryption key
- */
-async function getNextAuthKey(secret: string, salt: string) {
-  const buffer = await hkdfAsync(
-    "sha256",
-    secret,
-    salt,
-    `Auth.js Generated Encryption Key (${salt})`,
-    64,
-  );
-  return new Uint8Array(buffer);
-}
-
-/**
- * @desc    Verify a bearer token, trying standard JWS signature verification first and falling back to Auth.js JWE cookie decryption
+ * @desc    Verify a bearer token using standard JWS signature verification
  * @param   {string} token - The raw bearer token extracted from the Authorization header
  * @param   {string} secret - The shared secret used for verification/decryption
  * @returns {Promise<object>} The decoded token payload
  */
 export async function verifyToken(token: string, secret: string) {
-  try {
-    // First try standard JWS signature verification
-    const key = new TextEncoder().encode(secret);
-    const { payload } = await jwtVerify(token, key);
-    return payload;
-  } catch (err) {
-    // Fallback: try NextAuth JWE decryption
-    const salts = [
-      "authjs.session-token",
-      "__Secure-authjs.session-token",
-      "next-auth.session-token",
-      "__Secure-next-auth.session-token",
-    ];
-    for (const salt of salts) {
-      try {
-        const key = await getNextAuthKey(secret, salt);
-        const { payload } = await jwtDecrypt(token, key);
-        return payload;
-      } catch (_e2) {
-        // Ignore and try next salt
-      }
-    }
-    // If all fail, throw the original verification error
-    throw err;
-  }
+  const key = new TextEncoder().encode(secret);
+  const { payload } = await jwtVerify(token, key);
+  return payload;
 }
 
 /**
@@ -104,49 +61,15 @@ export const authPlugin = fp(async (fastify) => {
         token = authHeader.substring(7);
       } else if (request.headers.cookie) {
         const cookieHeader = request.headers.cookie;
-        const cookieNames = [
-          "nexus-session",
-          "authjs.session-token",
-          "__Secure-authjs.session-token",
-          "next-auth.session-token",
-          "__Secure-next-auth.session-token",
-        ];
+        const cookieNames = ["nexus-session"];
 
         for (const name of cookieNames) {
-          if (cookieHeader.includes(name)) {
-            // nexus-session is a simple single-part cookie — read directly
-            if (name === "nexus-session") {
-              const match = cookieHeader.match(
-                new RegExp(`(?:^|;\\s*)nexus-session=([^;]*)`),
-              );
-              if (match && match[1]) {
-                token = match[1];
-                break;
-              }
-              continue;
-            }
-
-            let stitched = "";
-            for (let i = 0; i < 5; i++) {
-              const match = cookieHeader.match(
-                new RegExp(`(?:^|;\\s*)${name}\\.${i}=([^;]*)`),
-              );
-              if (match && match[1]) {
-                stitched += match[1];
-              }
-            }
-            if (stitched) {
-              token = stitched;
-              break;
-            } else {
-              const match = cookieHeader.match(
-                new RegExp(`(?:^|;\\s*)${name}=([^;]*)`),
-              );
-              if (match && match[1]) {
-                token = match[1];
-                break;
-              }
-            }
+          const match = cookieHeader.match(
+            new RegExp(`(?:^|;\\s*)${name}=([^;]*)`),
+          );
+          if (match && match[1]) {
+            token = match[1];
+            break;
           }
         }
       }
@@ -173,6 +96,7 @@ export const authPlugin = fp(async (fastify) => {
             .send({ error: "Unauthorized: Missing sub in token" });
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (request as any).ownerId = ownerId;
 
         const store = tenantContext.getStore();

@@ -9,7 +9,7 @@
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
 import crypto from "node:crypto";
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT } from "jose";
 import { UserModel } from "../models/User.js";
 
 /** Build the HMAC-SHA256 signing key from AUTH_SECRET */
@@ -19,27 +19,12 @@ function getSigningKey(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days in seconds
-
-/** Emit the nexus-session Set-Cookie header */
+/** Helper to emit secure cookie attributes */
 const cookieOptions = () =>
   `HttpOnly; ${frontendUrl().startsWith("https://") ? "Secure; " : ""}SameSite=Lax; Path=/`;
 
-/** Emit the nexus-session Set-Cookie header */
-function sessionCookie(jwt: string): string {
-  return `nexus-session=${jwt}; ${cookieOptions()}; Max-Age=${COOKIE_MAX_AGE}`;
-}
-
-/** Clear the nexus-session cookie */
-function clearCookie(): string {
-  return `nexus-session=; ${cookieOptions()}; Max-Age=0`;
-}
-
 const frontendUrl = () =>
   (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
-
-const apiUrl = () =>
-  (process.env.API_URL || "http://localhost:8080").replace(/\/+$/, "");
 
 /* ─── Google OAuth constants ────────────────────────────── */
 
@@ -81,13 +66,15 @@ async function signSessionJwt(payload: {
  *          Uses { skipTenant: true } because no tenant context exists during OAuth callbacks.
  */
 async function upsertUser(ownerId: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const existing = await (UserModel as any)
     .findOne({ ownerId })
     .setOptions({ skipTenant: true });
 
   if (!existing) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (UserModel as any)
-      .create([{ ownerId }], { skipTenant: true } as any)
+      .create([{ ownerId }] as any, { skipTenant: true } as any)
       .catch(() => {
         // If race-condition duplicate insert, ignore
       });
@@ -394,50 +381,4 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     }
   });
 
-  /* ════════════════════════════════════════════
-     SESSION MANAGEMENT
-  ════════════════════════════════════════════ */
-
-  /**
-   * @desc    Return the current user from the nexus-session JWT
-   * @route   GET /api/auth/me
-   * @access  Public (checked manually)
-   */
-  fastify.get("/api/auth/me", async (request, reply) => {
-    const cookieHeader = request.headers.cookie ?? "";
-    const match = cookieHeader.match(/(?:^|;\s*)nexus-session=([^;]+)/);
-    const token = match?.[1];
-
-    if (!token) {
-      return reply.status(401).send({ error: "Not authenticated" });
-    }
-
-    try {
-      const { payload } = await jwtVerify(token, getSigningKey());
-
-      const ownerId = payload.sub;
-      if (!ownerId) {
-        return reply.status(401).send({ error: "Invalid session" });
-      }
-
-      // Ensure the user record exists
-      const user = await (UserModel as any)
-        .findOne({ ownerId })
-        .setOptions({ skipTenant: true });
-
-      if (!user) {
-        return reply.status(401).send({ error: "User not found" });
-      }
-
-      return reply.send({
-        id: ownerId,
-        email: (payload.email as string) ?? null,
-        name: (payload.name as string) ?? null,
-        image: (payload.image as string) ?? null,
-      });
-    } catch (err) {
-      fastify.log.warn(err, "nexus-session JWT verification failed");
-      return reply.status(401).send({ error: "Invalid or expired session" });
-    }
-  });
 });
