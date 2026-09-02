@@ -202,8 +202,14 @@ export const apiClient = {
         form.append("projectId", projectId);
         form.append("listId", listId);
         Object.keys(input).forEach((key) => {
-          if (input[key] !== undefined)
-            form.append(key, input[key] as string | Blob);
+          const val = input[key];
+          if (val !== undefined) {
+            if (Array.isArray(val)) {
+              val.forEach((v) => form.append(key, v));
+            } else {
+              form.append(key, val as string | Blob);
+            }
+          }
         });
         const { data } = await api.post<Resource>("/resources", form, {
           headers: {

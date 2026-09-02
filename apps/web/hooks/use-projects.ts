@@ -38,7 +38,7 @@ export function useCreateProject() {
   return useMutation({
     mutationFn: (input: CreateProjectInput) => apiClient.projects.create(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      return queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 }
@@ -52,8 +52,10 @@ export function useUpdateProject() {
     mutationFn: ({ id, input }: { id: string; input: UpdateProjectInput }) =>
       apiClient.projects.update(id, input),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["projects", variables.id] });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["projects"] }),
+        queryClient.invalidateQueries({ queryKey: ["projects", variables.id] }),
+      ]);
     },
   });
 }
@@ -66,8 +68,8 @@ export function useDeleteProject() {
   return useMutation({
     mutationFn: (id: string) => apiClient.projects.delete(id),
     onSuccess: (data, id) => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.removeQueries({ queryKey: ["projects", id] });
+      return queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 }

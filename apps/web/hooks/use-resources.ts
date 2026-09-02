@@ -55,10 +55,12 @@ export function useCreateResource() {
       input: CreateResourceInput & { file?: File; mimeType?: string };
     }) => apiClient.resources.create(projectId, listId, input),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["resources", variables.projectId, variables.listId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
+      return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["resources", variables.projectId, variables.listId],
+        }),
+        queryClient.invalidateQueries({ queryKey: ["resources"] }),
+      ]);
     },
   });
 }
@@ -77,7 +79,7 @@ export function useUpdateResource() {
       input: UpdateResourceInput;
     }) => apiClient.resources.update(resourceId, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
+      return queryClient.invalidateQueries({ queryKey: ["resources"] });
     },
   });
 }
@@ -90,7 +92,7 @@ export function useDeleteResource() {
   return useMutation({
     mutationFn: (resourceId: string) => apiClient.resources.delete(resourceId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
+      return queryClient.invalidateQueries({ queryKey: ["resources"] });
     },
   });
 }

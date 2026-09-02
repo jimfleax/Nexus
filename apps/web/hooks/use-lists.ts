@@ -51,7 +51,7 @@ export function useCreateList() {
       input: CreateKnowledgeListInput;
     }) => apiClient.lists.create(projectId, input),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
+      return queryClient.invalidateQueries({
         queryKey: ["lists", variables.projectId],
       });
     },
@@ -74,12 +74,14 @@ export function useUpdateList() {
       input: UpdateKnowledgeListInput;
     }) => apiClient.lists.update(projectId, listId, input),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["lists", variables.projectId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["lists", variables.projectId, variables.listId],
-      });
+      return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["lists", variables.projectId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["lists", variables.projectId, variables.listId],
+        }),
+      ]);
     },
   });
 }
@@ -98,7 +100,7 @@ export function useDeleteList() {
       listId: string;
     }) => apiClient.lists.delete(projectId, listId),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
+      return queryClient.invalidateQueries({
         queryKey: ["lists", variables.projectId],
       });
     },
@@ -120,7 +122,7 @@ export function useReorderLists() {
     }) => apiClient.lists.reorder(projectId, input),
     // Optimistic update can be added here if needed, but invalidation is fine for now
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
+      return queryClient.invalidateQueries({
         queryKey: ["lists", variables.projectId],
       });
     },
