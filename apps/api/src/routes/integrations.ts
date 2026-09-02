@@ -102,9 +102,10 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
         await updateSettings(request.ownerId, {
           driveRefreshToken: tokenData.refresh_token,
         });
+        return reply.redirect(frontendUrl());
+      } else {
+        return reply.redirect(`${frontendUrl()}/?error=drive_token_missing`);
       }
-
-      return reply.redirect(frontendUrl());
     },
   );
 });

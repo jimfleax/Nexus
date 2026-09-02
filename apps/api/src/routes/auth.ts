@@ -10,7 +10,7 @@ import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
 import crypto from "node:crypto";
 import { SignJWT } from "jose";
-import { UserModel } from "../models/User.js";
+import { findOrCreateUser, updateSettings } from "../services/user.service.js";
 
 /** Build the HMAC-SHA256 signing key from AUTH_SECRET */
 function getSigningKey(): Uint8Array {
@@ -61,24 +61,6 @@ async function signSessionJwt(payload: {
     .sign(getSigningKey());
 }
 
-/**
- * @desc    Upsert a user record by their OAuth subject identifier (ownerId).
- *          Uses { skipTenant: true } because no tenant context exists during OAuth callbacks.
- */
-async function upsertUser(ownerId: string): Promise<void> {
-  const existing = await (UserModel as any)
-    .findOne({ ownerId })
-    .setOptions({ skipTenant: true });
-
-  if (!existing) {
-    await (UserModel as any)
-      .create([{ ownerId }] as any, { skipTenant: true } as any)
-      .catch(() => {
-        // If race-condition duplicate insert, ignore
-      });
-  }
-}
-
 /* ─── Plugin ─────────────────────────────────────────────── */
 
 /**
@@ -112,8 +94,9 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       client_id: clientId,
       redirect_uri: redirectUri,
       response_type: "code",
-      scope: "openid email profile",
+      scope: "openid email profile https://www.googleapis.com/auth/drive.file",
       prompt: "select_account",
+      access_type: "offline",
       state,
     });
 
@@ -170,7 +153,10 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
         return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
       }
 
-      const tokenData = (await tokenRes.json()) as { access_token: string };
+      const tokenData = (await tokenRes.json()) as {
+        access_token: string;
+        refresh_token?: string;
+      };
 
       // 2. Fetch user profile
       const userRes = await fetch(GOOGLE_USERINFO_URL, {
@@ -194,8 +180,14 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
 
       const ownerId = `google_${profile.sub}`;
 
-      // 3. Upsert user in MongoDB
-      await upsertUser(ownerId);
+      // 3. Upsert user in MongoDB and save Drive integration token if present
+      if (tokenData.refresh_token) {
+        await updateSettings(ownerId, {
+          driveRefreshToken: tokenData.refresh_token,
+        });
+      } else {
+        await findOrCreateUser(ownerId);
+      }
 
       // 4. Sign JWT and set cookie
       const jwt = await signSessionJwt({
@@ -362,7 +354,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       const ownerId = `github_${profile.id}`;
 
       // 3. Upsert user in MongoDB
-      await upsertUser(ownerId);
+      await findOrCreateUser(ownerId);
 
       // 4. Sign JWT and set cookie
       const jwt = await signSessionJwt({
