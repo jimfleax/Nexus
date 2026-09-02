@@ -31,7 +31,15 @@ const STORAGE_BEARING_TYPES = [
 export async function findOrCreateUser(ownerId: string) {
   let user = await UserModel.findOne({ ownerId });
   if (!user) {
-    user = await UserModel.create({ ownerId });
+    try {
+      user = await UserModel.create({ ownerId });
+    } catch (err: any) {
+      if (err.code === 11000) {
+        user = await UserModel.findOne({ ownerId });
+      } else {
+        throw err;
+      }
+    }
   }
   return user;
 }
