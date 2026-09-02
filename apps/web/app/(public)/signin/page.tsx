@@ -80,7 +80,7 @@ export default function SignInPage() {
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="underline hover:text-zinc-300">
+            <Link href="/policy" className="underline hover:text-zinc-300">
               Privacy Policy
             </Link>
             .
