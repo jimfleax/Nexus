@@ -77,7 +77,11 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.status(500).send({ error: "Google OAuth not configured" });
     }
 
-    const redirectUri = `${frontendUrl()}/api/auth/callback/google`;
+    const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
+      /\/+$/,
+      "",
+    );
+    const redirectUri = `${apiUrl}/api/auth/callback/google`;
     const state = generateState();
     setStateCookie(reply, "oauth_state", state);
     reply.header("Cache-Control", "no-store, max-age=0");
@@ -124,7 +128,11 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     try {
       const clientId = process.env.AUTH_GOOGLE_ID!;
       const clientSecret = process.env.AUTH_GOOGLE_SECRET!;
-      const redirectUri = `${frontendUrl()}/api/auth/callback/google`;
+      const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
+        /\/+$/,
+        "",
+      );
+      const redirectUri = `${apiUrl}/api/auth/callback/google`;
 
       // 1. Exchange code for tokens
       const tokenRes = await exchangeCodeForToken(GOOGLE_TOKEN_URL, {
