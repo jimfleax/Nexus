@@ -47,8 +47,9 @@ export const authPlugin = fp(async (fastify) => {
   fastify.addHook(
     "preHandler",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      // Extract the matched route path (e.g. "/api/auth/google"), falling back to parsed url path
-      const routeUrl = request.routeOptions?.url || request.url.split("?")[0];
+      // Extract the matched route path (e.g. "/api/auth/google"), falling back to parsed url path with duplicate slashes collapsed
+      const rawUrl = request.url.split("?")[0].replace(/\/\/+/g, "/");
+      const routeUrl = request.routeOptions?.url || rawUrl;
 
       // Public routes — skip auth entirely
       if (routeUrl === "/health" || routeUrl.startsWith("/api/auth/")) {

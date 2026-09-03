@@ -18,7 +18,7 @@ const mint = async (claims: Record<string, unknown>, opts?: { exp?: number }) =>
 
 beforeAll(async () => {
   process.env.AUTH_SECRET = secret;
-  app = Fastify();
+  app = Fastify({ ignoreTrailingSlash: true, ignoreDuplicateSlashes: true });
   app.register(authPlugin);
 
   app.get("/api/protected", async (request: any) => {
@@ -157,6 +157,14 @@ describe("Route bypasses and environment", () => {
 
   it("bypasses auth for /api/auth/* paths", async () => {
     const res = await app.inject({ method: "GET", url: "/api/auth/something" });
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("bypasses auth for //api/auth/* paths (double slash resilient)", async () => {
+    const res = await app.inject({
+      method: "GET",
+      url: "//api/auth/something",
+    });
     expect(res.statusCode).toBe(200);
   });
 

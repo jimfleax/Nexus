@@ -34,7 +34,7 @@ export default function SignInPage() {
 
         <div className="flex flex-col gap-3 p-8 pt-0">
           <form
-            action={`${process.env.API_URL || "http://localhost:8080"}/api/auth/google`}
+            action={`${(process.env.API_URL || "http://localhost:8080").replace(/\/+$/, "")}/api/auth/google`}
             method="GET"
           >
             <OAuthSubmitButton provider="google">

@@ -32,7 +32,11 @@ import { infoRoutes } from "./routes/info.js";
 
 import { gcPlugin } from "./plugins/gc.js";
 
-const fastify = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
+const fastify = Fastify({
+  logger: true,
+  ignoreTrailingSlash: true,
+  ignoreDuplicateSlashes: true,
+}).withTypeProvider<ZodTypeProvider>();
 
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);

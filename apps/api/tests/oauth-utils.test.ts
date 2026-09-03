@@ -134,7 +134,8 @@ describe("oauth-utils", () => {
 
       const body = opts.body as URLSearchParams;
       expect(body.get("code")).toBe("my-code");
-      expect(body.get("clientId")).toBe("my-client");
+      expect(body.get("client_id")).toBe("my-client");
+      expect(body.get("client_secret")).toBe("my-secret");
     });
   });
 });
