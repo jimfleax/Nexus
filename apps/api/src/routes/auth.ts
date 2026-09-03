@@ -80,6 +80,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
     const redirectUri = `${frontendUrl()}/api/auth/callback/google`;
     const state = generateState();
     setStateCookie(reply, "oauth_state", state);
+    reply.header("Cache-Control", "no-store, max-age=0");
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -103,6 +104,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
    * @access  Public
    */
   fastify.get("/api/auth/callback/google", async (request, reply) => {
+    reply.header("Cache-Control", "no-store, max-age=0");
     const { code, state, error } = request.query as Record<string, string>;
 
     if (error || !code || !state) {

@@ -48,6 +48,15 @@ fastify.register(storagePlugin, {
 fastify.register(deletionPlugin);
 fastify.register(gcPlugin, { intervalMs: 15 * 60 * 1000 });
 
+// Global guardrail: Prevent edge caches (like Vercel) from aggressively caching
+// any response that sets a cookie, which would strip the cookie for subsequent users.
+fastify.addHook("onSend", async (_request, reply, payload) => {
+  if (reply.getHeader("set-cookie")) {
+    reply.header("Cache-Control", "no-store, max-age=0");
+  }
+  return payload;
+});
+
 // Auth routes remain public because authPlugin skips URLs beginning with /api/auth/, not because of registration order
 fastify.register(authRoutes);
 fastify.register(authPlugin);

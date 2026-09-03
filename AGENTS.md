@@ -82,3 +82,4 @@ Next.js rewrites (`apps/web/next.config.ts`): unmatched `/api/*` requests fall t
 - Shared package `dist/` must exist for the API to import `@nexus/shared`. Run `npm run build -w packages/shared` after schema changes.
 - Docker builds: `docker build -f apps/api/Dockerfile .` from repo root (multi-stage: deps → builder → runner).
 - GC runs on every `/health` hit, sweeping stale pending resources older than 30 min.
+- **Edge Caching vs Cookies**: Vercel's CDN aggressively strips `Set-Cookie` headers from any cached responses. If the Fastify backend sets a cookie (e.g., auth), it MUST either send `Cache-Control: no-store` or rely on the global `onSend` hook in `index.ts` to disable caching automatically. Otherwise, subsequent users will get a cached proxy response without the cookie.
