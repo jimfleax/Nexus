@@ -6,6 +6,7 @@
 
 import "dotenv/config";
 import Fastify from "fastify";
+import multipart from "@fastify/multipart";
 import { connectDB } from "./db.js";
 import { authPlugin } from "./auth.js";
 import { authRoutes } from "./routes/auth.js";
@@ -35,6 +36,9 @@ fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 
 fastify.register(errorHandlerPlugin);
+// Register multipart support globally so file-upload routes can parse
+// multipart/form-data requests (POST /api/resources, etc.)
+fastify.register(multipart, { attachFieldsToBody: false });
 fastify.register(storagePlugin, {
   clientId: process.env.AUTH_GOOGLE_ID,
   clientSecret: process.env.AUTH_GOOGLE_SECRET,
