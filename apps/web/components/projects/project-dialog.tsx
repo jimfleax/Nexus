@@ -116,8 +116,10 @@ export function ProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {trigger !== undefined && trigger !== null ? (
-        <DialogTrigger render={trigger as React.ReactElement} />
+      {trigger !== undefined ? (
+        trigger === null ? null : (
+          <DialogTrigger render={trigger as React.ReactElement} />
+        )
       ) : mode === "create" ? (
         <DialogTrigger
           render={

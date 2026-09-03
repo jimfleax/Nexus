@@ -188,11 +188,13 @@ export function ResourceDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {trigger !== undefined && trigger !== null ? (
-        <DialogTrigger
-          render={trigger as React.ReactElement}
-          nativeButton={isNativeButton}
-        />
+      {trigger !== undefined ? (
+        trigger === null ? null : (
+          <DialogTrigger
+            render={trigger as React.ReactElement}
+            nativeButton={isNativeButton}
+          />
+        )
       ) : mode === "create" ? (
         <DialogTrigger
           render={
