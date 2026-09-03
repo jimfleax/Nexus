@@ -39,11 +39,11 @@ const oauth2ClientMock = {
   setCredentials: vi.fn(),
   getAccessToken: getAccessTokenMock,
 };
-vi.mocked((await import("googleapis")).google.auth.OAuth2).mockImplementation(
-  function () {
-    return oauth2ClientMock;
-  } as any,
-);
+
+import { google } from "googleapis";
+vi.mocked(google.auth.OAuth2).mockImplementation(function () {
+  return oauth2ClientMock;
+} as any);
 
 const originalFetch = global.fetch;
 let fetchMock = vi.fn();

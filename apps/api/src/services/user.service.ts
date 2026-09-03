@@ -63,7 +63,7 @@ export async function getSettings(ownerId: string) {
  */
 export async function updateSettings(
   ownerId: string,
-  input: { driveRefreshToken?: string },
+  input: { driveRefreshToken?: string | null },
 ) {
   const user = await findOrCreateUser(ownerId);
 

@@ -59,18 +59,18 @@ describe("skipTenant queries", () => {
   });
 
   it("deleteMany with skipTenant deletes across tenants", async () => {
-    await TestModel.deleteMany({}, { skipTenant: true });
-    const count = await TestModel.countDocuments({}, { skipTenant: true });
+    await TestModel.deleteMany({}, { skipTenant: true } as any);
+    const count = await TestModel.countDocuments({}, {
+      skipTenant: true,
+    } as any);
     expect(count).toBe(0);
   });
 
   it("updateMany with skipTenant updates across tenants", async () => {
-    await TestModel.updateMany(
-      {},
-      { $set: { value: 99 } },
-      { skipTenant: true },
-    );
-    const docs = await TestModel.find({}, null, { skipTenant: true });
+    await TestModel.updateMany({}, { $set: { value: 99 } }, {
+      skipTenant: true,
+    } as any);
+    const docs = await TestModel.find({}, null, { skipTenant: true } as any);
     expect(docs.every((d) => d.value === 99)).toBe(true);
   });
 });
