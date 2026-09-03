@@ -1,3 +1,8 @@
+/**
+ * @file resource-meta.ts
+ * @description Provides metadata mapping for resource types (icons, labels, colors).
+ * @architecture Centralizes UI constants for resources to keep components clean.
+ */
 import {
   FileMd,
   FileText,
@@ -50,14 +55,29 @@ export const RESOURCE_COLORS: Record<string, string> = {
   text: "bg-[#dec9e9]",
 };
 
+/**
+ * @desc Checks if a resource type is a web link
+ * @param {ResourceType} type - Resource type
+ * @returns {boolean}
+ */
 export function isUrlType(type: ResourceType): boolean {
   return type === "url";
 }
 
+/**
+ * @desc Checks if a resource type can have content (like markdown or text)
+ * @param {ResourceType} type - Resource type
+ * @returns {boolean}
+ */
 export function isContentType(type: ResourceType): boolean {
   return type === "markdown" || type === "text" || type === "note";
 }
 
+/**
+ * @desc Capitalizes the first letter of the type string
+ * @param {string} type - String to capitalize
+ * @returns {string}
+ */
 export function capitalizeType(type: string): string {
   return type.charAt(0).toUpperCase() + type.slice(1);
 }

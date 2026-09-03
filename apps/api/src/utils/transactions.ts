@@ -1,3 +1,8 @@
+/**
+ * @file transactions.ts
+ * @description Provides a wrapper for executing MongoDB transactions safely.
+ * @architecture Enforces atomic operations for multi-document updates, automatically handling commits, rollbacks, and session cleanup.
+ */
 import mongoose from "mongoose";
 
 /**

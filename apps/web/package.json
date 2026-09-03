@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
-    "build:bones": "boneyard-js build"
+    "build:bones": "boneyard-js build http://localhost:3000/bones-preview"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

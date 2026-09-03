@@ -136,7 +136,7 @@ describe("runGarbageCollection drive deletion", () => {
     expect(filesDelete).not.toHaveBeenCalled();
   });
 
-  it("never throws, even if Drive deletion rejects", async () => {
+  it("never throws, even if Drive deletion rejects, but keeps DB record", async () => {
     filesDelete.mockRejectedValueOnce(new Error("Drive API down"));
     await tenantContext.run({ ownerId: "u1" }, () =>
       UserModel.create({ ownerId: "u1", driveRefreshToken: "tok-1" }),
@@ -144,11 +144,11 @@ describe("runGarbageCollection drive deletion", () => {
     await seedResource("u1", new Date(Date.now() - 31 * 60 * 1000), "file-abc");
 
     await expect(runGarbageCollection()).resolves.toBeUndefined();
-    // DB record should still be deleted even if Drive fails
+    // DB record should be kept so it can be retried next sweep
     const count = await ResourceModel.countDocuments({}, {
       skipTenant: true,
     } as any);
-    expect(count).toBe(0);
+    expect(count).toBe(1);
   });
 });
 

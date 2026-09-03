@@ -7,7 +7,7 @@
  */
 import React, { Suspense } from "react";
 import type { Project } from "@nexus/shared";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { useLists, useReorderLists } from "@/hooks/use-lists";
 import { ProjectListCard } from "@/components/project-list-card";
 import { useRouter } from "next/navigation";
@@ -77,10 +77,18 @@ export function ProjectPage({ project }: { project: Project }) {
         }
         actions={
           <div className="flex gap-2">
-            <Suspense fallback={<Skeleton className="h-[38px] w-[130px]" />}>
+            <Suspense
+              fallback={
+                <div className="h-[38px] w-[130px] rounded bg-gray-200 animate-pulse" />
+              }
+            >
               <CreateResourceDialog projectId={project.id} />
             </Suspense>
-            <Suspense fallback={<Skeleton className="h-[38px] w-[100px]" />}>
+            <Suspense
+              fallback={
+                <div className="h-[38px] w-[100px] rounded bg-gray-200 animate-pulse" />
+              }
+            >
               <CreateListDialog projectId={project.id} />
             </Suspense>
             <ConfirmDialog
@@ -111,9 +119,9 @@ export function ProjectPage({ project }: { project: Project }) {
         </h2>
         {isLoading ? (
           <div className="flex flex-col gap-2">
-            <Skeleton className="h-[72px] w-full" />
-            <Skeleton className="h-[72px] w-full" />
-            <Skeleton className="h-[72px] w-full" />
+            <div className="h-[72px] w-full rounded bg-gray-200 animate-pulse" />
+            <div className="h-[72px] w-full rounded bg-gray-200 animate-pulse" />
+            <div className="h-[72px] w-full rounded bg-gray-200 animate-pulse" />
           </div>
         ) : collections.length ? (
           <div className="flex flex-col gap-2">

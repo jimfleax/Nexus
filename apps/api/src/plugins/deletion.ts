@@ -46,11 +46,11 @@ export const deletionPlugin = fp(
           await ResourceModel.deleteMany({ projectId }, { session });
           await KnowledgeListModel.deleteMany({ projectId }, { session });
           await ProjectModel.deleteOne({ _id: projectId }, { session });
-
-          if (driveFileIds.length > 0) {
-            await server.storage.deleteFiles(ownerId, driveFileIds);
-          }
         });
+
+        if (driveFileIds.length > 0) {
+          await server.storage.deleteFiles(ownerId, driveFileIds);
+        }
       },
       /**
        * @desc    Delete a knowledge list, its resources, and their Drive files in a transaction
@@ -69,11 +69,11 @@ export const deletionPlugin = fp(
         await withTransaction(async (session) => {
           await ResourceModel.deleteMany({ listId }, { session });
           await KnowledgeListModel.deleteOne({ _id: listId }, { session });
-
-          if (driveFileIds.length > 0) {
-            await server.storage.deleteFiles(ownerId, driveFileIds);
-          }
         });
+
+        if (driveFileIds.length > 0) {
+          await server.storage.deleteFiles(ownerId, driveFileIds);
+        }
       },
       /**
        * @desc    Delete a single resource and its Drive file if present
@@ -87,11 +87,11 @@ export const deletionPlugin = fp(
 
         await withTransaction(async (session) => {
           await ResourceModel.deleteOne({ _id: resourceId }, { session });
-
-          if (resource.driveFileId) {
-            await server.storage.deleteFiles(ownerId, [resource.driveFileId]);
-          }
         });
+
+        if (resource.driveFileId) {
+          await server.storage.deleteFiles(ownerId, [resource.driveFileId]);
+        }
       },
     };
     server.decorate("deleter", deleter);

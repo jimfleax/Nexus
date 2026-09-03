@@ -18,7 +18,7 @@ import {
 } from "@phosphor-icons/react";
 import type { Resource } from "@nexus/shared";
 import { useDeleteResource, useUpdateResource } from "@/hooks/use-resources";
-import { EditResourceDialog } from "@/components/resources/edit-resource-dialog";
+import { EditResourceDialog } from "@/components/resources/resource-dialog";
 import { EntityContextMenu } from "@/components/ui/entity-context-menu";
 import { formatDate } from "@/lib/utils";
 import { FavoriteButton } from "@/components/ui/favorite-button";

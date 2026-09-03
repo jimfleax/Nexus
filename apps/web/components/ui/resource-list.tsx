@@ -9,7 +9,7 @@ import type { Resource } from "@nexus/shared";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { ResourceCard } from "@/components/resource-card";
-import { ListSkeleton } from "@/components/ui/data-skeletons";
+import { Skeleton } from "boneyard-js/react";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export function ResourceList({
@@ -34,10 +34,11 @@ export function ResourceList({
   return (
     <div className={cn("mt-6 max-w-4xl", className)}>
       {isLoading ? (
-        <ListSkeleton
-          count={skeletonCount}
-          className="border-y border-[#dec9e9]"
-        />
+        <div className="flex flex-col border-y border-[#dec9e9]">
+          {Array.from({ length: skeletonCount }).map((_, i) => (
+            <Skeleton key={i} name="resource-card" loading />
+          ))}
+        </div>
       ) : items.length > 0 ? (
         <div className="border-y border-[#dec9e9]">
           {items.map((r, index) => (

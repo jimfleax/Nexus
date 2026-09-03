@@ -1,3 +1,8 @@
+/**
+ * @file page.tsx
+ * @description Renders the public terms of service page.
+ * @architecture Next.js App Router server component for static marketing pages.
+ */
 import { MarkdownViewer } from "@/components/markdown-viewer";
 import Link from "next/link";
 import { ArrowLeft, Hexagon } from "lucide-react";
@@ -52,6 +57,10 @@ These Terms shall be governed and construed in accordance with the laws of the j
 For any questions regarding these Terms, please contact us at support@nexus.local.
 `;
 
+/**
+ * @desc Server component rendering the terms of service
+ * @returns {JSX.Element}
+ */
 export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-zinc-900 selection:bg-[#dec9e9] selection:text-[#6247aa]">

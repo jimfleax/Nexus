@@ -1,3 +1,8 @@
+/**
+ * @file markdown-viewer.tsx
+ * @description Renders Markdown text as styled HTML using react-markdown.
+ * @architecture Supports syntax highlighting and custom components to integrate seamlessly with the app's UI theme.
+ */
 "use client";
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";

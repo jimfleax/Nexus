@@ -23,4 +23,4 @@ test-web.js
 apps/api/check-db.js
 apps/api/test-*.js
 prd
-docs
+docstemp.html

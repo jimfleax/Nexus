@@ -34,6 +34,7 @@ export async function runGarbageCollection() {
 
     for (const resource of staleResources) {
       if (resource.driveFileId) {
+        let driveDeleteSucceeded = false;
         // Need to delete orphan drive file
         try {
           const user = await UserModel.findOne({ ownerId: resource.ownerId });
@@ -41,12 +42,19 @@ export async function runGarbageCollection() {
             const oauth2Client = buildOAuthClient(user.driveRefreshToken);
             const drive = google.drive({ version: "v3", auth: oauth2Client });
             await drive.files.delete({ fileId: resource.driveFileId });
+            driveDeleteSucceeded = true;
+          } else {
+            driveDeleteSucceeded = true;
           }
         } catch (err) {
           console.error(
             `Failed to delete orphan drive file ${resource.driveFileId}:`,
             err,
           );
+        }
+
+        if (!driveDeleteSucceeded) {
+          continue;
         }
       }
 

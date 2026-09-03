@@ -1,3 +1,8 @@
+/**
+ * @file list-dialog.tsx
+ * @description Dialog component for creating or editing lists.
+ * @architecture Reusable form modal that handles both creation and mutation of list entities.
+ */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -23,6 +28,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+/**
+ * @desc Modal form to create or edit a list inside a project
+ * @param {Object} props
+ * @returns {JSX.Element}
+ */
 export function ListDialog({
   mode,
   list,
@@ -221,6 +231,9 @@ export function ListDialog({
   );
 }
 
+/**
+ * @desc Helper component to quickly instantiate the ListDialog in create mode
+ */
 export function CreateListDialog(props: {
   projectId?: string;
   trigger?: React.ReactNode;
@@ -230,6 +243,9 @@ export function CreateListDialog(props: {
   return <ListDialog mode="create" {...props} />;
 }
 
+/**
+ * @desc Helper component to quickly instantiate the ListDialog in edit mode
+ */
 export function EditListDialog(props: {
   list: KnowledgeList;
   children?: React.ReactNode;

@@ -1,7 +1,16 @@
+/**
+ * @file errorHandler.ts
+ * @description Global error handling plugin for the Fastify application.
+ * @architecture Centralizes error processing, converting internal errors and validation failures into standardized API responses.
+ */
 import fp from "fastify-plugin";
 import { FastifyPluginAsync, FastifyError } from "fastify";
 import { ApplicationError } from "../utils/errors.js";
 
+/**
+ * @desc    Registers the global error handler for the Fastify server
+ * @param   {import("fastify").FastifyInstance} fastify - Fastify instance
+ */
 export const errorHandlerPlugin: FastifyPluginAsync = fp(async (fastify) => {
   fastify.setErrorHandler(function (
     error: FastifyError | Error,

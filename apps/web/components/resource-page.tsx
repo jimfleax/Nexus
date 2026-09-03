@@ -17,7 +17,6 @@ import {
   useMarkOpened,
 } from "@/hooks/use-resources";
 import { ResourceViewer } from "@/components/resource-viewer";
-import { Skeleton } from "boneyard-js/react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Trash } from "@phosphor-icons/react";
@@ -78,7 +77,16 @@ export function ResourcePage({
   }, [resourceId, markOpened]);
 
   if (projectLoading || listLoading || resourceLoading) {
-    return <Skeleton name="resource-page" />;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="h-6 w-24 rounded bg-gray-200 animate-pulse" />
+          <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+          <div className="h-6 w-32 rounded bg-gray-200 animate-pulse" />
+        </div>
+        <div className="h-[400px] w-full rounded-2xl bg-gray-200 animate-pulse" />
+      </div>
+    );
   }
 
   if (!project || !list || !resource) {

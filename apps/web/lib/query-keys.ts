@@ -1,3 +1,8 @@
+/**
+ * @file query-keys.ts
+ * @description Centralized React Query key factories.
+ * @architecture Enforces consistent query key structures to prevent cache collision and enable targeted invalidation.
+ */
 export const projectKeys = {
   all: () => ["projects"] as const,
   detail: (id: string) => ["projects", id] as const,

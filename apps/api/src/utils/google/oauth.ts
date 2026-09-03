@@ -1,3 +1,8 @@
+/**
+ * @file oauth.ts
+ * @description Google OAuth2 client builder utilities.
+ * @architecture Encapsulates the Google API client instantiation and credentials hydration using environment variables and user tokens.
+ */
 import { google } from "googleapis";
 
 /**

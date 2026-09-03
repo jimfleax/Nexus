@@ -1,3 +1,8 @@
+/**
+ * @file urls.ts
+ * @description Centralized URL routing helpers for the frontend.
+ * @architecture Enforces consistent route generation to avoid hardcoded paths across the React application.
+ */
 export const projectUrl = (id: string) => `/projects/${id}`;
 export const listUrl = (projectId: string, listId: string) =>
   `/projects/${projectId}/lists/${listId}`;

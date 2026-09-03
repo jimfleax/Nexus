@@ -1,4 +1,10 @@
 /**
+ * @file retry.ts
+ * @description Provides a generic exponential backoff utility for async functions.
+ * @architecture Wraps unreliable external network calls (e.g., third-party APIs) with resilience mechanisms.
+ */
+
+/**
  * Retries an async function with exponential backoff.
  */
 export async function withRetry<T>(

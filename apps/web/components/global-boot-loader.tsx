@@ -1,9 +1,18 @@
+/**
+ * @file global-boot-loader.tsx
+ * @description Provides a global full-screen loading state during initial app boot or heavy transitions.
+ * @architecture Wraps the main layout with a suspense-like overlay that blocks interaction while essential data loads.
+ */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useIsFetching } from "@tanstack/react-query";
 import { NexusLoader } from "@/components/ui/nexus-loader";
 
+/**
+ * @desc Render a global loading overlay that tracks route changes
+ * @returns {JSX.Element}
+ */
 export function GlobalBootLoader() {
   const isFetching = useIsFetching();
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);

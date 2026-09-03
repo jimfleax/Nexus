@@ -68,7 +68,11 @@ export default function ProjectsPage() {
         title="Projects"
         subtitle="Your knowledge contexts, collected in one place."
         actions={
-          <Suspense fallback={<Skeleton name="create-project-btn" />}>
+          <Suspense
+            fallback={
+              <div className="h-10 w-32 rounded bg-gray-200 animate-pulse" />
+            }
+          >
             <CreateProjectDialog />
           </Suspense>
         }
@@ -85,7 +89,11 @@ export default function ProjectsPage() {
           title="No projects yet"
           description="Create your first project to start organizing your knowledge contexts."
           action={
-            <Suspense fallback={<Skeleton name="create-project-btn" />}>
+            <Suspense
+              fallback={
+                <div className="h-10 w-32 rounded bg-gray-200 animate-pulse" />
+              }
+            >
               <CreateProjectDialog />
             </Suspense>
           }

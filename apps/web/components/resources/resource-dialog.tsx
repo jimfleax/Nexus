@@ -1,3 +1,8 @@
+/**
+ * @file resource-dialog.tsx
+ * @description Dialog component for creating or editing resources.
+ * @architecture Handles complex multi-modal form logic (file uploads, rich text, links) for Resource entities.
+ */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -35,6 +40,11 @@ import {
   isUrlType as checkUrlType,
 } from "@/lib/resource-meta";
 
+/**
+ * @desc Modal form to create or edit a resource
+ * @param {Object} props
+ * @returns {JSX.Element}
+ */
 export function ResourceDialog({
   mode,
   resource,
@@ -448,6 +458,9 @@ export function ResourceDialog({
   );
 }
 
+/**
+ * @desc Helper component to quickly instantiate the ResourceDialog in create mode
+ */
 export function CreateResourceDialog(props: {
   projectId?: string;
   listId?: string;
@@ -458,6 +471,9 @@ export function CreateResourceDialog(props: {
   return <ResourceDialog mode="create" {...props} />;
 }
 
+/**
+ * @desc Helper component to quickly instantiate the ResourceDialog in edit mode
+ */
 export function EditResourceDialog(props: {
   resource: Resource;
   children?: React.ReactNode;

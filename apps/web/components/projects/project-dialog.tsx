@@ -1,3 +1,8 @@
+/**
+ * @file project-dialog.tsx
+ * @description Dialog component for creating or editing projects.
+ * @architecture Reusable form modal that handles both creation and mutation of project entities.
+ */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -54,6 +59,11 @@ const PRESET_ICONS = [
   "🌐",
 ];
 
+/**
+ * @desc Modal form to create or edit a project
+ * @param {Object} props
+ * @returns {JSX.Element}
+ */
 export function ProjectDialog({
   mode,
   project,
@@ -257,6 +267,9 @@ export function ProjectDialog({
   );
 }
 
+/**
+ * @desc Helper component to quickly instantiate the ProjectDialog in create mode
+ */
 export function CreateProjectDialog(props: {
   compact?: boolean;
   trigger?: React.ReactNode;
@@ -266,6 +279,9 @@ export function CreateProjectDialog(props: {
   return <ProjectDialog mode="create" {...props} />;
 }
 
+/**
+ * @desc Helper component to quickly instantiate the ProjectDialog in edit mode
+ */
 export function EditProjectDialog(props: {
   project: Project;
   trigger?: React.ReactNode;

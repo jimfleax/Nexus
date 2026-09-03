@@ -1,3 +1,8 @@
+/**
+ * @file db-utils.ts
+ * @description Provides common database utility functions.
+ * @architecture Encapsulates reusable Mongoose querying patterns to avoid duplication across service files.
+ */
 import { Model } from "mongoose";
 
 /**

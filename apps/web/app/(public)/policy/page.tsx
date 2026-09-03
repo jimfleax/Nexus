@@ -1,7 +1,12 @@
 import { MarkdownViewer } from "@/components/markdown-viewer";
 import Link from "next/link";
 import { ArrowLeft, Hexagon } from "lucide-react";
-import { Metadata } from "next";
+/**
+ * @file page.tsx
+ * @description Renders the public privacy policy page.
+ * @architecture Next.js App Router server component for static marketing pages.
+ */
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -48,7 +53,11 @@ We may update our Privacy Policy from time to time. We will notify you of any ch
 If you have any questions or concerns about this Privacy Policy, please contact us at support@nexus.local.
 `;
 
-export default function PrivacyPolicyPage() {
+/**
+ * @desc Server component rendering the privacy policy
+ * @returns {JSX.Element}
+ */
+export default function PolicyPage() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-zinc-900 selection:bg-[#dec9e9] selection:text-[#6247aa]">
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur-md">

@@ -1,3 +1,8 @@
+/**
+ * @file use-info.ts
+ * @description Hook to fetch global info metadata for a given entity.
+ * @architecture Abstraction over React Query for info fetching, preventing duplicated query keys.
+ */
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { infoKeys } from "@/lib/query-keys";

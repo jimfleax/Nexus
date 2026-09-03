@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * @file empty-state.tsx
@@ -87,11 +86,11 @@ export function DetailPageSkeleton() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Skeleton className="h-6 w-24" />
-        <Skeleton className="h-4 w-4" />
-        <Skeleton className="h-6 w-32" />
+        <div className="h-6 w-24 rounded bg-gray-200 animate-pulse" />
+        <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+        <div className="h-6 w-32 rounded bg-gray-200 animate-pulse" />
       </div>
-      <Skeleton className="h-[400px] w-full rounded-2xl" />
+      <div className="h-[400px] w-full rounded-2xl bg-gray-200 animate-pulse" />
     </div>
   );
 }

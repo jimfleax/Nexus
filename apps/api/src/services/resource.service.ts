@@ -156,3 +156,6 @@ export async function toggleFavoriteResource(id: string) {
     { returnDocument: "after", updatePipeline: true } as any,
   );
 }
+export async function deleteResourceById(id: string) {
+  return ResourceModel.findByIdAndDelete(id);
+}

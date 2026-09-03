@@ -1,5 +1,15 @@
+/**
+ * @file route.ts
+ * @description Next.js Route Handler for syncing backend OAuth tokens to the frontend session.
+ * @architecture Handles redirect from the API auth flow and stores the JWT as an HttpOnly cookie.
+ */
 import { NextResponse } from "next/server";
 
+/**
+ * @desc Handles GET requests with a token query param to establish the local session.
+ * @param {Request} request - The incoming HTTP request
+ * @returns {Promise<NextResponse>} Redirect response
+ */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");

@@ -26,6 +26,7 @@ import {
   createResource,
   updateResource,
   toggleFavoriteResource,
+  deleteResourceById,
 } from "../services/resource.service.js";
 import { FastifyReply } from "fastify";
 
@@ -137,54 +138,66 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         } as any);
       }
 
-      let driveFileId: string | undefined;
-      let size: number | undefined;
-
       const isFileUpload =
         (body.type === "pdf" || body.type === "image") &&
         !body.url &&
         !body.content;
 
-      if (isFileUpload) {
-        if (!fileStream) {
-          return reply.status(400).send({
-            error: "File stream required for this resource type",
-          } as any);
-        }
-        try {
-          const mType =
-            mimeType ||
-            body.mimeType ||
-            (body.type === "pdf" ? "application/pdf" : "image/jpeg");
-          const uploadResult = await server.storage.uploadFile(
-            ownerId,
-            {
-              title: body.title,
-              mimeType: mType,
-            },
-            fileStream,
-          );
-          driveFileId = uploadResult.driveFileId;
-          size = uploadResult.size;
-        } catch (error: any) {
-          request.log.error(error, "Storage upload failed");
-          if (error.name === "StorageError") {
-            return reply.status(400).send({ error: error.message } as any);
-          }
-          return reply
-            .status(500)
-            .send({ error: "Failed to upload file to storage" } as any);
-        }
+      if (isFileUpload && !fileStream) {
+        return reply.status(400).send({
+          error: "File stream required for this resource type",
+        } as any);
       }
 
-      // Create resource via service
+      // Create resource via service in pending or ready state
       const resource = await createResource({
         ...body,
-        driveFileId,
-        size,
+        status: isFileUpload ? "pending" : "ready",
       });
 
-      return reply.status(201).send(resource);
+      if (!isFileUpload) {
+        return reply.status(201).send(resource);
+      }
+
+      try {
+        const mType =
+          mimeType ||
+          body.mimeType ||
+          (body.type === "pdf" ? "application/pdf" : "image/jpeg");
+        const uploadResult = await server.storage.uploadFile(
+          ownerId,
+          {
+            title: body.title,
+            mimeType: mType,
+          },
+          fileStream,
+        );
+
+        const updatedResource = await updateResource(resource._id.toString(), {
+          driveFileId: uploadResult.driveFileId,
+          size: uploadResult.size,
+          status: "ready",
+        });
+
+        if (!updatedResource) {
+          const finalResource = await findResourceById(resource._id.toString());
+          return reply.status(201).send(finalResource);
+        }
+
+        return reply.status(201).send(updatedResource);
+      } catch (error: any) {
+        request.log.error(error, "Storage upload failed");
+
+        // Remove the newly created pending resource record so retries with the same title succeed
+        await deleteResourceById(resource._id.toString());
+
+        if (error.name === "StorageError") {
+          return reply.status(400).send({ error: error.message } as any);
+        }
+        return reply
+          .status(500)
+          .send({ error: "Failed to upload file to storage" } as any);
+      }
     },
   );
 

@@ -9,8 +9,7 @@ import React, { Suspense } from "react";
 import type { KnowledgeList, Project } from "@nexus/shared";
 import { ResourceCard } from "@/components/resource-card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ListSkeleton } from "@/components/ui/data-skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "boneyard-js/react";
 import { useResources } from "@/hooks/use-resources";
 import { useRouter } from "next/navigation";
 import { useDeleteList } from "@/hooks/use-lists";
@@ -68,7 +67,7 @@ export function ListPage({
                 </span>
               )}
               {isLoading ? (
-                <Skeleton className="mt-2 h-4 w-24" />
+                <div className="mt-2 h-4 w-24 rounded bg-gray-200 animate-pulse" />
               ) : (
                 <span className="mt-2 block text-sm text-[#6247aa]">
                   {items.length} {items.length === 1 ? "resource" : "resources"}
@@ -78,7 +77,11 @@ export function ListPage({
           }
           actions={
             <div className="flex gap-2">
-              <Suspense fallback={<Skeleton className="h-[38px] w-[130px]" />}>
+              <Suspense
+                fallback={
+                  <div className="h-[38px] w-[130px] rounded bg-gray-200 animate-pulse" />
+                }
+              >
                 <CreateResourceDialog projectId={project.id} listId={list.id} />
               </Suspense>
               <Button
@@ -88,7 +91,11 @@ export function ListPage({
               >
                 Sort
               </Button>
-              <Suspense fallback={<Skeleton className="h-[38px] w-[80px]" />}>
+              <Suspense
+                fallback={
+                  <div className="h-[38px] w-[80px] rounded bg-gray-200 animate-pulse" />
+                }
+              >
                 <EditListDialog list={list}>
                   <Button
                     variant="outline"
@@ -126,7 +133,11 @@ export function ListPage({
       </div>
       <div className="mt-3 max-w-4xl">
         {isLoading ? (
-          <ListSkeleton />
+          <div className="flex flex-col">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} name="resource-card" loading />
+            ))}
+          </div>
         ) : items.length ? (
           items.map((item, index) => (
             <ResourceCard key={item.id} resource={item} index={index} />
@@ -138,7 +149,7 @@ export function ListPage({
             action={
               <Suspense
                 fallback={
-                  <Skeleton className="h-[38px] w-[130px] mx-auto mt-4" />
+                  <div className="h-[38px] w-[130px] mx-auto mt-4 rounded bg-gray-200 animate-pulse" />
                 }
               >
                 <CreateResourceDialog projectId={project.id} listId={list.id} />
