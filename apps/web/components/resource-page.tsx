@@ -28,6 +28,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { PageBreadcrumb } from "@/components/ui/page-breadcrumb";
 
 const EditResourceDialog = React.lazy(() =>
   import("@/components/resources/resource-dialog").then((mod) => ({

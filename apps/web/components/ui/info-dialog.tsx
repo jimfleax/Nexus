@@ -70,7 +70,7 @@ export function InfoDialog({ open, onOpenChange, type, id }: InfoDialogProps) {
               {info.type === "resource" && (
                 <>
                   <span className="font-semibold text-[#6247aa]">Type:</span>
-                  <span>{capitalizeType(info.resourceType)}</span>
+                  <span>{capitalizeType(info.resourceType as string)}</span>
 
                   {info.size !== undefined && (
                     <>

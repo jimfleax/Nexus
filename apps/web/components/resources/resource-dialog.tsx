@@ -81,7 +81,7 @@ export function ResourceDialog({
   const activeProjectId = initialProjectId || selectedProjectId;
 
   const { data: availableLists = [] } = useLists(
-    activeProjectId || resource?.projectId,
+    activeProjectId || resource?.projectId || "",
   );
   const [selectedListId, setSelectedListId] = useState("");
   const activeListId = initialListId || selectedListId;
@@ -319,14 +319,12 @@ export function ResourceDialog({
               <FormField label="Upload File" htmlFor="resource-file">
                 <FilePicker
                   accept={type === "pdf" ? ".pdf" : "image/*"}
-                  maxSizeMb={5}
-                  value={file}
-                  onChange={(newFile) => {
+                  file={file}
+                  onFileSelect={(newFile: File | null) => {
                     setFile(newFile);
                     if (newFile && !title)
                       setTitle(formatFilenameToTitle(newFile.name));
                   }}
-                  compact
                 />
               </FormField>
             )}

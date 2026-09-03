@@ -64,7 +64,6 @@ export function ResourceCard({
       resourceId: resource.id,
       input: { title },
     });
-    setRenameOpen(false);
   };
 
   const handleDelete = () => {

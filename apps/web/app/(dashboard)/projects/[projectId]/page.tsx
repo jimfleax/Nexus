@@ -27,7 +27,9 @@ export default function Page() {
         </div>
         <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} name="project-list-card" loading />
+            <Skeleton key={i} name="project-list-card" loading>
+              {null}
+            </Skeleton>
           ))}
         </div>
       </div>

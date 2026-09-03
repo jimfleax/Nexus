@@ -21,6 +21,9 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { PageBreadcrumb } from "@/components/ui/page-breadcrumb";
+import { PageHeader } from "@/components/ui/page-header";
+import { projectUrl } from "@/lib/urls";
 
 const CreateResourceDialog = React.lazy(() =>
   import("@/components/resources/resource-dialog").then((mod) => ({
@@ -135,7 +138,9 @@ export function ListPage({
         {isLoading ? (
           <div className="flex flex-col">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} name="resource-card" loading />
+              <Skeleton key={i} name="resource-card" loading>
+                {null}
+              </Skeleton>
             ))}
           </div>
         ) : items.length ? (

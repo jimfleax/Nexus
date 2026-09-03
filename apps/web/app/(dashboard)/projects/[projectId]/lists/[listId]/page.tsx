@@ -33,7 +33,9 @@ export default function Page() {
         </div>
         <div className="flex flex-col border-y border-[#dec9e9]">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} name="resource-card" loading />
+            <Skeleton key={i} name="resource-card" loading>
+              {null}
+            </Skeleton>
           ))}
         </div>
       </div>

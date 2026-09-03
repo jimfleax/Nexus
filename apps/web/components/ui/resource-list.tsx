@@ -36,7 +36,9 @@ export function ResourceList({
       {isLoading ? (
         <div className="flex flex-col border-y border-[#dec9e9]">
           {Array.from({ length: skeletonCount }).map((_, i) => (
-            <Skeleton key={i} name="resource-card" loading />
+            <Skeleton key={i} name="resource-card" loading>
+              {null}
+            </Skeleton>
           ))}
         </div>
       ) : items.length > 0 ? (

@@ -38,7 +38,11 @@ import { RESOURCE_LABELS, RESOURCE_COLORS } from "@/lib/resource-meta";
  * @desc    Skeleton fallback while metrics load
  */
 function MetricSkeleton() {
-  return <Skeleton name="profile-metrics" />;
+  return (
+    <Skeleton name="profile-metrics" loading={true}>
+      {null}
+    </Skeleton>
+  );
 }
 
 /**

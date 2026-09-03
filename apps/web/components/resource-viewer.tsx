@@ -72,7 +72,7 @@ export function ResourceViewer({ resource }: { resource: Resource }) {
         (resource.driveFileId
           ? `/api/v1/resources/${resource.id}/file`
           : undefined);
-      content = <PdfViewer resource={resource} url={pdfUrl} />;
+      content = <PdfViewer title={resource.title} url={pdfUrl} />;
       break;
     }
     case "image":
@@ -82,7 +82,12 @@ export function ResourceViewer({ resource }: { resource: Resource }) {
       content = <WebResourceViewer resource={resource} />;
       break;
     case "chat":
-      content = <ChatViewer resource={resource} />;
+      content = (
+        <ChatViewer
+          title={resource.title}
+          content={(resource as any).content}
+        />
+      );
       break;
     case "text":
     case "note":

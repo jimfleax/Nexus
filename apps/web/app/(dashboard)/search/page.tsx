@@ -98,7 +98,9 @@ export default function Search({
       {loading && (
         <div className="mt-4 max-w-3xl divide-y divide-[#dec9e9] flex flex-col gap-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} name="search-result" />
+            <Skeleton key={i} name="search-result" loading={true}>
+              {null}
+            </Skeleton>
           ))}
         </div>
       )}

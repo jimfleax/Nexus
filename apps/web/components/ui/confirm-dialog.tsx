@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useControllableOpen } from "@/hooks/use-controllable-open";
 
 interface ConfirmDialogProps {
   trigger?: React.ReactElement;

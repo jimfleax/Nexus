@@ -34,7 +34,7 @@ export function EntityContextMenu({
   rename,
   deleteDialog,
   info,
-  editDialogTrigger,
+  editDialog,
 }: {
   children: React.ReactNode;
   entityKind: "project" | "list" | "resource";
@@ -79,10 +79,10 @@ export function EntityContextMenu({
   return (
     <>
       <ContextMenu>
-        <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+        <ContextMenuTrigger>{children}</ContextMenuTrigger>
         <ContextMenuContent className="w-48 border-[#dec9e9] bg-white text-[#6247aa] shadow-lg shadow-[#dac3e8]/20">
           {(openHref || onOpen) && (
-            <ContextMenuItem asChild>
+            <ContextMenuItem>
               {openHref ? (
                 <Link
                   href={openHref}
@@ -102,7 +102,7 @@ export function EntityContextMenu({
           )}
 
           {openHref && entityKind === "resource" && (
-            <ContextMenuItem asChild>
+            <ContextMenuItem>
               <Link
                 href={openHref}
                 target="_blank"
@@ -207,8 +207,8 @@ export function EntityContextMenu({
         <InfoDialog
           open={infoOpen}
           onOpenChange={setInfoOpen}
-          entityId={info.id}
-          entityType={info.type || entityKind}
+          id={info.id}
+          type={(info.type || entityKind) as "project" | "list" | "resource"}
         />
       )}
     </>

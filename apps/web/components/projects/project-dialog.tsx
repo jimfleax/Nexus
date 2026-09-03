@@ -117,7 +117,7 @@ export function ProjectDialog({
       router.push(projectUrl(created.id));
     } else if (mode === "edit" && project) {
       await updateProject({
-        projectId: project.id,
+        id: project.id,
         input: { name, description, icon },
       });
       setOpen(false);

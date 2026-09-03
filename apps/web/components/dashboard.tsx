@@ -87,7 +87,9 @@ export function Dashboard() {
             {projectsLoading ? (
               <div className="gap-3 md:grid-cols-3 grid">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} name="project-card" />
+                  <Skeleton key={i} name="project-card" loading={true}>
+                    {null}
+                  </Skeleton>
                 ))}
               </div>
             ) : (
@@ -123,7 +125,9 @@ export function Dashboard() {
           {recentLoading ? (
             <div className="flex flex-col gap-2">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} name="resource-card" />
+                <Skeleton key={i} name="resource-card" loading={true}>
+                  {null}
+                </Skeleton>
               ))}
             </div>
           ) : recentResources.length ? (

@@ -81,7 +81,9 @@ export default function ProjectsPage() {
       {isLoading ? (
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} name="project-card" />
+            <Skeleton key={i} name="project-card" loading={true}>
+              {null}
+            </Skeleton>
           ))}
         </div>
       ) : projects.length === 0 ? (
