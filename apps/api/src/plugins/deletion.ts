@@ -35,17 +35,25 @@ export const deletionPlugin = fp(
        * @returns {Promise<void>} Resolves when everything is deleted
        */
       async deleteProject(projectId, ownerId) {
-        const resources = await ResourceModel.find({ projectId }).select(
-          "driveFileId",
-        );
+        // Scope to owner before reading Drive IDs — sessions bypass the tenant plugin
+        const resources = await ResourceModel.find({
+          projectId,
+          ownerId,
+        }).select("driveFileId");
         const driveFileIds = resources
           .map((r) => r.driveFileId)
           .filter(Boolean) as string[];
 
         await withTransaction(async (session) => {
-          await ResourceModel.deleteMany({ projectId }, { session });
-          await KnowledgeListModel.deleteMany({ projectId }, { session });
-          await ProjectModel.deleteOne({ _id: projectId }, { session });
+          await ResourceModel.deleteMany({ projectId, ownerId }, { session });
+          await KnowledgeListModel.deleteMany(
+            { projectId, ownerId },
+            { session },
+          );
+          await ProjectModel.deleteOne(
+            { _id: projectId, ownerId },
+            { session },
+          );
         });
 
         if (driveFileIds.length > 0) {
@@ -59,16 +67,21 @@ export const deletionPlugin = fp(
        * @returns {Promise<void>} Resolves when everything is deleted
        */
       async deleteList(listId, ownerId) {
-        const resources = await ResourceModel.find({ listId }).select(
-          "driveFileId",
-        );
+        // Scope to owner before reading Drive IDs — sessions bypass the tenant plugin
+        const resources = await ResourceModel.find({
+          listId,
+          ownerId,
+        }).select("driveFileId");
         const driveFileIds = resources
           .map((r) => r.driveFileId)
           .filter(Boolean) as string[];
 
         await withTransaction(async (session) => {
-          await ResourceModel.deleteMany({ listId }, { session });
-          await KnowledgeListModel.deleteOne({ _id: listId }, { session });
+          await ResourceModel.deleteMany({ listId, ownerId }, { session });
+          await KnowledgeListModel.deleteOne(
+            { _id: listId, ownerId },
+            { session },
+          );
         });
 
         if (driveFileIds.length > 0) {
@@ -82,11 +95,18 @@ export const deletionPlugin = fp(
        * @returns {Promise<void>} Resolves when the resource is deleted
        */
       async deleteResource(resourceId, ownerId) {
-        const resource = await ResourceModel.findById(resourceId);
+        // Scope findById with ownerId to prevent cross-tenant lookup in sessions
+        const resource = await ResourceModel.findOne({
+          _id: resourceId,
+          ownerId,
+        });
         if (!resource) return;
 
         await withTransaction(async (session) => {
-          await ResourceModel.deleteOne({ _id: resourceId }, { session });
+          await ResourceModel.deleteOne(
+            { _id: resourceId, ownerId },
+            { session },
+          );
         });
 
         if (resource.driveFileId) {

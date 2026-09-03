@@ -41,7 +41,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     async (request, reply) => {
       const { q, projectId } = request.query;
-      const ownerId = (request as any).ownerId;
+      const ownerId = request.ownerId;
 
       const filter: any = {
         ...scopeFilter(ownerId, projectId),
@@ -86,7 +86,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     async (request, reply) => {
       const { q, projectId } = request.query;
-      const ownerId = (request as any).ownerId;
+      const ownerId = request.ownerId;
 
       const filter: any = {
         ...scopeFilter(ownerId, projectId),
@@ -116,7 +116,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     async (request, reply) => {
       const { projectId } = request.query;
-      const ownerId = (request as any).ownerId;
+      const ownerId = request.ownerId;
 
       const filter: any = {
         ...scopeFilter(ownerId, projectId),
@@ -146,7 +146,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
     },
     async (request, reply) => {
       const { projectId } = request.query;
-      const ownerId = (request as any).ownerId;
+      const ownerId = request.ownerId;
 
       const filter: any = {
         ...scopeFilter(ownerId, projectId),
