@@ -46,19 +46,28 @@ export function ReaderSettingsProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [readerSettings, setReaderSettings] = useState<ReaderSettings>(() => {
-    if (typeof window === "undefined") return defaultReaderSettings;
-    try {
-      const saved = localStorage.getItem("nexus-reader-settings");
-      return saved
-        ? { ...defaultReaderSettings, ...(JSON.parse(saved) as ReaderSettings) }
-        : defaultReaderSettings;
-    } catch {
-      return defaultReaderSettings;
-    }
-  });
+  const [readerSettings, setReaderSettings] = useState<ReaderSettings>(
+    defaultReaderSettings,
+  );
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    try {
+      const saved = localStorage.getItem("nexus-reader-settings");
+      if (saved) {
+        setReaderSettings({
+          ...defaultReaderSettings,
+          ...(JSON.parse(saved) as ReaderSettings),
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
     const root = document.documentElement;
     root.dataset.readerFont = readerSettings.font;
     root.style.setProperty(
@@ -69,11 +78,18 @@ export function ReaderSettingsProvider({
       "--reader-line-height",
       String(readerSettings.lineHeight),
     );
+
+    const widthMap = { narrow: "60ch", standard: "70ch", wide: "85ch" };
+    root.style.setProperty(
+      "--reader-max-width",
+      widthMap[readerSettings.width] || "70ch",
+    );
+
     localStorage.setItem(
       "nexus-reader-settings",
       JSON.stringify(readerSettings),
     );
-  }, [readerSettings]);
+  }, [readerSettings, isMounted]);
 
   return (
     <ReaderSettingsContext.Provider
