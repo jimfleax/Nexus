@@ -30,6 +30,8 @@ import { errorHandlerPlugin } from "./plugins/errorHandler.js";
 
 import { infoRoutes } from "./routes/info.js";
 
+import { gcPlugin } from "./plugins/gc.js";
+
 const fastify = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 
 fastify.setValidatorCompiler(validatorCompiler);
@@ -44,6 +46,7 @@ fastify.register(storagePlugin, {
   clientSecret: process.env.AUTH_GOOGLE_SECRET,
 });
 fastify.register(deletionPlugin);
+fastify.register(gcPlugin, { intervalMs: 15 * 60 * 1000 });
 
 // Auth routes remain public because authPlugin skips URLs beginning with /api/auth/, not because of registration order
 fastify.register(authRoutes);
@@ -57,13 +60,11 @@ fastify.register(searchRoutes);
 fastify.register(infoRoutes);
 
 /**
- * @desc    Liveness probe that reports API health and asynchronously triggers a garbage-collection sweep of stale resources
+ * @desc    Liveness probe that reports API health
  * @route   GET /health
  * @access  Public
  */
 fastify.get("/health", async (_request, _reply) => {
-  // Trigger asynchronously
-  runGarbageCollection().catch((err) => fastify.log.error(err, "GC failed"));
   return { ok: true, version: "0.1.0" };
 });
 

@@ -17,7 +17,12 @@ export class FakeStorageAdapter implements IStorageAdapter {
 
   async uploadFile(
     ownerId: string,
-    metadata: { title: string; mimeType: string },
+    metadata: {
+      title: string;
+      mimeType: string;
+      projectId?: string;
+      listId?: string;
+    },
     fileStream: Readable,
   ): Promise<{ driveFileId: string; size: number }> {
     // Consume the stream to calculate size
@@ -38,7 +43,12 @@ export class FakeStorageAdapter implements IStorageAdapter {
    */
   async initializeUpload(
     ownerId: string,
-    metadata: { title: string; mimeType: string },
+    metadata: {
+      title: string;
+      mimeType: string;
+      projectId?: string;
+      listId?: string;
+    },
   ): Promise<string> {
     const uploadUri = `https://fake-storage.nexus.local/upload/${Math.random().toString(36).substring(7)}`;
     this.uploads.set(uploadUri, metadata);

@@ -183,6 +183,8 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           {
             title: body.title,
             mimeType: mType,
+            projectId: body.projectId,
+            listId: body.listId,
           },
           fileStream,
         );

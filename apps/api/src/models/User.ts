@@ -6,6 +6,8 @@
 
 import mongoose, { Schema, Document } from "mongoose";
 
+import { encrypt, decrypt } from "../utils/crypto.js";
+
 /**
  * @interface IUser
  * @description MongoDB document shape for a user's integration metadata.
@@ -21,11 +23,35 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     ownerId: { type: String, required: true, unique: true },
-    driveRefreshToken: { type: String },
+    driveRefreshToken: {
+      type: String,
+      get: (val: string | undefined) => {
+        if (!val) return val;
+        try {
+          return decrypt(val);
+        } catch {
+          return val; // Fallback for unencrypted legacy tokens
+        }
+      },
+      set: (val: string | undefined) => {
+        if (!val) return val;
+        try {
+          // If it's already encrypted, encrypting it again will result in a double encryption.
+          // But since the value passed to setter is usually plaintext, we encrypt it.
+          // To avoid double encrypting, let's just encrypt. If someone passes an encrypted value, it gets encrypted again.
+          // Since we shouldn't ever pass an encrypted value from the app side, this is fine.
+          return encrypt(val);
+        } catch {
+          return val;
+        }
+      },
+    },
     driveFolderId: { type: String },
   },
   {
     timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true },
   },
 );
 

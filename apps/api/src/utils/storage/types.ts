@@ -22,12 +22,22 @@ import type { Readable } from "stream";
 export interface IStorageAdapter {
   uploadFile(
     ownerId: string,
-    metadata: { title: string; mimeType: string },
+    metadata: {
+      title: string;
+      mimeType: string;
+      projectId?: string;
+      listId?: string;
+    },
     fileStream: Readable,
   ): Promise<{ driveFileId: string; size: number }>;
   initializeUpload(
     ownerId: string,
-    metadata: { title: string; mimeType: string },
+    metadata: {
+      title: string;
+      mimeType: string;
+      projectId?: string;
+      listId?: string;
+    },
   ): Promise<string>;
   deleteFiles(ownerId: string, fileIds: string[]): Promise<void>;
   getQuota(ownerId: string): Promise<StorageQuota | null>;

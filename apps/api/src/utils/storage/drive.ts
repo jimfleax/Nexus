@@ -94,14 +94,63 @@ export class DriveStorageAdapter implements IStorageAdapter {
     return folderId;
   }
 
+  private async getOrCreateSubfolder(
+    drive: ReturnType<typeof google.drive>,
+    name: string,
+    parentId: string,
+  ): Promise<string> {
+    const query = `name = '${name}' and '${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+    const searchRes = await drive.files.list({
+      q: query,
+      spaces: "drive",
+      fields: "files(id)",
+    });
+
+    if (searchRes.data.files && searchRes.data.files.length > 0) {
+      return searchRes.data.files[0].id!;
+    }
+
+    const createRes = await drive.files.create({
+      requestBody: {
+        name,
+        mimeType: "application/vnd.google-apps.folder",
+        parents: [parentId],
+      },
+      fields: "id",
+    });
+
+    return createRes.data.id!;
+  }
+
   async uploadFile(
     ownerId: string,
-    metadata: { title: string; mimeType: string },
+    metadata: {
+      title: string;
+      mimeType: string;
+      projectId?: string;
+      listId?: string;
+    },
     fileStream: import("stream").Readable,
   ): Promise<{ driveFileId: string; size: number }> {
     try {
       const { drive, user } = await this.getDrive(ownerId);
-      const folderId = await this.ensureDriveFolder(drive, user);
+      let folderId = await this.ensureDriveFolder(drive, user);
+
+      if (folderId && metadata.projectId) {
+        folderId = await this.getOrCreateSubfolder(
+          drive,
+          metadata.projectId,
+          folderId,
+        );
+        if (metadata.listId) {
+          folderId = await this.getOrCreateSubfolder(
+            drive,
+            metadata.listId,
+            folderId,
+          );
+        }
+      }
+
       const parents = folderId ? [folderId] : undefined;
 
       const res = await drive.files.create({
@@ -139,7 +188,12 @@ export class DriveStorageAdapter implements IStorageAdapter {
    */
   async initializeUpload(
     ownerId: string,
-    metadata: { title: string; mimeType: string },
+    metadata: {
+      title: string;
+      mimeType: string;
+      projectId?: string;
+      listId?: string;
+    },
   ): Promise<string> {
     try {
       const { drive, user, oauth2Client } = await this.getDrive(ownerId);
@@ -147,7 +201,22 @@ export class DriveStorageAdapter implements IStorageAdapter {
       const accessTokenRes = await oauth2Client.getAccessToken();
       const accessToken = accessTokenRes.token;
 
-      const folderId = await this.ensureDriveFolder(drive, user);
+      let folderId = await this.ensureDriveFolder(drive, user);
+
+      if (folderId && metadata.projectId) {
+        folderId = await this.getOrCreateSubfolder(
+          drive,
+          metadata.projectId,
+          folderId,
+        );
+        if (metadata.listId) {
+          folderId = await this.getOrCreateSubfolder(
+            drive,
+            metadata.listId,
+            folderId,
+          );
+        }
+      }
       const parents = folderId ? [folderId] : undefined;
 
       const driveRes = await fetch(

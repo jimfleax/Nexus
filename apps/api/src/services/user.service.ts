@@ -160,18 +160,25 @@ export async function getMetrics(
     remaining: null,
   };
   try {
-    const quota = await storage.getQuota(ownerId);
-    if (quota) {
-      drive = {
-        connected: true,
-        usedInDrive: quota.usedInDrive,
-        limit: quota.limit,
-        remaining:
-          quota.limit === null ? null : quota.limit - quota.usedInDrive,
-      };
+    // Determine connected status from the user record directly —
+    // getQuota returns null on unlimited accounts (Google Workspace)
+    // which would incorrectly show "not connected".
+    const user = await UserModel.findOne({ ownerId });
+    const isConnected = !!user?.driveRefreshToken;
+
+    if (isConnected) {
+      drive.connected = true;
+      // Try to get quota numbers (may be null for unlimited accounts — that's fine)
+      const quota = await storage.getQuota(ownerId);
+      if (quota) {
+        drive.usedInDrive = quota.usedInDrive;
+        drive.limit = quota.limit;
+        drive.remaining =
+          quota.limit === null ? null : quota.limit - quota.usedInDrive;
+      }
     }
   } catch (err: any) {
-    console.error(`Failed to fetch drive quota for ${ownerId}:`, err.message);
+    console.error(`Failed to fetch drive metrics for ${ownerId}:`, err.message);
   }
 
   return {

@@ -22,7 +22,7 @@ Welcome to Nexus ("we," "our," or "us"). We are committed to protecting your pri
 ## 1. Information We Collect
 
 ### Personal Information
-When you sign in using third-party authentication providers (such as Google or GitHub), we collect basic profile information provided by these services, which may include your name, email address, and profile picture.
+When you sign in using third-party authentication providers, we collect basic profile information provided by these services, which may include your name, email address, and profile picture.
 
 ### Usage Data
 We collect information about how you interact with Nexus, such as the projects, lists, and resources you create, modify, or delete, to provide you with a seamless and reliable experience.
@@ -42,7 +42,7 @@ Your data is stored securely using industry-standard encryption and security pra
 
 ## 4. Third-Party Services
 
-We use third-party services, such as Google and GitHub for authentication. These third parties have their own privacy policies governing the use of your information. We encourage you to review their privacy practices.
+We use third-party services, such as Google for authentication. These third parties have their own privacy policies governing the use of your information. We encourage you to review their privacy practices.
 
 ## 5. Changes to This Privacy Policy
 

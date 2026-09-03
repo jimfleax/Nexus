@@ -5,36 +5,29 @@ import {
   beforeAll,
   afterAll,
   beforeEach,
-  vi,
   afterEach,
+  vi,
 } from "vitest";
 import Fastify from "fastify";
-import { authRoutes } from "../src/routes/auth.js";
 import { authPlugin } from "../src/auth.js";
-import { connectDB } from "../src/db.js";
+import { authRoutes } from "../src/routes/auth.js";
 import { UserModel } from "../src/models/User.js";
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import {
-  validatorCompiler,
-  serializerCompiler,
-  ZodTypeProvider,
-} from "fastify-type-provider-zod";
+import { connectDB } from "../src/db.js";
 
+const fetchMock = vi.fn();
 const originalFetch = global.fetch;
-let fetchMock = vi.fn();
-global.fetch = fetchMock as any;
 
 let mongoServer: MongoMemoryServer;
-let app: ReturnType<typeof Fastify>;
+let app: any;
 
 beforeAll(async () => {
+  global.fetch = fetchMock;
   mongoServer = await MongoMemoryServer.create();
   await connectDB(mongoServer.getUri());
 
-  app = Fastify().withTypeProvider<ZodTypeProvider>();
-  app.setValidatorCompiler(validatorCompiler);
-  app.setSerializerCompiler(serializerCompiler);
+  app = Fastify();
   app.register(authPlugin);
   app.register(authRoutes);
   await app.ready();
@@ -55,8 +48,6 @@ beforeEach(async () => {
   vi.stubEnv("AUTH_SECRET", "test-secret-12345678901234567890");
   vi.stubEnv("AUTH_GOOGLE_ID", "google-id");
   vi.stubEnv("AUTH_GOOGLE_SECRET", "google-secret");
-  vi.stubEnv("AUTH_GITHUB_ID", "github-id");
-  vi.stubEnv("AUTH_GITHUB_SECRET", "github-secret");
   vi.stubEnv("FRONTEND_URL", "http://localhost:3000");
 });
 
@@ -64,7 +55,6 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-// Helper for standard happy mock
 const setupHappyGoogleMock = () => {
   fetchMock.mockImplementation(async (url: any) => {
     const urlStr = url.toString();
@@ -79,37 +69,12 @@ const setupHappyGoogleMock = () => {
   });
 };
 
-const setupHappyGithubMock = () => {
-  fetchMock.mockImplementation(async (url: any) => {
-    const urlStr = url.toString();
-    if (urlStr.includes("access_token"))
-      return { ok: true, json: async () => ({ access_token: "at" }) };
-    if (urlStr.includes("user/emails"))
-      return {
-        ok: true,
-        json: async () => [
-          { email: "gh@example.com", primary: true, verified: true },
-        ],
-      };
-    if (urlStr.includes("user"))
-      return { ok: true, json: async () => ({ id: 123, login: "ghuser" }) };
-    return { ok: false };
-  });
-};
-
 describe("Initiate & callback validation failures", () => {
   it("returns 500 when Google unconfigured", async () => {
     vi.stubEnv("AUTH_GOOGLE_ID", ""); // Unset
     const res = await app.inject({ method: "GET", url: "/api/auth/google" });
     expect(res.statusCode).toBe(500);
     expect(res.json().error).toBe("Google OAuth not configured");
-  });
-
-  it("returns 500 when GitHub unconfigured", async () => {
-    vi.stubEnv("AUTH_GITHUB_ID", ""); // Unset
-    const res = await app.inject({ method: "GET", url: "/api/auth/github" });
-    expect(res.statusCode).toBe(500);
-    expect(res.json().error).toBe("GitHub OAuth not configured");
   });
 
   it("redirects auth_failed when callback missing code", async () => {
@@ -195,54 +160,6 @@ describe("OAuth provider fetch failures", () => {
     });
     expect(res.statusCode).toBe(302);
     expect(res.headers.location).toContain("auth_failed");
-  });
-
-  it("redirects auth_failed when GitHub token json has error or missing access_token", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ error: "bad" }),
-    });
-    const res1 = await app.inject({
-      method: "GET",
-      url: "/api/auth/callback/github?code=x&state=v",
-      headers: { cookie: "oauth_state=v" },
-    });
-    expect(res1.statusCode).toBe(302);
-    expect(res1.headers.location).toContain("auth_failed");
-
-    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({}) }); // no token
-    const res2 = await app.inject({
-      method: "GET",
-      url: "/api/auth/callback/github?code=x&state=v",
-      headers: { cookie: "oauth_state=v" },
-    });
-    expect(res2.headers.location).toContain("auth_failed");
-  });
-
-  it("GitHub email fallback failure is non-fatal", async () => {
-    fetchMock.mockImplementation(async (url: any) => {
-      const u = url.toString();
-      if (u.includes("access_token"))
-        return { ok: true, json: async () => ({ access_token: "at" }) };
-      if (u.includes("user/emails"))
-        return { ok: false, text: async () => "fail" }; // Emails fail
-      if (u.includes("user"))
-        return { ok: true, json: async () => ({ id: 123, login: "ghuser" }) }; // user success
-      return { ok: false };
-    });
-    const res = await app.inject({
-      method: "GET",
-      url: "/api/auth/callback/github?code=x&state=v",
-      headers: { cookie: "oauth_state=v" },
-    });
-    expect(res.statusCode).toBe(302);
-    expect(res.headers.location).toContain("sync?token="); // Success despite email fetch failure
-
-    // Verify user upserted with null email
-    const user = await UserModel.findOne({ ownerId: "github_123" }, null, {
-      skipTenant: true,
-    });
-    expect(user).toBeTruthy();
   });
 });
 

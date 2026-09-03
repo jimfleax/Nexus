@@ -21,7 +21,7 @@ Welcome to Nexus. By accessing or using our application, you agree to be bound b
 
 ## 1. Acceptance of Terms
 
-By creating an account, signing in via third-party providers (Google or GitHub), or using any part of the Nexus application, you agree to comply with and be bound by these Terms. If you do not agree to these Terms, you must not use our services.
+By creating an account, signing in via third-party providers, or using any part of the Nexus application, you agree to comply with and be bound by these Terms. If you do not agree to these Terms, you must not use our services.
 
 ## 2. Description of Service
 
@@ -29,7 +29,7 @@ Nexus provides a digital workspace for organizing research, knowledge lists, pro
 
 ## 3. User Accounts and Security
 
-- You must authenticate using a valid Google or GitHub account to use Nexus.
+- You must authenticate using a valid Google to use Nexus.
 - You are responsible for maintaining the security of your authentication credentials and your account.
 - You are fully responsible for all activities that occur under your account.
 

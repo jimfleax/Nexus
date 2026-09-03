@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
 interface OAuthSubmitButtonProps {
-  provider: "google" | "github";
+  provider: "google";
   children: React.ReactNode;
 }
 
@@ -23,13 +23,9 @@ export function OAuthSubmitButton({
     <Button
       type="submit"
       size="lg"
-      variant={provider === "google" ? "secondary" : "outline"}
+      variant="secondary"
       disabled={pending}
-      className={
-        provider === "google"
-          ? "w-full justify-center bg-white text-zinc-950 hover:bg-zinc-200"
-          : "w-full justify-center border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-      }
+      className="w-full justify-center bg-white text-zinc-950 hover:bg-zinc-200"
     >
       {pending && <Spinner className="mr-2 size-4" />}
       {children}
