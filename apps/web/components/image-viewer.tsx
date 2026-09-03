@@ -17,12 +17,16 @@ import { buttonVariants } from "@/components/ui/button";
  * @returns {JSX.Element} The image viewer
  */
 export function ImageViewer({ resource }: { resource: Resource }) {
-  if (!resource.url) {
+  const imageUrl =
+    resource.url ||
+    (resource.driveFileId ? `/api/resources/${resource.id}/file` : undefined);
+
+  if (!imageUrl) {
     return (
       <ViewerEmptyState
         icon={ImageBroken}
         title={resource.title}
-        message="Add an image URL to display this asset here."
+        message="Add an image URL or upload an image to display it here."
       />
     );
   }
@@ -34,7 +38,7 @@ export function ImageViewer({ resource }: { resource: Resource }) {
         actions={
           <a
             className={buttonVariants({ variant: "ghost", size: "sm" })}
-            href={resource.url!}
+            href={imageUrl}
             target="_blank"
             rel="noreferrer"
           >
@@ -46,7 +50,7 @@ export function ImageViewer({ resource }: { resource: Resource }) {
 
       <div className="grid min-h-[360px] place-items-center bg-[#dec9e9] p-6">
         <img
-          src={resource.url}
+          src={imageUrl}
           alt={resource.description || resource.title}
           className="max-h-[75vh] w-auto max-w-full rounded-md object-contain shadow-xs"
         />

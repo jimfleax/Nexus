@@ -70,7 +70,7 @@ export function ResourceViewer({ resource }: { resource: Resource }) {
       const pdfUrl =
         resource.url ||
         (resource.driveFileId
-          ? `/api/v1/resources/${resource.id}/file`
+          ? `/api/resources/${resource.id}/file`
           : undefined);
       content = <PdfViewer title={resource.title} url={pdfUrl} />;
       break;

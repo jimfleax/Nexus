@@ -96,9 +96,7 @@ export const apiClient = {
      * @returns {Promise<KnowledgeList>} The list
      */
     async get(projectId: string, listId: string): Promise<KnowledgeList> {
-      const { data } = await api.get<KnowledgeList>(
-        `/projects/${projectId}/lists/${listId}`,
-      );
+      const { data } = await api.get<KnowledgeList>(`/lists/${listId}`);
       return data;
     },
     /**
@@ -130,7 +128,7 @@ export const apiClient = {
       input: UpdateKnowledgeListInput,
     ): Promise<KnowledgeList> {
       const { data } = await api.patch<KnowledgeList>(
-        `/projects/${projectId}/lists/${listId}`,
+        `/lists/${listId}`,
         input,
       );
       return data;
@@ -142,7 +140,7 @@ export const apiClient = {
      * @returns {Promise<void>} Resolves when deleted
      */
     async delete(projectId: string, listId: string): Promise<void> {
-      await api.delete(`/projects/${projectId}/lists/${listId}`);
+      await api.delete(`/lists/${listId}`);
     },
     /**
      * @desc    Bulk-reorder lists within a project
@@ -154,7 +152,7 @@ export const apiClient = {
       projectId: string,
       input: ReorderKnowledgeListInput,
     ): Promise<void> {
-      await api.patch(`/projects/${projectId}/lists/reorder`, input);
+      await api.put(`/projects/${projectId}/lists/reorder`, input);
     },
   },
   /**
@@ -169,7 +167,8 @@ export const apiClient = {
      */
     async list(projectId: string, listId: string): Promise<Resource[]> {
       const { data } = await api.get<Resource[]>(
-        `/projects/${projectId}/lists/${listId}/resources`,
+        `/projects/${projectId}/resources`,
+        { params: { listId } },
       );
       return data;
     },
