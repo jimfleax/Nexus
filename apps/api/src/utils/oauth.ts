@@ -17,8 +17,10 @@ export const frontendUrl = () =>
  * @desc    Generate standard cookie options (HttpOnly, SameSite, Secure if HTTPS)
  * @returns {string} The cookie options string
  */
-export const cookieOptions = () =>
-  `HttpOnly; ${frontendUrl().startsWith("https://") ? "Secure; " : ""}SameSite=Lax; Path=/`;
+export const cookieOptions = () => {
+  const apiUrl = process.env.API_URL || "http://localhost:8080";
+  return `HttpOnly; ${apiUrl.startsWith("https://") ? "Secure; " : ""}SameSite=Lax; Path=/`;
+};
 
 /**
  * @desc    Generate a random 16-byte hex string for OAuth state validation

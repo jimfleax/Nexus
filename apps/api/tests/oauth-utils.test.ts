@@ -34,23 +34,23 @@ describe("oauth-utils", () => {
   });
 
   describe("cookieOptions", () => {
-    let origFrontendUrl: string | undefined;
+    let origApiUrl: string | undefined;
 
     beforeEach(() => {
-      origFrontendUrl = process.env.FRONTEND_URL;
+      origApiUrl = process.env.API_URL;
     });
 
     afterEach(() => {
-      process.env.FRONTEND_URL = origFrontendUrl;
+      process.env.API_URL = origApiUrl;
     });
 
     it("should include Secure flag if https", () => {
-      process.env.FRONTEND_URL = "https://example.com";
+      process.env.API_URL = "https://example.com";
       expect(cookieOptions()).toContain("Secure;");
     });
 
     it("should not include Secure flag if http", () => {
-      process.env.FRONTEND_URL = "http://localhost:3000";
+      process.env.API_URL = "http://localhost:8080";
       expect(cookieOptions()).not.toContain("Secure;");
     });
   });
