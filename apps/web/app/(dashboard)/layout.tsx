@@ -12,6 +12,8 @@ import { jwtVerify } from "jose";
 import { AppShell } from "@/components/layout/app-shell";
 import { Providers } from "@/components/providers";
 
+export const dynamic = "force-dynamic";
+
 /**
  * @desc    Verify the nexus-session JWT and return the decoded user payload, or null if invalid
  */
