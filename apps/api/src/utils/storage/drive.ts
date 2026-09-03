@@ -44,13 +44,15 @@ export class DriveStorageAdapter implements IStorageAdapter {
     };
   }
 
+  private folderLocks = new Map<string, Promise<string | null>>();
+
   /**
    * @desc    Resolve or create the user's shared "Nexus" Drive folder
    * @param   {object} drive - An authenticated Drive v3 client
    * @param   {object} user - The user document storing the folder reference
    * @returns {Promise<string|null>} The Drive folder ID, or null if unavailable
    */
-  private async ensureDriveFolder(
+  private async ensureDriveFolderInternal(
     drive: ReturnType<typeof google.drive>,
     user: any,
   ): Promise<string | null> {
@@ -94,6 +96,23 @@ export class DriveStorageAdapter implements IStorageAdapter {
     return folderId;
   }
 
+  private async ensureDriveFolder(
+    drive: ReturnType<typeof google.drive>,
+    user: any,
+  ): Promise<string | null> {
+    const ownerId = user.ownerId;
+    if (this.folderLocks.has(ownerId)) {
+      return this.folderLocks.get(ownerId)!;
+    }
+
+    const promise = this.ensureDriveFolderInternal(drive, user).finally(() => {
+      this.folderLocks.delete(ownerId);
+    });
+
+    this.folderLocks.set(ownerId, promise);
+    return promise;
+  }
+
   private async getOrCreateSubfolder(
     drive: ReturnType<typeof google.drive>,
     name: string,
@@ -120,6 +139,19 @@ export class DriveStorageAdapter implements IStorageAdapter {
     });
 
     return createRes.data.id!;
+  }
+
+  private async handleDriveError(err: any, ownerId: string) {
+    const message = err?.message?.toLowerCase() || "";
+    const status = err?.response?.status || err?.status;
+
+    if (status === 401 || message.includes("invalid_grant")) {
+      const user = await UserModel.findOne({ ownerId });
+      if (user && user.driveRefreshToken) {
+        user.driveRefreshToken = undefined;
+        await user.save();
+      }
+    }
   }
 
   async uploadFile(
@@ -175,6 +207,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
         size: res.data.size ? parseInt(res.data.size, 10) : 0,
       };
     } catch (err: any) {
+      await this.handleDriveError(err, ownerId);
       if (err instanceof StorageError) throw err;
       throw new StorageError(err.message || "Failed to upload file", err);
     }
@@ -249,6 +282,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
 
       return uploadUri;
     } catch (err: any) {
+      await this.handleDriveError(err, ownerId);
       if (err instanceof StorageError) throw err;
       throw new StorageError(
         err.message || "Failed to initialize storage",
@@ -271,6 +305,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
       const res = await this.getDrive(ownerId);
       drive = res.drive;
     } catch (err) {
+      await this.handleDriveError(err, ownerId);
       console.warn(
         `User ${ownerId} has no drive credentials, cannot delete files`,
       );
@@ -282,6 +317,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
       try {
         await drive.files.delete({ fileId });
       } catch (err: any) {
+        await this.handleDriveError(err, ownerId);
         console.error(`Failed to delete drive file ${fileId}:`, err.message);
       }
     }
@@ -310,6 +346,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
         limit: quota.limit != null ? Number(quota.limit) : null,
       };
     } catch (err) {
+      await this.handleDriveError(err, ownerId);
       return null;
     }
   }

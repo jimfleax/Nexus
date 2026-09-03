@@ -29,19 +29,27 @@ const UserSchema = new Schema<IUser>(
         if (!val) return val;
         try {
           return decrypt(val);
-        } catch {
+        } catch (err: any) {
+          if (
+            err.message ===
+            "TOKEN_ENCRYPTION_KEY must be defined in the environment"
+          ) {
+            throw err;
+          }
           return val; // Fallback for unencrypted legacy tokens
         }
       },
       set: (val: string | undefined) => {
         if (!val) return val;
         try {
-          // If it's already encrypted, encrypting it again will result in a double encryption.
-          // But since the value passed to setter is usually plaintext, we encrypt it.
-          // To avoid double encrypting, let's just encrypt. If someone passes an encrypted value, it gets encrypted again.
-          // Since we shouldn't ever pass an encrypted value from the app side, this is fine.
           return encrypt(val);
-        } catch {
+        } catch (err: any) {
+          if (
+            err.message ===
+            "TOKEN_ENCRYPTION_KEY must be defined in the environment"
+          ) {
+            throw err;
+          }
           return val;
         }
       },

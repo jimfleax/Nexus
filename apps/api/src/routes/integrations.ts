@@ -99,4 +99,29 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
       }
     },
   );
+  fastify.post(
+    "/api/integrations/google-drive/disconnect",
+    async (request: any, reply) => {
+      const { UserModel } = await import("../models/User.js");
+      const { buildOAuthClient } = await import("../utils/google/oauth.js");
+
+      const user = await UserModel.findOne({ ownerId: request.ownerId });
+      if (user?.driveRefreshToken) {
+        try {
+          const oauth2Client = buildOAuthClient(user.driveRefreshToken);
+          await oauth2Client.revokeToken(user.driveRefreshToken);
+        } catch (err) {
+          request.log.warn(
+            err,
+            "Failed to revoke token on Google side; proceeding to clear local token.",
+          );
+        }
+
+        user.driveRefreshToken = undefined;
+        await user.save();
+      }
+
+      return reply.send({ success: true });
+    },
+  );
 });

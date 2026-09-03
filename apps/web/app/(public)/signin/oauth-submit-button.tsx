@@ -13,10 +13,7 @@ interface OAuthSubmitButtonProps {
   children: React.ReactNode;
 }
 
-export function OAuthSubmitButton({
-  provider,
-  children,
-}: OAuthSubmitButtonProps) {
+export function OAuthSubmitButton({ children }: OAuthSubmitButtonProps) {
   const { pending } = useFormStatus();
 
   return (

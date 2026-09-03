@@ -300,6 +300,13 @@ export const apiClient = {
       const { data } = await api.get<UserMetricsDto>("/user/metrics");
       return data;
     },
+    /**
+     * @desc    Disconnect Google Drive integration
+     * @returns {Promise<void>} Resolves when disconnected
+     */
+    async disconnectDrive(): Promise<void> {
+      await api.post("/integrations/google-drive/disconnect");
+    },
   },
   /**
    * @description Info endpoints.

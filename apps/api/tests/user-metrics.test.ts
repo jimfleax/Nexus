@@ -187,6 +187,13 @@ describe("GET /api/user/metrics", () => {
     expect(data.drive.usedInDrive).toBeNull();
     expect(data.drive.limit).toBeNull();
     expect(data.drive.remaining).toBeNull();
+
+    // Restore for subsequent tests
+    await UserModel.updateOne(
+      { ownerId: "test-user-1" },
+      { $set: { driveRefreshToken: "token-1" } },
+      { skipTenant: true } as any,
+    );
   });
 
   it("treats an unlimited drive quota (null limit) with remaining as null", async () => {

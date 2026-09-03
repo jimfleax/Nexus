@@ -29,9 +29,10 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "boneyard-js/react";
 import { Button } from "@/components/ui/button";
 import { cn, formatBytes } from "@/lib/utils";
-import { useUserMetrics } from "@/hooks/use-user-metrics";
+import { useUserMetrics, metricsKeys } from "@/hooks/use-user-metrics";
 import { signOut } from "@/lib/auth";
-import {} from "sonner";
+import { apiClient } from "@/lib/api-client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RESOURCE_LABELS, RESOURCE_COLORS } from "@/lib/resource-meta";
 
 /**
@@ -51,6 +52,14 @@ function MetricSkeleton() {
  */
 function MetricContent() {
   const { data } = useUserMetrics();
+  const queryClient = useQueryClient();
+
+  const disconnectMutation = useMutation({
+    mutationFn: () => apiClient.user.disconnectDrive(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: metricsKeys.all() });
+    },
+  });
 
   const totalByType = Object.values(data.byType).reduce((sum, n) => sum + n, 0);
 
@@ -63,9 +72,28 @@ function MetricContent() {
             <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#6247aa]">
               <CloudCheck className="size-3.5" /> Google Drive
             </span>
-            <span className="text-xs text-[#9163cb]">
-              {formatBytes(data.drive.usedInDrive)}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[#9163cb]">
+                {formatBytes(data.drive.usedInDrive)}
+              </span>
+              <ConfirmDialog
+                trigger={
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-[#a83232] hover:underline disabled:opacity-50"
+                    disabled={disconnectMutation.isPending}
+                  >
+                    Disconnect
+                  </button>
+                }
+                title="Disconnect Google Drive"
+                description="Are you sure you want to disconnect? Your files will remain in Drive, but Nexus won't be able to access them."
+                confirmText="Disconnect"
+                cancelText="Cancel"
+                isDestructive
+                onConfirm={() => disconnectMutation.mutate()}
+              />
+            </div>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#dec9e9]">
             <div
