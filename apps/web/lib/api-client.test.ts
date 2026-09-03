@@ -82,7 +82,7 @@ describe("apiClient.lists", () => {
   });
 
   it("create(projectId, input) should POST /projects/:projectId/lists", async () => {
-    const input = { name: "New List" } as any;
+    const input = { name: "New List" } as never;
     mockPost.mockResolvedValue({ data: { id: "l1", ...input } });
     const result = await apiClient.lists.create("proj-1", input);
     expect(mockPost).toHaveBeenCalledWith("/projects/proj-1/lists", input);
@@ -90,7 +90,7 @@ describe("apiClient.lists", () => {
   });
 
   it("update(projectId, listId, input) should PATCH", async () => {
-    const input = { name: "Updated List" } as any;
+    const input = { name: "Updated List" } as never;
     await apiClient.lists.update("proj-1", "list-1", input);
     expect(mockPatch).toHaveBeenCalledWith(
       "/projects/proj-1/lists/list-1",
@@ -134,7 +134,7 @@ describe("apiClient.resources", () => {
       title: "Test",
       type: "pdf" as const,
       file,
-    } as any;
+    } as never;
 
     mockPost.mockResolvedValue({ data: { id: "r1" } });
     await apiClient.resources.create("proj-1", "list-1", input);
@@ -149,7 +149,7 @@ describe("apiClient.resources", () => {
       title: "Note",
       type: "note" as const,
       content: "Hello",
-    } as any;
+    } as never;
 
     mockPost.mockResolvedValue({ data: { id: "r2" } });
     await apiClient.resources.create("proj-1", "list-1", input);
@@ -162,7 +162,7 @@ describe("apiClient.resources", () => {
   });
 
   it("update(resourceId, input) should PATCH /resources/:id", async () => {
-    const input = { title: "Updated" } as any;
+    const input = { title: "Updated" } as never;
     await apiClient.resources.update("res-1", input);
     expect(mockPatch).toHaveBeenCalledWith("/resources/res-1", input);
   });

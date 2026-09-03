@@ -1,0 +1,107 @@
+name: Web – CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/shared/**"
+      - "package-lock.json"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/shared/**"
+      - "package-lock.json"
+      - ".github/workflows/web-ci.yml"
+
+env:
+  # Provide fallback env vars so Next.js build doesn't fail on missing build-time variables
+  API_URL: http://localhost:8080
+  AUTH_SECRET: dummy-secret-for-ci
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────────
+  # 1. Lint
+  # ────────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint (Web)
+        run: npm run lint --workspace=apps/web
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # 2. Test
+  # ────────────────────────────────────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Tests (Web)
+        run: npm run test --workspace=apps/web
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # 3. Build (Next.js App)
+  # ────────────────────────────────────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Next.js Cache
+        uses: actions/cache@v4
+        with:
+          path: apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('apps/web/**.[jt]s', 'apps/web/**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared package
+        # Must build shared first so Next.js can resolve @nexus/shared types/schemas
+        run: npm run build --workspace=packages/shared --if-present
+
+      - name: Build Web (Next.js)
+        # Next.js build implicitly runs type checking (tsc) and generates the production bundle
+        run: npm run build --workspace=apps/web

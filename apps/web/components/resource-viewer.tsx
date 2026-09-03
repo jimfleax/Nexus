@@ -85,7 +85,7 @@ export function ResourceViewer({ resource }: { resource: Resource }) {
       content = (
         <ChatViewer
           title={resource.title}
-          content={(resource as any).content}
+          content={(resource as unknown as { content: string }).content}
         />
       );
       break;
