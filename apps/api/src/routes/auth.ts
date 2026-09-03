@@ -113,14 +113,16 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
 
     if (error || !code || !state) {
       fastify.log.warn({ error }, "Google OAuth error or missing code/state");
-      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
+      return reply.redirect(
+        `${frontendUrl()}/signin?error=auth_failed_missing_params`,
+      );
     }
 
     const stateCookie = getStateFromCookie(request, "oauth_state");
 
     if (!stateCookie || stateCookie !== state) {
       fastify.log.warn("Google OAuth state mismatch");
-      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
+      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed_state`);
     }
 
     clearStateCookie(reply, "oauth_state");
@@ -144,11 +146,13 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       });
 
       if (!tokenRes.ok) {
-        fastify.log.error(
+        fastify.log.warn(
           { status: tokenRes.status, body: await tokenRes.text() },
           "Google token exchange failed",
         );
-        return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
+        return reply.redirect(
+          `${frontendUrl()}/signin?error=auth_failed_token`,
+        );
       }
 
       const tokenData = (await tokenRes.json()) as {
@@ -162,11 +166,13 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       });
 
       if (!userRes.ok) {
-        fastify.log.error(
+        fastify.log.warn(
           { status: userRes.status },
           "Google userinfo fetch failed",
         );
-        return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
+        return reply.redirect(
+          `${frontendUrl()}/signin?error=auth_failed_userinfo`,
+        );
       }
 
       const profile = (await userRes.json()) as {
@@ -198,7 +204,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       return reply.redirect(`${frontendUrl()}/api/auth/sync?token=${jwt}`);
     } catch (err) {
       fastify.log.error(err, "Google OAuth callback error");
-      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed`);
+      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed_catch`);
     }
   });
 });
