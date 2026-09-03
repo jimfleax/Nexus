@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
   if (!token) {
     return NextResponse.redirect(
-      new URL("/signin?error=auth_failed", request.url),
+      new URL("/signin?error=auth_failed_sync", request.url),
     );
   }
 

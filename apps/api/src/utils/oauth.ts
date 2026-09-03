@@ -19,7 +19,7 @@ export const frontendUrl = () =>
  */
 export const cookieOptions = () => {
   const apiUrl = process.env.API_URL || "http://localhost:8080";
-  return `HttpOnly; ${apiUrl.startsWith("https://") ? "Secure; " : ""}SameSite=Lax; Path=/`;
+  return `HttpOnly; ${apiUrl.startsWith("https://") ? "Secure; " : ""}SameSite=None; Path=/`;
 };
 
 /**
