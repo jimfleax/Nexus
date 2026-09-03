@@ -54,6 +54,7 @@ export function ResourceDialog({
   open: openProp,
   onOpenChange,
   isNativeButton = true,
+  disabled,
 }: {
   mode: "create" | "edit";
   resource?: Resource;
@@ -63,6 +64,7 @@ export function ResourceDialog({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   isNativeButton?: boolean;
+  disabled?: boolean;
 }) {
   const { open, setOpen } = useControllableOpen(openProp, onOpenChange);
   const router = useRouter();
@@ -194,7 +196,8 @@ export function ResourceDialog({
     type === "chat" ||
     type === "ebook";
   const isUploadMode =
-    (type === "pdf" || type === "image") && mode === "create";
+    (type === "pdf" || type === "image" || type === "markdown") &&
+    mode === "create";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -210,6 +213,7 @@ export function ResourceDialog({
           render={
             <Button
               variant="outline"
+              disabled={disabled}
               className="gap-2 border-[#dec9e9] bg-[#f8f4fb] text-[#6247aa] hover:bg-[#dec9e9]"
             >
               <Plus className="size-4" weight="bold" />
@@ -318,12 +322,27 @@ export function ResourceDialog({
             {isUploadMode && (
               <FormField label="Upload File" htmlFor="resource-file">
                 <FilePicker
-                  accept={type === "pdf" ? ".pdf" : "image/*"}
+                  accept={
+                    type === "pdf"
+                      ? ".pdf"
+                      : type === "markdown"
+                        ? ".md,.markdown"
+                        : "image/*"
+                  }
                   file={file}
-                  onFileSelect={(newFile: File | null) => {
+                  onFileSelect={async (newFile: File | null) => {
                     setFile(newFile);
                     if (newFile && !title)
                       setTitle(formatFilenameToTitle(newFile.name));
+
+                    if (newFile && type === "markdown") {
+                      try {
+                        const text = await newFile.text();
+                        setContent(text);
+                      } catch (err) {
+                        console.error("Failed to read markdown file", err);
+                      }
+                    }
                   }}
                 />
               </FormField>
@@ -465,6 +484,7 @@ export function CreateResourceDialog(props: {
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  disabled?: boolean;
 }) {
   return <ResourceDialog mode="create" {...props} />;
 }

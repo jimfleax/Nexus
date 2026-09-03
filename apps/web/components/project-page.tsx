@@ -82,7 +82,10 @@ export function ProjectPage({ project }: { project: Project }) {
                 <div className="h-[38px] w-[130px] rounded bg-gray-200 animate-pulse" />
               }
             >
-              <CreateResourceDialog projectId={project.id} />
+              <CreateResourceDialog
+                projectId={project.id}
+                disabled={collections.length === 0}
+              />
             </Suspense>
             <Suspense
               fallback={
