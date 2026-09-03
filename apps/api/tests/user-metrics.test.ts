@@ -172,9 +172,9 @@ describe("GET /api/user/metrics", () => {
   it("reports drive not connected when the user has no drive quota", async () => {
     mockGetDriveQuota.mockResolvedValue(null);
     await UserModel.updateOne(
-      { ownerId: ctx.ownerId },
-      { $unset: { driveRefreshToken: "" } },
-      { skipTenant: true },
+      { ownerId: "test-user-1" },
+      { $unset: { driveRefreshToken: 1 } },
+      { skipTenant: true } as any,
     );
 
     const response = await ctx.app.inject({
