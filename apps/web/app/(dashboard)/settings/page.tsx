@@ -97,7 +97,7 @@ export default function SettingsPage() {
           </Button>
         }
       />
-      <div className="mt-9 grid gap-6 lg:grid-cols-[1.05fr_.95fr]">
+      <div className="mt-9 grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -199,7 +199,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </div>
-        <motion.div layout className="lg:sticky lg:top-20 lg:h-fit">
+        <motion.div className="lg:sticky lg:top-20 lg:h-fit">
           <p className="mb-3 text-sm font-medium text-[#815ac0]">Preview</p>
           <Card>
             <CardContent className="pt-6">
