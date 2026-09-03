@@ -88,4 +88,29 @@ describe("Mongoose Tenant Isolation", () => {
       "Tenant context missing. Set skipTenant: true to bypass.",
     );
   });
+
+  it("fail-closed if no tenant context on insertMany", async () => {
+    await expect(UserData.insertMany([{ data: "hello" }])).rejects.toThrow(
+      "Tenant context missing on save.",
+    );
+  });
+
+  it("should enforce ownerId on insertMany", async () => {
+    await new Promise<void>((resolve, reject) => {
+      tenantContext.run({ ownerId: "user-C" }, async () => {
+        try {
+          const docs = await UserData.insertMany([
+            { data: "bulk 1" },
+            { data: "bulk 2" },
+          ]);
+          expect(docs).toHaveLength(2);
+          expect((docs[0] as any).ownerId).toBe("user-C");
+          expect((docs[1] as any).ownerId).toBe("user-C");
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+  });
 });

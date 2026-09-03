@@ -6,8 +6,7 @@
 
 import { ResourceModel } from "./models/Resource.js";
 import { UserModel } from "./models/User.js";
-import { google } from "googleapis";
-import { buildOAuthClient } from "./utils/google/oauth.js";
+import { IStorageAdapter } from "./utils/storage/types.js";
 
 let isGCRunning = false;
 
@@ -15,7 +14,7 @@ let isGCRunning = false;
  * @desc    Delete pending resources older than 30 minutes, removing orphaned Drive files where present
  * @returns {Promise<void>} Resolves when the sweep completes; never throws
  */
-export async function runGarbageCollection() {
+export async function runGarbageCollection(storageAdapter: IStorageAdapter) {
   if (isGCRunning) return;
   isGCRunning = true;
 
@@ -37,16 +36,23 @@ export async function runGarbageCollection() {
         let driveDeleteSucceeded = false;
         // Need to delete orphan drive file
         try {
-          const user = await UserModel.findOne({ ownerId: resource.ownerId });
-          if (user && user.driveRefreshToken) {
-            const oauth2Client = buildOAuthClient(user.driveRefreshToken);
-            const drive = google.drive({ version: "v3", auth: oauth2Client });
-            await drive.files.delete({ fileId: resource.driveFileId });
-            driveDeleteSucceeded = true;
-          } else {
-            driveDeleteSucceeded = true;
+          await storageAdapter.deleteFiles(resource.ownerId, [
+            resource.driveFileId,
+          ]);
+          driveDeleteSucceeded = true;
+        } catch (err: any) {
+          if (
+            err.name === "TokenRevokedError" ||
+            (err &&
+              err.constructor &&
+              err.constructor.name === "TokenRevokedError")
+          ) {
+            await UserModel.updateOne(
+              { ownerId: resource.ownerId },
+              { $unset: { driveRefreshToken: 1 } },
+              { skipTenant: true },
+            );
           }
-        } catch (err) {
           console.error(
             `Failed to delete orphan drive file ${resource.driveFileId}:`,
             err,

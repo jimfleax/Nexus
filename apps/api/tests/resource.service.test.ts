@@ -4,7 +4,15 @@
  * @architecture Tests the service functions directly with in-memory MongoDB, no HTTP layer involved.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  vi,
+} from "vitest";
 import mongoose from "mongoose";
 import { tenantContext, connectDB } from "../src/db.js";
 import { ResourceModel } from "../src/models/Resource.js";
@@ -18,6 +26,7 @@ import {
   createResource,
   updateResource,
   queryResources,
+  createResourceWithUpload,
 } from "../src/services/resource.service.js";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 
@@ -220,6 +229,92 @@ describe("ResourceService", () => {
         expect(resources).toHaveLength(1);
         expect((resources[0] as any).type).toBeDefined();
         expect((resources[0] as any).createdAt).toBeUndefined();
+      });
+    });
+  });
+
+  describe("createResourceWithUpload", () => {
+    const fakeStorage = {
+      uploadFile: vi.fn(),
+      deleteFiles: vi.fn(),
+      getFileStream: vi.fn(),
+      getQuota: vi.fn(),
+    };
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("should create a non-file resource without calling storage", async () => {
+      await tenantContext.run({ ownerId: OWNER }, async () => {
+        const resource = await createResourceWithUpload(
+          OWNER,
+          {
+            projectId,
+            listId,
+            title: "Note Resource",
+            type: "note",
+            content: "note content",
+          },
+          fakeStorage as any,
+        );
+        expect(resource.title).toBe("Note Resource");
+        expect(resource.status).toBe("ready");
+        expect(fakeStorage.uploadFile).not.toHaveBeenCalled();
+      });
+    });
+
+    it("should throw if file stream is missing for file upload", async () => {
+      await tenantContext.run({ ownerId: OWNER }, async () => {
+        await expect(
+          createResourceWithUpload(
+            OWNER,
+            { projectId, listId, title: "Missing Stream PDF", type: "pdf" },
+            fakeStorage as any,
+          ),
+        ).rejects.toThrow("File stream required");
+      });
+    });
+
+    it("should orchestrate file upload and update status to ready", async () => {
+      fakeStorage.uploadFile.mockResolvedValueOnce({
+        driveFileId: "drive-123",
+        size: 1024,
+      });
+
+      await tenantContext.run({ ownerId: OWNER }, async () => {
+        const resource = await createResourceWithUpload(
+          OWNER,
+          { projectId, listId, title: "Valid PDF", type: "pdf" },
+          fakeStorage as any,
+          {} as any, // fake stream
+          "application/pdf",
+        );
+        expect(resource.title).toBe("Valid PDF");
+        expect(resource.status).toBe("ready");
+        expect(resource.driveFileId).toBe("drive-123");
+        expect(resource.size).toBe(1024);
+        expect(fakeStorage.uploadFile).toHaveBeenCalled();
+      });
+    });
+
+    it("should rollback and delete pending resource if upload fails", async () => {
+      fakeStorage.uploadFile.mockRejectedValueOnce(new Error("Upload boom"));
+
+      await tenantContext.run({ ownerId: OWNER }, async () => {
+        await expect(
+          createResourceWithUpload(
+            OWNER,
+            { projectId, listId, title: "Fail PDF", type: "pdf" },
+            fakeStorage as any,
+            {} as any,
+            "application/pdf",
+          ),
+        ).rejects.toThrow("Upload boom");
+
+        // Verify the resource was rolled back
+        const exists = await ResourceModel.findOne({ title: "Fail PDF" });
+        expect(exists).toBeNull();
       });
     });
   });

@@ -179,7 +179,9 @@ export async function inTenant<T>(
  */
 export async function createAuthTestApp(): Promise<FastifyInstance> {
   const { authPlugin } = await import("../src/auth.js");
+  const { default: cookiePlugin } = await import("@fastify/cookie");
   const app = Fastify();
+  app.register(cookiePlugin);
   app.register(authPlugin);
 
   app.get("/health", async () => ({ ok: true, version: "0.1.0" }));

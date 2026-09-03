@@ -57,6 +57,7 @@ describe("Resources Routes (CRUD)", () => {
       },
     });
 
+    if (response.statusCode === 500) console.error(response.payload);
     expect(response.statusCode).toBe(200);
     const data = JSON.parse(response.payload);
     expect(data.title).toBe("Updated Note");

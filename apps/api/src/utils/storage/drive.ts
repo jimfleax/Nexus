@@ -4,10 +4,14 @@
  * @architecture Uses per-user OAuth refresh tokens, lazily creates a shared "Nexus" folder, returns resumable upload URIs, and wraps failures in StorageError.
  */
 
-import { IStorageAdapter, StorageQuota, StorageError } from "./types.js";
-import { UserModel } from "../../models/User.js";
+import {
+  IStorageAdapter,
+  StorageQuota,
+  StorageError,
+  TokenRevokedError,
+  IDriveCredentialProvider,
+} from "./types.js";
 import { google } from "googleapis";
-import { buildOAuthClient } from "../google/oauth.js";
 
 /**
  * @class DriveStorageAdapter
@@ -18,10 +22,15 @@ export class DriveStorageAdapter implements IStorageAdapter {
    * @desc    Construct the adapter with the OAuth client credentials
    * @param   {string} clientId - Google OAuth client ID
    * @param   {string} clientSecret - Google OAuth client secret
+   * @param   {IDriveCredentialProvider} credentialProvider - Handles fetching and saving Drive credentials
    */
   constructor(
     private clientId: string,
     private clientSecret: string,
+    private credentialProvider: IDriveCredentialProvider,
+    private clientBuilder: (refreshToken: string) => any = (rt) => {
+      throw new Error("Storage client builder not configured");
+    },
   ) {}
 
   /**
@@ -30,16 +39,16 @@ export class DriveStorageAdapter implements IStorageAdapter {
    * @returns {Promise<object>} Resolved Drive client, user document, and OAuth client
    */
   private async getDrive(ownerId: string) {
-    const user = await UserModel.findOne({ ownerId });
-    if (!user || !user.driveRefreshToken) {
+    const creds = await this.credentialProvider.getCredentials(ownerId);
+    if (!creds || !creds.refreshToken) {
       throw new StorageError("Google Drive integration not configured");
     }
 
-    const oauth2Client = buildOAuthClient(user.driveRefreshToken);
+    const oauth2Client = this.clientBuilder(creds.refreshToken);
 
     return {
       drive: google.drive({ version: "v3", auth: oauth2Client }),
-      user,
+      folderId: creds.folderId,
       oauth2Client,
     };
   }
@@ -49,21 +58,23 @@ export class DriveStorageAdapter implements IStorageAdapter {
   /**
    * @desc    Resolve or create the user's shared "Nexus" Drive folder
    * @param   {object} drive - An authenticated Drive v3 client
-   * @param   {object} user - The user document storing the folder reference
+   * @param   {string} ownerId - The owner's ID
+   * @param   {string} cachedFolderId - The previously saved folder ID, if any
    * @returns {Promise<string|null>} The Drive folder ID, or null if unavailable
    */
   private async ensureDriveFolderInternal(
     drive: ReturnType<typeof google.drive>,
-    user: any,
+    ownerId: string,
+    cachedFolderId?: string,
   ): Promise<string | null> {
-    if (user.driveFolderId) {
+    if (cachedFolderId) {
       try {
         const folderRes = await drive.files.get({
-          fileId: user.driveFolderId,
+          fileId: cachedFolderId,
           fields: "id,trashed",
         });
         if (folderRes.data && !folderRes.data.trashed) {
-          return user.driveFolderId;
+          return cachedFolderId;
         }
       } catch (err) {
         // Fall through
@@ -91,21 +102,24 @@ export class DriveStorageAdapter implements IStorageAdapter {
       folderId = createRes.data.id!;
     }
 
-    user.driveFolderId = folderId;
-    await user.save();
+    await this.credentialProvider.saveFolderId(ownerId, folderId);
     return folderId;
   }
 
   private async ensureDriveFolder(
     drive: ReturnType<typeof google.drive>,
-    user: any,
+    ownerId: string,
+    cachedFolderId?: string,
   ): Promise<string | null> {
-    const ownerId = user.ownerId;
     if (this.folderLocks.has(ownerId)) {
       return this.folderLocks.get(ownerId)!;
     }
 
-    const promise = this.ensureDriveFolderInternal(drive, user).finally(() => {
+    const promise = this.ensureDriveFolderInternal(
+      drive,
+      ownerId,
+      cachedFolderId,
+    ).finally(() => {
       this.folderLocks.delete(ownerId);
     });
 
@@ -141,16 +155,12 @@ export class DriveStorageAdapter implements IStorageAdapter {
     return createRes.data.id!;
   }
 
-  private async handleDriveError(err: any, ownerId: string) {
+  private handleDriveError(err: any, ownerId: string) {
     const message = err?.message?.toLowerCase() || "";
     const status = err?.response?.status || err?.status;
 
     if (status === 401 || message.includes("invalid_grant")) {
-      const user = await UserModel.findOne({ ownerId });
-      if (user && user.driveRefreshToken) {
-        user.driveRefreshToken = undefined;
-        await user.save();
-      }
+      throw new TokenRevokedError("Google Drive token revoked", ownerId, err);
     }
   }
 
@@ -165,8 +175,12 @@ export class DriveStorageAdapter implements IStorageAdapter {
     fileStream: import("stream").Readable,
   ): Promise<{ driveFileId: string; size: number }> {
     try {
-      const { drive, user } = await this.getDrive(ownerId);
-      let folderId = await this.ensureDriveFolder(drive, user);
+      const { drive, folderId: cachedFolderId } = await this.getDrive(ownerId);
+      let folderId = await this.ensureDriveFolder(
+        drive,
+        ownerId,
+        cachedFolderId,
+      );
 
       if (folderId && metadata.projectId) {
         folderId = await this.getOrCreateSubfolder(
@@ -207,7 +221,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
         size: res.data.size ? parseInt(res.data.size, 10) : 0,
       };
     } catch (err: any) {
-      await this.handleDriveError(err, ownerId);
+      this.handleDriveError(err, ownerId);
       if (err instanceof StorageError) throw err;
       throw new StorageError(err.message || "Failed to upload file", err);
     }
@@ -229,12 +243,20 @@ export class DriveStorageAdapter implements IStorageAdapter {
     },
   ): Promise<string> {
     try {
-      const { drive, user, oauth2Client } = await this.getDrive(ownerId);
+      const {
+        drive,
+        folderId: cachedFolderId,
+        oauth2Client,
+      } = await this.getDrive(ownerId);
 
       const accessTokenRes = await oauth2Client.getAccessToken();
       const accessToken = accessTokenRes.token;
 
-      let folderId = await this.ensureDriveFolder(drive, user);
+      let folderId = await this.ensureDriveFolder(
+        drive,
+        ownerId,
+        cachedFolderId,
+      );
 
       if (folderId && metadata.projectId) {
         folderId = await this.getOrCreateSubfolder(
@@ -282,7 +304,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
 
       return uploadUri;
     } catch (err: any) {
-      await this.handleDriveError(err, ownerId);
+      this.handleDriveError(err, ownerId);
       if (err instanceof StorageError) throw err;
       throw new StorageError(
         err.message || "Failed to initialize storage",
@@ -305,7 +327,11 @@ export class DriveStorageAdapter implements IStorageAdapter {
       const res = await this.getDrive(ownerId);
       drive = res.drive;
     } catch (err) {
-      await this.handleDriveError(err, ownerId);
+      try {
+        this.handleDriveError(err, ownerId);
+      } catch (revokedErr) {
+        throw revokedErr;
+      }
       console.warn(
         `User ${ownerId} has no drive credentials, cannot delete files`,
       );
@@ -317,7 +343,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
       try {
         await drive.files.delete({ fileId });
       } catch (err: any) {
-        await this.handleDriveError(err, ownerId);
+        this.handleDriveError(err, ownerId);
         console.error(`Failed to delete drive file ${fileId}:`, err.message);
       }
     }
@@ -346,8 +372,70 @@ export class DriveStorageAdapter implements IStorageAdapter {
         limit: quota.limit != null ? Number(quota.limit) : null,
       };
     } catch (err) {
-      await this.handleDriveError(err, ownerId);
+      this.handleDriveError(err, ownerId);
       return null;
+    }
+  }
+
+  async getFileStream(
+    ownerId: string,
+    fileId: string,
+    rangeHeader?: string,
+  ): Promise<{
+    stream: import("stream").Readable;
+    headers: Record<string, string>;
+    status: number;
+  }> {
+    try {
+      const { oauth2Client } = await this.getDrive(ownerId);
+      const accessTokenRes = await oauth2Client.getAccessToken();
+      const accessToken = accessTokenRes.token;
+
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${accessToken}`,
+      };
+      if (rangeHeader) {
+        headers["Range"] = rangeHeader;
+      }
+
+      const driveRes = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+        { headers },
+      );
+
+      if (!driveRes.ok) {
+        throw new Error(
+          `Failed to fetch file from Drive: ${driveRes.statusText}`,
+        );
+      }
+
+      const resultHeaders: Record<string, string> = {};
+      const safeDriveHeaders = [
+        "content-type",
+        "content-disposition",
+        "content-range",
+        "accept-ranges",
+      ];
+      driveRes.headers.forEach((value, key) => {
+        if (safeDriveHeaders.includes(key.toLowerCase())) {
+          resultHeaders[key] = value;
+        }
+      });
+      resultHeaders["accept-ranges"] = "bytes";
+
+      const streamModule = await import("stream");
+      return {
+        stream: streamModule.Readable.fromWeb(driveRes.body as any),
+        headers: resultHeaders,
+        status: driveRes.status,
+      };
+    } catch (err: any) {
+      this.handleDriveError(err, ownerId);
+      if (err instanceof StorageError) throw err;
+      throw new StorageError(
+        err.message || "Failed to download file stream",
+        err,
+      );
     }
   }
 }

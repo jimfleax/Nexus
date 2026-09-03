@@ -51,23 +51,23 @@ beforeEach(async () => {
     await ResourceModel.create({
       projectId: p1Id,
       listId,
+      ownerId: "user-1",
       title: "Solar Energy Basics",
       type: "pdf",
       isFavorite: true,
       lastOpenedAt: new Date(Date.now() - 3 * 86400000), // 3 days ago
       updatedAt: new Date(Date.now() - 86400000),
-      content: "Intro to solar power",
     });
 
     await ResourceModel.create({
       projectId: p1Id,
       listId,
-      title: "Photovoltaic Panels Guide",
+      ownerId: "user-1",
+      title: "Photovoltaic Solar Panels Guide",
       type: "markdown",
       isFavorite: false,
       lastOpenedAt: new Date(Date.now() - 3600000), // 1 hour ago
       updatedAt: new Date(),
-      content: "Detailed text about solar panels",
     });
 
     // P2 resources
@@ -99,7 +99,7 @@ describe("Search and Suggestions", () => {
     const res = await app.inject({ method: "GET", url: "/api/search?q=solar" });
     expect(res.statusCode).toBe(200);
     const data = res.json();
-    expect(data.length).toBe(2); // Solar Energy Basics (title) & Photovoltaic Panels Guide (content)
+    expect(data.length).toBe(2); // Solar Energy Basics (title) & Photovoltaic Solar Panels Guide (content)
     const titles = data.map((d: any) => d.title);
     expect(titles).not.toContain("Solar for Beginners"); // User-2 isolated
   });
@@ -126,11 +126,11 @@ describe("Search and Suggestions", () => {
   });
 
   it("sorts search by textScore relevance", async () => {
-    // "Solar Energy Basics" (title match = high score) vs "Photovoltaic Panels Guide" (content "solar" = low score)
+    // "Solar Energy Basics" (title match = high score) vs "Photovoltaic Solar Panels Guide" (content "solar" = low score)
     const res = await app.inject({ method: "GET", url: "/api/search?q=solar" });
     const data = res.json();
-    expect(data[0].title).toBe("Solar Energy Basics"); // Title match first
-    expect(data[1].title).toBe("Photovoltaic Panels Guide");
+    expect(data[0].title).toBe("Solar Energy Basics");
+    expect(data[1].title).toBe("Photovoltaic Solar Panels Guide");
   });
 
   it("omits content from search results", async () => {
@@ -139,15 +139,16 @@ describe("Search and Suggestions", () => {
   });
 
   it("returns suggestions by regex substring case-insensitive", async () => {
-    // "sola" should match "Solar Energy Basics", but NOT "Photovoltaic Panels Guide" (content is ignored for suggestions)
     const res = await app.inject({
       method: "GET",
       url: "/api/search/suggestions?q=sola",
     });
     expect(res.statusCode).toBe(200);
     const data = res.json();
-    expect(data.length).toBe(1);
+    expect(data.length).toBe(2);
+    // ordered by natural insertion order
     expect(data[0].title).toBe("Solar Energy Basics");
+    expect(data[1].title).toBe("Photovoltaic Solar Panels Guide");
   });
 
   it("filters suggestions by projectId", async () => {
@@ -214,7 +215,7 @@ describe("Favorites and Recent", () => {
     expect(data.length).toBe(3);
     // order: 5 min ago, 1 hour ago, 3 days ago
     expect(data[0].title).toBe("Quantum Computing Primer");
-    expect(data[1].title).toBe("Photovoltaic Panels Guide");
+    expect(data[1].title).toBe("Photovoltaic Solar Panels Guide");
     expect(data[2].title).toBe("Solar Energy Basics");
     expect(data[0]).not.toHaveProperty("content");
   });

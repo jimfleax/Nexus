@@ -6,8 +6,10 @@
 
 import fp from "fastify-plugin";
 import { FastifyInstance } from "fastify";
-import { IStorageAdapter } from "./types.js";
+import { IStorageAdapter, IDriveCredentialProvider } from "./types.js";
 import { DriveStorageAdapter } from "./drive.js";
+import { buildGoogleAuthClient } from "../oauth/google.js";
+import { UserModel } from "../../models/User.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -38,7 +40,34 @@ export const storagePlugin = fp(
           "StoragePlugin requires either an adapter or clientId and clientSecret",
         );
       }
-      adapter = new DriveStorageAdapter(opts.clientId, opts.clientSecret);
+      const credentialProvider: IDriveCredentialProvider = {
+        async getCredentials(ownerId: string) {
+          const user = await UserModel.findOne({ ownerId }).select(
+            "driveRefreshToken driveFolderId",
+          );
+          if (!user || !user.driveRefreshToken) return null;
+          return {
+            refreshToken: user.driveRefreshToken,
+            folderId: user.driveFolderId,
+          };
+        },
+        async saveFolderId(ownerId: string, folderId: string) {
+          await UserModel.updateOne(
+            { ownerId },
+            { $set: { driveFolderId: folderId } },
+          );
+        },
+      };
+      adapter = new DriveStorageAdapter(
+        opts.clientId,
+        opts.clientSecret,
+        credentialProvider,
+        (refreshToken) =>
+          buildGoogleAuthClient(refreshToken, {
+            clientId: opts.clientId as string,
+            clientSecret: opts.clientSecret as string,
+          }),
+      );
     }
     server.decorate("storage", adapter);
   },

@@ -60,18 +60,12 @@ export function ResourceViewer({ resource }: { resource: Resource }) {
 
   switch (resource.type) {
     case "markdown":
-      content = resource.content ? (
-        <MarkdownViewer content={resource.content} />
-      ) : (
-        <TextViewer resource={resource} />
-      );
+      content = <MarkdownViewer resource={resource} />;
       break;
     case "pdf": {
-      const pdfUrl =
-        resource.url ||
-        (resource.driveFileId
-          ? `/api/resources/${resource.id}/file`
-          : undefined);
+      const pdfUrl = resource.driveFileId
+        ? `/api/resources/${resource.id}/file`
+        : undefined;
       content = <PdfViewer title={resource.title} url={pdfUrl} />;
       break;
     }
@@ -82,12 +76,7 @@ export function ResourceViewer({ resource }: { resource: Resource }) {
       content = <WebResourceViewer resource={resource} />;
       break;
     case "chat":
-      content = (
-        <ChatViewer
-          title={resource.title}
-          content={(resource as unknown as { content: string }).content}
-        />
-      );
+      content = <ChatViewer resource={resource} />;
       break;
     case "text":
     case "note":

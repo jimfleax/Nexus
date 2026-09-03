@@ -7,14 +7,9 @@
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
 import { updateSettings } from "../services/user.service.js";
-import {
-  frontendUrl,
-  generateState,
-  setStateCookie,
-  getStateFromCookie,
-  clearStateCookie,
-  exchangeCodeForToken,
-} from "../utils/oauth.js";
+import { authorizeWithGoogle } from "../utils/oauth/google.js";
+import { frontendUrl, generateState } from "../utils/oauth.js";
+import { SessionManager } from "../utils/session.js";
 
 export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
   /**
@@ -23,29 +18,20 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
    * @access  Private
    */
   fastify.get("/api/integrations/google-drive", async (request, reply) => {
-    const clientId = process.env.AUTH_GOOGLE_ID;
-    if (!clientId) {
-      return reply.status(500).send({ error: "Google Auth not configured" });
-    }
-
     const redirectUri = `${frontendUrl()}/api/integrations/google-drive/callback`;
     const state = generateState();
 
-    setStateCookie(reply, "integration_state", state);
+    SessionManager.setIntegrationState(reply, state);
 
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: "code",
-      scope: "https://www.googleapis.com/auth/drive.file",
-      prompt: "consent",
-      access_type: "offline",
-      state,
-    });
-
-    return reply.redirect(
-      `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
-    );
+    try {
+      const provider = fastify.oauth.getProvider("google");
+      const url = provider.getAuthorizationUrl(state, redirectUri, [
+        "https://www.googleapis.com/auth/drive.file",
+      ]);
+      return reply.redirect(url);
+    } catch (err) {
+      return reply.status(500).send({ error: "Google Auth not configured" });
+    }
   });
 
   /**
@@ -61,55 +47,53 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
         return reply.redirect(`${frontendUrl()}/?error=drive_auth_failed`);
       }
 
-      const stateCookie = getStateFromCookie(request, "integration_state");
+      const stateCookie = SessionManager.getIntegrationState(request);
 
       if (!stateCookie || stateCookie !== state) {
         return reply.redirect(`${frontendUrl()}/?error=state_mismatch`);
       }
-      clearStateCookie(reply, "integration_state");
+      SessionManager.clearIntegrationState(reply);
 
-      const clientId = process.env.AUTH_GOOGLE_ID!;
-      const clientSecret = process.env.AUTH_GOOGLE_SECRET!;
-      const redirectUri = `${frontendUrl()}/api/integrations/google-drive/callback`;
+      try {
+        const redirectUri = `${frontendUrl()}/api/integrations/google-drive/callback`;
+        const provider = fastify.oauth.getProvider("google");
 
-      const tokenRes = await exchangeCodeForToken(
-        "https://oauth2.googleapis.com/token",
-        {
+        const { tokens } = await authorizeWithGoogle(
+          provider,
           code,
-          clientId,
-          clientSecret,
           redirectUri,
-          grant_type: "authorization_code",
-        },
-      );
+          (refreshToken) =>
+            updateSettings(request.ownerId, {
+              driveRefreshToken: refreshToken,
+            }),
+        );
 
-      if (!tokenRes.ok) {
-        return reply.redirect(`${frontendUrl()}/?error=drive_token_failed`);
-      }
-
-      const tokenData = (await tokenRes.json()) as { refresh_token?: string };
-
-      if (tokenData.refresh_token) {
-        await updateSettings(request.ownerId, {
-          driveRefreshToken: tokenData.refresh_token,
-        });
-        return reply.redirect(frontendUrl());
-      } else {
-        return reply.redirect(`${frontendUrl()}/?error=drive_token_missing`);
+        if (tokens.refreshToken) {
+          return reply.redirect(frontendUrl());
+        } else {
+          return reply.redirect(`${frontendUrl()}/?error=drive_token_missing`);
+        }
+      } catch (err: any) {
+        if (err.name === "OAuthExchangeError") {
+          return reply.redirect(`${frontendUrl()}/?error=drive_token_failed`);
+        }
+        return reply.redirect(
+          `${frontendUrl()}/?error=drive_auth_failed_catch`,
+        );
       }
     },
   );
+
   fastify.post(
     "/api/integrations/google-drive/disconnect",
     async (request: any, reply) => {
       const { UserModel } = await import("../models/User.js");
-      const { buildOAuthClient } = await import("../utils/google/oauth.js");
 
       const user = await UserModel.findOne({ ownerId: request.ownerId });
       if (user?.driveRefreshToken) {
         try {
-          const oauth2Client = buildOAuthClient(user.driveRefreshToken);
-          await oauth2Client.revokeToken(user.driveRefreshToken);
+          const provider = fastify.oauth.getProvider("google");
+          await provider.revokeConnection(user.driveRefreshToken);
         } catch (err) {
           request.log.warn(
             err,

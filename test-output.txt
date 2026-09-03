@@ -1,0 +1,309 @@
+
+> @nexus/api@1.0.0 test
+> vitest run --no-color
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /run/media/jimfleax/DEV/Projects/Nexus/apps/api
+
+(node:146129) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:146129) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ❯ tests/resources-extra.test.ts (21 tests | 5 failed) 2788ms
+     ✓ lists resources in project without content field 205ms
+     ✓ filters by listId 87ms
+     ✓ returns empty array for project with no resources 40ms
+     ✓ returns raw text content with text/plain 34ms
+     ✓ returns empty string when content is absent or opaque 40ms
+     ✓ returns 404 for nonexistent content 30ms
+     ✓ isolates list by project (tenant) 34ms
+     ✓ returns 404 and doesn't call deleter for nonexistent DELETE 25ms
+     ✓ returns 204 and calls deleter on happy DELETE 33ms
+     ✓ returns 404 moving to nonexistent list 45ms
+     ✓ returns 400 when rename collides with existing title in project 32ms
+     ✓ allows patching to same title (excludes self) 46ms
+     ✓ overrides projectId when moving to a list in another project 61ms
+     ✓ returns 404 PATCHing nonexistent resource 64ms
+     × returns 400 when Drive is not configured (no token) 74ms
+     ✓ returns 404 for resource without driveFileId 179ms
+     × streams file successfully and copies headers 245ms
+     × forwards Range request and handles 206 181ms
+     × passes through Drive errors 212ms
+     ✓ returns 404 for nonexistent resource file request 31ms
+     × propagates OAuth access token failure 193ms
+(node:146340) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | tests/integrity.test.ts > Backend Integrity Fixes > Fix C: garbage collection — Drive failure handling > does not delete the DB record when storage adapter throws
+Failed to delete orphan drive file stale-drive-id: Error: Drive API Error
+    at /run/media/jimfleax/DEV/Projects/Nexus/apps/api/tests/integrity.test.ts:367:89
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64
+
+ ✓ tests/integrity.test.ts (11 tests) 3294ms
+ ❯ tests/auth-routes-failures.test.ts (11 tests | 1 failed) 1619ms
+     ✓ returns 500 when Google unconfigured 99ms
+     × redirects auth_failed when callback missing code 23ms
+     ✓ redirects auth_failed when callback has error param 28ms
+     ✓ redirects auth_failed on state mismatch 11ms
+     ✓ redirects auth_failed on missing oauth_state cookie 16ms
+     ✓ redirects auth_failed on Google token exchange non-OK 23ms
+     ✓ redirects auth_failed on Google userinfo non-OK 17ms
+     ✓ redirects auth_failed when upstream fetch throws network error 12ms
+     ✓ clears oauth_state cookie on success 86ms
+     ✓ fails if AUTH_SECRET is unset during callback (upserts user but auth fails) 36ms
+     ✓ swallows duplicate upsert user race gracefully 20ms
+(node:146842) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:146842) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/resources.test.ts (6 tests) 2191ms
+(node:147262) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/lists.test.ts (4 tests) 3161ms
+ ✓ tests/user-settings.test.ts (10 tests) 5580ms
+     ✓ returns existing token if user exists  355ms
+     ✓ is tenant-scoped based on request owner  629ms
+     ✓ creates user when none exists and sets token  529ms
+     ✓ updates existing user's token  619ms
+     ✓ leaves token unchanged if PATCH body is empty  347ms
+     ✓ isolates PATCH mutations to the requesting user  927ms
+ ✓ tests/deletion-plugin.test.ts (6 tests) 2956ms
+(node:148056) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/resources-upload.test.ts (1 test) 1692ms
+ ✓ tests/lists-reorder.test.ts (9 tests) 1430ms
+     ✓ fully reorders and changes positions  301ms
+(node:148584) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/list.service.test.ts (10 tests) 951ms
+(node:148718) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:148718) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:148718) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:148718) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/error-paths.test.ts (17 tests) 2047ms
+ ✓ tests/search.test.ts (4 tests) 2968ms
+stderr | tests/gc.test.ts > runGarbageCollection drive deletion > never throws, even if Drive deletion rejects, but keeps DB record
+Failed to delete orphan drive file file-abc: Error: Drive API down
+    at /run/media/jimfleax/DEV/Projects/Nexus/apps/api/tests/gc.test.ts:123:69
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)
+    at file:///run/media/jimfleax/DEV/Projects/Nexus/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64
+
+ ✓ tests/gc.test.ts (5 tests) 1910ms
+(node:149544) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/projects.test.ts (6 tests) 3503ms
+ ✓ tests/search-filters.test.ts (16 tests) 3928ms
+     ✓ basic text search returns current tenant's matches only  396ms
+ ✓ tests/auth-routes.test.ts (3 tests) 2235ms
+ ✓ tests/user-metrics.test.ts (5 tests) 5262ms
+     ✓ aggregates storage and counts for the current user  442ms
+     ✓ reports drive not connected when the user has no drive quota  356ms
+(node:150649) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:150649) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:150649) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:150649) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/lists-errors.test.ts (15 tests) 3195ms
+     ✓ returns single list by id  460ms
+ ✓ tests/resources-list.test.ts (4 tests) 3753ms
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:151012) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/resources-toggle-open.test.ts (11 tests) 4674ms
+     ✓ toggles favorite false -> true  595ms
+ ✓ tests/resources-create-json.test.ts (14 tests) 4187ms
+(node:151387) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:151387) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/db-extended.test.ts (17 tests) 3107ms
+     ✓ find with skipTenant sees all tenants  302ms
+ ✓ tests/projects-list-count.test.ts (2 tests) 4040ms
+     ✓ returns correct listCount per project  331ms
+ ✓ tests/info.test.ts (2 tests) 3038ms
+ ✓ tests/user.service.test.ts (10 tests) 4110ms
+       ✓ should update drive refresh token  571ms
+ ✓ tests/info-success.test.ts (10 tests) 2781ms
+     ✓ returns project info with counts  334ms
+ ✓ tests/transactions.test.ts (2 tests) 1824ms
+(node:152779) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:152779) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:152779) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(node:152779) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/projects-errors.test.ts (15 tests) 2205ms
+(node:152881) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:152881) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/db-utils.test.ts (2 tests) 1781ms
+(node:153151) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:153151) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/resource.service.test.ts (15 tests) 1770ms
+ ✓ tests/db.test.ts (4 tests) 1017ms
+ ✓ tests/models.test.ts (6 tests) 1524ms
+ ✓ tests/resources-download.test.ts (1 test) 2997ms
+ ✓ tests/user-endpoints.test.ts (2 tests) 4915ms
+(node:154401) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:154401) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
+ ✓ tests/project.service.test.ts (7 tests) 5140ms
+(node:154610) [FSTDEP022] FastifyWarning: The router options for ignoreDuplicateSlashes, ignoreTrailingSlash property access is deprecated. Please use "options.routerOptions" instead for accessing router options. The router options will be removed in `fastify@6`.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/auth-plugin.test.ts (15 tests) 1561ms
+ ✓ tests/auth-middleware.test.ts (10 tests) 562ms
+ ✓ tests/crypto.test.ts (3 tests) 1412ms
+     ✓ should successfully encrypt and decrypt text  910ms
+     ✓ should fail to decrypt with different key  468ms
+ ✓ tests/health.test.ts (2 tests) 1092ms
+ ✓ tests/plugins/errorHandler.test.ts (6 tests) 1139ms
+ ✓ tests/storage-plugin.test.ts (2 tests) 404ms
+     ✓ should register the plugin with FakeStorageAdapter  381ms
+ ✓ tests/shared-schemas.test.ts (31 tests) 83ms
+ ✓ tests/utils-google-oauth.test.ts (3 tests) 29ms
+ ✓ tests/auth.test.ts (2 tests) 91ms
+ ✓ tests/utils/retry.test.ts (4 tests) 131ms
+ ✓ tests/oauth-utils.test.ts (10 tests) 60ms
+ ✓ tests/slugify.test.ts (9 tests) 65ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/auth-routes-failures.test.ts > Initiate & callback validation failures > redirects auth_failed when callback missing code
+AssertionError: expected 'http://localhost:3000/signin?error=au…' to be 'http://localhost:3000/signin?error=au…' // Object.is equality
+
+Expected: "http://localhost:3000/signin?error=auth_failed"
+Received: "http://localhost:3000/signin?error=auth_failed_missing_params"
+
+ ❯ tests/auth-routes-failures.test.ts:87:34
+     85|     });
+     86|     expect(res.statusCode).toBe(302);
+     87|     expect(res.headers.location).toBe(
+       |                                  ^
+     88|       "http://localhost:3000/signin?error=auth_failed_missing_params",
+     89|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/resources-extra.test.ts > Drive File Streaming > returns 400 when Drive is not configured (no token)
+AssertionError: expected 502 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 502
+
+ ❯ tests/resources-extra.test.ts:308:28
+    300| });
+    301|
+    302|
+       | ^
+    303|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/resources-extra.test.ts > Drive File Streaming > streams file successfully and copies headers
+AssertionError: expected 502 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 502
+
+ ❯ tests/resources-extra.test.ts:347:28
+    300| });
+    301|
+    302|
+       | ^
+    303|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/resources-extra.test.ts > Drive File Streaming > forwards Range request and handles 206
+AssertionError: expected 502 to be 206 // Object.is equality
+
+- Expected
++ Received
+
+- 206
++ 502
+
+ ❯ tests/resources-extra.test.ts:378:28
+    300| });
+    301|
+    302|
+       | ^
+    303|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/resources-extra.test.ts > Drive File Streaming > passes through Drive errors
+AssertionError: expected 'Storage backend unavailable' to be 'Failed to fetch file from Drive' // Object.is equality
+
+Expected: "Failed to fetch file from Drive"
+Received: "Storage backend unavailable"
+
+ ❯ tests/resources-extra.test.ts:400:30
+    300| });
+    301|
+    302|
+       | ^
+    303|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/resources-extra.test.ts > Drive File Streaming > propagates OAuth access token failure
+AssertionError: expected 502 to be 500 // Object.is equality
+
+- Expected
++ Received
+
+- 500
++ 502
+
+ ❯ tests/resources-extra.test.ts:423:28
+    300| });
+    301|
+    302|
+       | ^
+    303|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  2 failed | 45 passed (47)
+      Tests  6 failed | 375 passed (381)
+   Start at  23:24:43
+   Duration  309.22s (transform 4.36s, setup 0ms, import 159.77s, tests 110.20s, environment 57ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /run/media/jimfleax/DEV/Projects/Nexus/apps/api
+npm error workspace @nexus/api@1.0.0
+npm error location /run/media/jimfleax/DEV/Projects/Nexus/apps/api
+npm error command failed
+npm error command sh -c vitest run --no-color

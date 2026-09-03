@@ -8,6 +8,7 @@ import fp from "fastify-plugin";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { jwtVerify } from "jose";
 import { tenantContext } from "./db.js";
+import { SessionManager } from "./utils/session.js";
 import "./types.js";
 
 /**
@@ -56,25 +57,7 @@ export const authPlugin = fp(async (fastify) => {
         return;
       }
 
-      const authHeader = request.headers.authorization;
-      let token = "";
-
-      if (authHeader && authHeader.startsWith("Bearer ")) {
-        token = authHeader.substring(7);
-      } else if (request.headers.cookie) {
-        const cookieHeader = request.headers.cookie;
-        const cookieNames = ["nexus-session"];
-
-        for (const name of cookieNames) {
-          const match = cookieHeader.match(
-            new RegExp(`(?:^|;\\s*)${name}=([^;]*)`),
-          );
-          if (match && match[1]) {
-            token = match[1];
-            break;
-          }
-        }
-      }
+      const token = SessionManager.getAuthToken(request);
 
       if (!token) {
         return reply

@@ -9,7 +9,6 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { UserModel } from "../models/User.js";
-import { buildOAuthClient } from "../utils/google/oauth.js";
 import {
   CreateResourceSchema,
   UpdateResourceSchema,
@@ -27,7 +26,9 @@ import {
   updateResource,
   toggleFavoriteResource,
   deleteResourceById,
+  createResourceWithUpload,
 } from "../services/resource.service.js";
+import { parseMultipartResourceRequest } from "../utils/multipart.js";
 import { FastifyReply } from "fastify";
 
 /** Send a 404 with the raw `{ error }` shape matching this route file's existing responses. */
@@ -87,37 +88,10 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       let mimeType = "";
 
       if (request.isMultipart()) {
-        body = {};
-        let fileBuffer: Buffer | null = null;
-
-        // Iterate all parts in order. The file stream MUST be fully consumed
-        // inside the loop — leaving it open stalls the iterator.
-        for await (const part of request.parts()) {
-          if (part.type === "file") {
-            mimeType = part.mimetype;
-            const chunks: Buffer[] = [];
-            for await (const chunk of part.file) {
-              chunks.push(chunk as Buffer);
-            }
-            fileBuffer = Buffer.concat(chunks);
-          } else {
-            body[part.fieldname] = part.value;
-          }
-        }
-
-        if (body.isFavorite !== undefined) {
-          body.isFavorite = body.isFavorite === "true";
-        }
-
-        if (!fileBuffer) {
-          return reply
-            .status(400)
-            .send({ error: "Missing file in multipart request" } as any);
-        }
-
-        // Wrap the buffer in a Readable so storage adapters receive a stream
-        const { Readable } = await import("stream");
-        fileStream = Readable.from(fileBuffer);
+        const parsed = await parseMultipartResourceRequest(request);
+        body = parsed.body;
+        fileStream = parsed.fileStream;
+        mimeType = parsed.mimeType;
       } else {
         body = request.body;
       }
@@ -129,90 +103,30 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         } as any);
       }
 
-      body = parsedBody.data;
-      const ownerId = request.ownerId;
-
-      // Validate list membership via service
-      const list = await validateListMembership(body.listId, body.projectId);
-      if (!list) {
-        return reply.status(404).send({
-          error: "Knowledge List not found in the specified project",
-        } as any);
-      }
-
-      // Check title uniqueness via service
-      const exists = await isDuplicateTitle(
-        body.projectId,
-        body.title,
-        ownerId,
-      );
-      if (exists) {
-        return reply.status(400).send({
-          error: "A resource with this name already exists in the project",
-        } as any);
-      }
-
-      const isFileUpload =
-        (body.type === "pdf" || body.type === "image") &&
-        !body.url &&
-        !body.content;
-
-      if (isFileUpload && !fileStream) {
-        return reply.status(400).send({
-          error: "File stream required for this resource type",
-        } as any);
-      }
-
-      // Create resource via service in pending or ready state
-      const resource = await createResource({
-        ...body,
-        status: isFileUpload ? "pending" : "ready",
-      });
-
-      if (!isFileUpload) {
-        return reply.status(201).send(resource);
-      }
-
       try {
-        const mType =
-          mimeType ||
-          body.mimeType ||
-          (body.type === "pdf" ? "application/pdf" : "image/jpeg");
-        const uploadResult = await server.storage.uploadFile(
-          ownerId,
-          {
-            title: body.title,
-            mimeType: mType,
-            projectId: body.projectId,
-            listId: body.listId,
-          },
+        const resource = await createResourceWithUpload(
+          request.ownerId,
+          parsedBody.data,
+          server.storage,
           fileStream,
+          mimeType,
         );
-
-        const updatedResource = await updateResource(resource._id.toString(), {
-          driveFileId: uploadResult.driveFileId,
-          size: uploadResult.size,
-          status: "ready",
-        });
-
-        if (!updatedResource) {
-          const finalResource = await findResourceById(resource._id.toString());
-          return reply.status(201).send(finalResource);
+        return reply.status(201).send(resource);
+      } catch (err: any) {
+        if (err.message.includes("Knowledge List not found")) {
+          return reply.status(404).send({ error: err.message } as any);
         }
-
-        return reply.status(201).send(updatedResource);
-      } catch (error: any) {
-        request.log.error(error, "Storage upload failed");
-
-        // Remove the newly created pending resource record so retries with the same title succeed
-        await deleteResourceById(resource._id.toString());
-
-        if (error.name === "StorageError") {
-          return reply.status(400).send({ error: error.message } as any);
+        if (
+          err.message.includes("already exists") ||
+          err.name === "StorageError" ||
+          err.message.includes("stream required")
+        ) {
+          return reply.status(400).send({ error: err.message } as any);
         }
+        request.log.error(err, "Resource creation failed");
         return reply
           .status(500)
-          .send({ error: "Failed to upload file to storage" } as any);
+          .send({ error: "Internal server error" } as any);
       }
     },
   );
@@ -277,6 +191,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         response: {
           400: z.object({ error: z.string() }),
           404: z.object({ error: z.string() }),
+          500: z.object({ error: z.string() }),
           // 200 is omitted because it streams binary data
         },
       },
@@ -290,63 +205,33 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         return notFoundReply(reply, "Resource or file not found");
       }
 
-      const user = await UserModel.findOne({ ownerId });
-      if (!user || !user.driveRefreshToken) {
-        return reply.status(400).send({ error: "Google Drive not configured" });
-      }
+      try {
+        const { stream, headers, status } = await server.storage.getFileStream(
+          ownerId,
+          resource.driveFileId,
+          request.headers.range,
+        );
 
-      const oauth2Client = buildOAuthClient(user.driveRefreshToken);
-
-      const accessTokenRes = await oauth2Client.getAccessToken();
-      const accessToken = accessTokenRes.token;
-
-      const headers: Record<string, string> = {
-        Authorization: `Bearer ${accessToken}`,
-      };
-
-      if (request.headers.range) {
-        headers["Range"] = request.headers.range;
-      }
-
-      const driveRes = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${resource.driveFileId}?alt=media`,
-        {
-          headers,
-        },
-      );
-
-      if (!driveRes.ok) {
-        request.log.error(`Drive API error: ${driveRes.statusText}`);
-        return reply
-          .status(driveRes.status as any)
-          .send({ error: "Failed to fetch file from Drive" } as any);
-      }
-
-      reply.status(driveRes.status as any);
-
-      const safeDriveHeaders = [
-        "content-type",
-        "content-disposition",
-        "content-range",
-        "accept-ranges",
-      ];
-      driveRes.headers.forEach((value, key) => {
-        if (safeDriveHeaders.includes(key.toLowerCase())) {
+        reply.header(
+          "Content-Type",
+          resource.mimeType || "application/octet-stream",
+        );
+        if (resource.size) {
+          reply.header("Content-Length", resource.size.toString());
+        }
+        for (const [key, value] of Object.entries(headers)) {
           reply.header(key, value);
         }
-      });
+        reply.status(status as any);
 
-      // Ensure proper headers for media streaming and viewing
-      reply.header("Accept-Ranges", "bytes");
-      if (!reply.getHeader("content-disposition")) {
-        reply.header(
-          "Content-Disposition",
-          `inline; filename="${resource.title}"`,
-        );
+        return reply.send(stream as any);
+      } catch (err: any) {
+        request.log.error(err, "Failed to stream file");
+        if (err.name === "StorageError") {
+          return reply.status(400).send({ error: err.message } as any);
+        }
+        return reply.status(500).send({ error: "Failed to fetch file" } as any);
       }
-
-      // Stream the response body safely by converting Web Stream to Node Stream
-      return reply.send(Readable.fromWeb(driveRes.body as any) as any);
     },
   );
 

@@ -23,11 +23,21 @@ let mongoServer: MongoMemoryServer;
 let app: any;
 
 beforeAll(async () => {
+  process.env.AUTH_GOOGLE_ID = "google-id";
+  process.env.AUTH_GOOGLE_SECRET = "google-secret";
+  process.env.AUTH_SECRET = "test-secret-12345678901234567890";
+  process.env.FRONTEND_URL = "http://localhost:3000";
+
   global.fetch = fetchMock;
   mongoServer = await MongoMemoryServer.create();
   await connectDB(mongoServer.getUri());
 
   app = Fastify();
+  const { default: cookiePlugin } = await import("@fastify/cookie");
+  const { oauthProviderPlugin } =
+    await import("../src/plugins/oauthProvider.js");
+  app.register(cookiePlugin);
+  app.register(oauthProviderPlugin);
   app.register(authPlugin);
   app.register(authRoutes);
   await app.ready();
@@ -71,8 +81,15 @@ const setupHappyGoogleMock = () => {
 
 describe("Initiate & callback validation failures", () => {
   it("returns 500 when Google unconfigured", async () => {
-    vi.stubEnv("AUTH_GOOGLE_ID", ""); // Unset
+    const originalProvider = app.oauth.getProvider("google");
+    // @ts-ignore
+    app.oauth.registerProvider("google", null);
+
     const res = await app.inject({ method: "GET", url: "/api/auth/google" });
+
+    // Restore
+    app.oauth.registerProvider("google", originalProvider);
+
     expect(res.statusCode).toBe(500);
     expect(res.json().error).toBe("Google OAuth not configured");
   });
@@ -85,7 +102,7 @@ describe("Initiate & callback validation failures", () => {
     });
     expect(res.statusCode).toBe(302);
     expect(res.headers.location).toBe(
-      "http://localhost:3000/signin?error=auth_failed",
+      "http://localhost:3000/signin?error=auth_failed_missing_params",
     );
   });
 
@@ -174,7 +191,7 @@ describe("Internal edge cases and state cleanup", () => {
     const setCookie = res.headers["set-cookie"];
     const cookieStr = Array.isArray(setCookie)
       ? setCookie.join(";")
-      : setCookie;
+      : setCookie || "";
     expect(cookieStr).toContain("oauth_state=");
     expect(cookieStr).toContain("Max-Age=0");
   });

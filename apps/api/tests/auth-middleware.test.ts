@@ -9,11 +9,13 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import Fastify, { FastifyInstance } from "fastify";
 import { SignJWT } from "jose";
 import { authPlugin } from "../src/auth.js";
+import cookiePlugin from "@fastify/cookie";
 
 const SECRET = "test-auth-secret-for-middleware-1234";
 
 function createApp(): FastifyInstance {
   const app = Fastify();
+  app.register(cookiePlugin);
   app.register(authPlugin);
 
   // Public route
@@ -190,6 +192,7 @@ describe("Auth Middleware", () => {
       delete process.env.AUTH_SECRET;
 
       const tempApp = Fastify();
+      tempApp.register(cookiePlugin);
       tempApp.register(authPlugin);
       tempApp.get("/api/data", async () => ({ ok: true }));
       await tempApp.ready();

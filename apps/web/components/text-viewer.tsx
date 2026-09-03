@@ -7,27 +7,44 @@
 import type { Resource } from "@nexus/shared";
 import { ViewerHeader } from "@/components/ui/viewer-header";
 import { ViewerEmptyState } from "@/components/ui/viewer-empty-state";
-
-import { FileText } from "@phosphor-icons/react";
+import { useResourceText } from "@/hooks/use-resources";
+import { CircleNotch, FileText } from "@phosphor-icons/react";
 
 /**
  * @desc    Render plain-text content with copy action and word/character counts
- * @param   {{title: string; content?: string}} props - Title and text body
+ * @param   {{resource: Resource}} props - Resource
  * @returns {JSX.Element} The text viewer
  */
 export function TextViewer({ resource }: { resource: Resource }) {
-  if (!resource.content) {
+  const {
+    data: textContent,
+    isLoading,
+    isError,
+  } = useResourceText(resource.id);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 w-full flex-col items-center justify-center gap-4 bg-[#f8f4fb] border border-[#dec9e9] rounded-xl">
+        <CircleNotch className="h-8 w-8 animate-spin text-[#6247aa]" />
+        <span className="text-sm font-medium text-[#6247aa]">
+          Loading text...
+        </span>
+      </div>
+    );
+  }
+
+  if (isError || !textContent) {
     return (
       <ViewerEmptyState
         icon={FileText}
         title={resource.title}
-        message="This text resource has no content yet."
+        message="This text resource is empty or could not be loaded from Google Drive."
       />
     );
   }
 
-  const wordCount = resource.content.trim().split(/\s+/).filter(Boolean).length;
-  const charCount = resource.content.length;
+  const wordCount = textContent.trim().split(/\s+/).filter(Boolean).length;
+  const charCount = textContent.length;
 
   return (
     <article className="overflow-hidden rounded-xl border border-[#dec9e9] bg-white shadow-xs">
@@ -43,7 +60,7 @@ export function TextViewer({ resource }: { resource: Resource }) {
       />
       <div className="p-6 md:p-8">
         <pre className="whitespace-pre-wrap break-words font-readable text-[var(--reader-font-size,18px)] leading-[var(--reader-line-height,1.6)] max-w-[var(--reader-max-width,70ch)] text-black">
-          {resource.content}
+          {textContent}
         </pre>
       </div>
     </article>

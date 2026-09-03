@@ -8,6 +8,7 @@
 import { ResourceModel } from "../models/Resource.js";
 import { KnowledgeListModel } from "../models/KnowledgeList.js";
 import { updateById } from "./db-utils.js";
+import { IStorageAdapter } from "../utils/storage/types.js";
 
 /** Build a resource query with a default omission of heavy content and optional sort/limit/select. */
 export function queryResources(
@@ -47,12 +48,12 @@ export async function findResourceById(id: string) {
 }
 
 /**
- * @desc    Find a resource by ID, selecting only content and type fields
+ * @desc    Find resource content by ID
  * @param   {string} id - The resource ID
- * @returns {Promise<any|null>} The resource with content, or null
+ * @returns {Promise<any|null>} The resource content
  */
 export async function findResourceContent(id: string) {
-  return ResourceModel.findById(id).select("content type");
+  return ResourceModel.findById(id).select("content type -_id");
 }
 
 /**
@@ -115,13 +116,13 @@ export async function createResource(data: {
   type: string;
   mimeType?: string;
   description?: string;
-  content?: string;
-  url?: string;
   tags?: string[];
   isFavorite?: boolean;
   status?: string;
   driveFileId?: string;
   size?: number;
+  content?: string;
+  url?: string;
 }) {
   const resource = new ResourceModel({
     ...data,
@@ -129,6 +130,73 @@ export async function createResource(data: {
   });
   await resource.save();
   return resource;
+}
+
+export async function createResourceWithUpload(
+  ownerId: string,
+  body: any,
+  storageAdapter: IStorageAdapter,
+  fileStream?: NodeJS.ReadableStream,
+  mimeType?: string,
+) {
+  // 1. Validate list membership
+  const list = await validateListMembership(body.listId, body.projectId);
+  if (!list) {
+    throw new Error("Knowledge List not found in the specified project");
+  }
+
+  // 2. Check title uniqueness
+  const exists = await isDuplicateTitle(body.projectId, body.title, ownerId);
+  if (exists) {
+    throw new Error("A resource with this name already exists in the project");
+  }
+
+  const isFileUpload =
+    (body.type === "pdf" || body.type === "image") &&
+    !body.url &&
+    !body.content;
+  if (isFileUpload && !fileStream) {
+    throw new Error("File stream required for this resource type");
+  }
+
+  // 3. Create pending/ready resource
+  const resource = await createResource({
+    ...body,
+    status: isFileUpload ? "pending" : "ready",
+  });
+
+  if (!isFileUpload) return resource;
+
+  // 4. Handle file upload
+  try {
+    const mType =
+      mimeType ||
+      body.mimeType ||
+      (body.type === "pdf" ? "application/pdf" : "image/jpeg");
+    const uploadResult = await storageAdapter.uploadFile(
+      ownerId,
+      {
+        title: body.title,
+        mimeType: mType,
+        projectId: body.projectId,
+        listId: body.listId,
+      },
+      fileStream as any,
+    );
+
+    // 5. Update to ready
+    const updatedResource = await updateResource(resource._id.toString(), {
+      driveFileId: uploadResult.driveFileId,
+      size: uploadResult.size,
+      status: "ready",
+    });
+
+    return updatedResource || (await findResourceById(resource._id.toString()));
+  } catch (error: any) {
+    // 6. Rollback on failure
+    await deleteResourceById(resource._id.toString());
+    throw error;
+  }
 }
 
 /**

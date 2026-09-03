@@ -16,7 +16,6 @@ import { resourceRoutes } from "./routes/resources.js";
 import { userRoutes } from "./routes/user.js";
 import { searchRoutes } from "./routes/search.js";
 import { integrationRoutes } from "./routes/integrations.js";
-import { runGarbageCollection } from "./gc.js";
 
 import {
   serializerCompiler,
@@ -27,10 +26,12 @@ import {
 import { storagePlugin } from "./utils/storage/plugin.js";
 import { deletionPlugin } from "./plugins/deletion.js";
 import { errorHandlerPlugin } from "./plugins/errorHandler.js";
+import { oauthProviderPlugin } from "./plugins/oauthProvider.js";
 
 import { infoRoutes } from "./routes/info.js";
 
 import { gcPlugin } from "./plugins/gc.js";
+import cookiePlugin from "@fastify/cookie";
 
 const fastify = Fastify({
   logger: true,
@@ -42,6 +43,7 @@ fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 
 fastify.register(errorHandlerPlugin);
+fastify.register(cookiePlugin);
 // Register multipart support globally so file-upload routes can parse
 // multipart/form-data requests (POST /api/resources, etc.)
 fastify.register(multipart, { attachFieldsToBody: false });
@@ -60,6 +62,8 @@ fastify.addHook("onSend", async (_request, reply, payload) => {
   }
   return payload;
 });
+
+fastify.register(oauthProviderPlugin);
 
 // Auth routes remain public because authPlugin skips URLs beginning with /api/auth/, not because of registration order
 fastify.register(authRoutes);

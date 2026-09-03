@@ -75,4 +75,27 @@ export class FakeStorageAdapter implements IStorageAdapter {
   async getQuota(ownerId: string): Promise<StorageQuota | null> {
     return { usedInDrive: 1000, limit: 10000 };
   }
+
+  async getFileStream(
+    ownerId: string,
+    fileId: string,
+    rangeHeader?: string,
+  ): Promise<{
+    stream: import("stream").Readable;
+    headers: Record<string, string>;
+    status: number;
+  }> {
+    const stream = import("stream").then((m) =>
+      m.Readable.from(["fake file content"]),
+    );
+    return {
+      stream: await stream,
+      headers: {
+        "content-type": "text/plain",
+        "content-disposition": `inline; filename="fake.txt"`,
+        "accept-ranges": "bytes",
+      },
+      status: 200,
+    };
+  }
 }

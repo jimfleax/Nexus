@@ -271,6 +271,18 @@ export const apiClient = {
     async markOpened(resourceId: string): Promise<void> {
       await api.post(`/resources/${resourceId}/open`, {});
     },
+
+    /**
+     * @desc    Fetch the file bytes for a resource and return them as text
+     * @param   {string} resourceId - Resource ID
+     * @returns {Promise<string>} The text content
+     */
+    async getFileText(resourceId: string): Promise<string> {
+      const { data } = await api.get(`/resources/${resourceId}/file`, {
+        responseType: "text",
+      });
+      return data;
+    },
   },
   /**
    * @description User-level endpoints.

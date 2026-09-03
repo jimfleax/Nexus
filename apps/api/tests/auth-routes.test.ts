@@ -37,9 +37,31 @@ beforeAll(async () => {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
+  const { default: cookiePlugin } = await import("@fastify/cookie");
+  const { oauthProviderPlugin } =
+    await import("../src/plugins/oauthProvider.js");
+  app.register(cookiePlugin);
+  app.register(oauthProviderPlugin);
   app.register(authRoutes);
   app.register(authPlugin);
   await app.ready();
+
+  app.oauth.registerProvider("google", {
+    getAuthorizationUrl() {
+      return "https://accounts.google.com/o/oauth2/v2/auth?mock=true";
+    },
+    async exchangeCode() {
+      return { accessToken: "mock-access-token" };
+    },
+    async getIdentity() {
+      return {
+        id: "google_mock-google-id",
+        email: "google@example.com",
+        name: "Google User",
+        image: "http://example.com/pic.jpg",
+      };
+    },
+  });
 });
 
 afterAll(async () => {
@@ -85,28 +107,6 @@ describe("Auth Routes", () => {
   });
 
   it("GET /api/auth/callback/google with valid state and code should upsert user and return session", async () => {
-    const originalFetch = global.fetch;
-    global.fetch = vi.fn().mockImplementation(async (url: any) => {
-      if (url.toString().includes("token")) {
-        return {
-          ok: true,
-          json: async () => ({ access_token: "mock-access-token" }),
-        };
-      }
-      if (url.toString().includes("userinfo")) {
-        return {
-          ok: true,
-          json: async () => ({
-            sub: "mock-google-id",
-            email: "google@example.com",
-            name: "Google User",
-            picture: "http://example.com/pic.jpg",
-          }),
-        };
-      }
-      return originalFetch(url);
-    });
-
     const res = await app.inject({
       method: "GET",
       url: "/api/auth/callback/google?code=mock-code&state=valid-state",
@@ -122,7 +122,5 @@ describe("Auth Routes", () => {
       .findOne({ ownerId: "google_mock-google-id" })
       .setOptions({ skipTenant: true });
     expect(user).not.toBeNull();
-
-    global.fetch = originalFetch;
   });
 });

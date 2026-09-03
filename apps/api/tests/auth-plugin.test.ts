@@ -19,6 +19,8 @@ const mint = async (claims: Record<string, unknown>, opts?: { exp?: number }) =>
 beforeAll(async () => {
   process.env.AUTH_SECRET = secret;
   app = Fastify({ ignoreTrailingSlash: true, ignoreDuplicateSlashes: true });
+  const { default: cookiePlugin } = await import("@fastify/cookie");
+  app.register(cookiePlugin);
   app.register(authPlugin);
 
   app.get("/api/protected", async (request: any) => {

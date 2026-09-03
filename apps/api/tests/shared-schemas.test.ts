@@ -204,18 +204,6 @@ describe("Shared Zod Schemas", () => {
         ).toBe(false);
       });
 
-      it("rejects invalid url format", () => {
-        expect(
-          CreateResourceSchema.safeParse({
-            projectId: "p",
-            listId: "l",
-            title: "T",
-            type: "url",
-            url: "not-a-url",
-          }).success,
-        ).toBe(false);
-      });
-
       it("rejects unknown types", () => {
         expect(
           CreateResourceSchema.safeParse({

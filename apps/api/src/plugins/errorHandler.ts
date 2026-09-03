@@ -6,21 +6,37 @@
 import fp from "fastify-plugin";
 import { FastifyPluginAsync, FastifyError } from "fastify";
 import { ApplicationError } from "../utils/errors.js";
+import { TokenRevokedError } from "../utils/storage/types.js";
+import { UserModel } from "../models/User.js";
 
 /**
  * @desc    Registers the global error handler for the Fastify server
  * @param   {import("fastify").FastifyInstance} fastify - Fastify instance
  */
 export const errorHandlerPlugin: FastifyPluginAsync = fp(async (fastify) => {
-  fastify.setErrorHandler(function (
+  fastify.setErrorHandler(async function (
     error: FastifyError | Error,
     request,
     reply,
   ) {
     let appError: ApplicationError;
 
+    if (error instanceof TokenRevokedError) {
+      await UserModel.updateOne(
+        { ownerId: error.ownerId },
+        { $unset: { driveRefreshToken: 1 } },
+      );
+      appError = new ApplicationError(
+        "Integration Revoked",
+        "INTEGRATION_ERROR",
+        401,
+      );
+    }
     // 1. Zod / Fastify Validation Errors
-    if ("validation" in error || (error as any).code === "FST_ERR_VALIDATION") {
+    else if (
+      "validation" in error ||
+      (error as any).code === "FST_ERR_VALIDATION"
+    ) {
       appError = new ApplicationError(
         "Validation failed",
         "VALIDATION_ERROR",

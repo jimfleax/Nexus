@@ -1,0 +1,33 @@
+import { FastifyRequest } from "fastify";
+import { Readable } from "stream";
+
+export async function parseMultipartResourceRequest(request: FastifyRequest) {
+  const body: Record<string, any> = {};
+  let fileStream: Readable | undefined;
+  let mimeType = "";
+
+  let fileBuffer: Buffer | null = null;
+
+  for await (const part of request.parts()) {
+    if (part.type === "file") {
+      mimeType = part.mimetype;
+      const chunks: Buffer[] = [];
+      for await (const chunk of part.file) {
+        chunks.push(chunk as Buffer);
+      }
+      fileBuffer = Buffer.concat(chunks);
+    } else {
+      body[part.fieldname] = part.value;
+    }
+  }
+
+  if (body.isFavorite !== undefined) {
+    body.isFavorite = body.isFavorite === "true";
+  }
+
+  if (fileBuffer) {
+    fileStream = Readable.from(fileBuffer);
+  }
+
+  return { body, fileStream, mimeType };
+}

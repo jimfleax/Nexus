@@ -35,7 +35,7 @@ export const deletionPlugin = fp(
        * @returns {Promise<void>} Resolves when everything is deleted
        */
       async deleteProject(projectId, ownerId) {
-        // Scope to owner before reading Drive IDs — sessions bypass the tenant plugin
+        // Defense-in-depth: explicitly scope to ownerId alongside the tenant plugin
         const resources = await ResourceModel.find({
           projectId,
           ownerId,
@@ -67,7 +67,7 @@ export const deletionPlugin = fp(
        * @returns {Promise<void>} Resolves when everything is deleted
        */
       async deleteList(listId, ownerId) {
-        // Scope to owner before reading Drive IDs — sessions bypass the tenant plugin
+        // Defense-in-depth: explicitly scope to ownerId alongside the tenant plugin
         const resources = await ResourceModel.find({
           listId,
           ownerId,
@@ -95,7 +95,7 @@ export const deletionPlugin = fp(
        * @returns {Promise<void>} Resolves when the resource is deleted
        */
       async deleteResource(resourceId, ownerId) {
-        // Scope findById with ownerId to prevent cross-tenant lookup in sessions
+        // Defense-in-depth: explicitly scope findById to ownerId
         const resource = await ResourceModel.findOne({
           _id: resourceId,
           ownerId,

@@ -42,6 +42,19 @@ export function useResource(
 }
 
 /**
+ * @desc    Query the text content of a resource file
+ * @param   {string} resourceId - Resource ID
+ */
+export function useResourceText(resourceId: string, enabled = true) {
+  return useQuery({
+    queryKey: [...resourceKeys.all(), resourceId, "fileText"],
+    queryFn: () => apiClient.resources.getFileText(resourceId),
+    enabled: !!resourceId && enabled,
+    retry: 1,
+  });
+}
+
+/**
  * @desc    Mutation that creates a resource in a list and invalidates the list's resource cache
  */
 export function useCreateResource() {

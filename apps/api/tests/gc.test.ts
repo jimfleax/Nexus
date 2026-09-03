@@ -13,19 +13,15 @@ import { UserModel } from "../src/models/User.js";
 import { connectDB, tenantContext } from "../src/db.js";
 import mongoose from "mongoose";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
-import { google } from "googleapis";
+import { IStorageAdapter } from "../src/utils/storage/types.js";
 
-const { filesDelete } = vi.hoisted(() => ({ filesDelete: vi.fn() }));
-vi.mock("googleapis", () => ({
-  google: {
-    auth: {
-      OAuth2: vi.fn().mockImplementation(function (this: any) {
-        this.setCredentials = vi.fn();
-      }),
-    },
-    drive: vi.fn().mockReturnValue({ files: { delete: filesDelete } }),
-  },
-}));
+const mockStorageAdapter: IStorageAdapter = {
+  uploadFile: vi.fn(),
+  initializeUpload: vi.fn(),
+  deleteFiles: vi.fn(),
+  getQuota: vi.fn(),
+  getFileStream: vi.fn(),
+};
 
 let mongoServer: MongoMemoryReplSet;
 
@@ -44,7 +40,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  filesDelete.mockReset();
+  vi.mocked(mockStorageAdapter.deleteFiles).mockReset();
   await ResourceModel.deleteMany({}, { skipTenant: true } as any);
   await UserModel.deleteMany({}, { skipTenant: true } as any);
 });
@@ -76,7 +72,7 @@ describe("runGarbageCollection sweeping logic", () => {
     await seedResource("u2", new Date(now - 35 * 60 * 1000));
     await seedResource("u3", new Date(now - 5 * 60 * 1000)); // fresh
 
-    await runGarbageCollection();
+    await runGarbageCollection(mockStorageAdapter);
 
     const remaining = await ResourceModel.find({}, null, { skipTenant: true });
     expect(remaining.length).toBe(1);
@@ -98,7 +94,7 @@ describe("runGarbageCollection sweeping logic", () => {
       "error",
     );
 
-    await runGarbageCollection();
+    await runGarbageCollection(mockStorageAdapter);
 
     const count = await ResourceModel.countDocuments({}, { skipTenant: true });
     expect(count).toBe(2);
@@ -112,38 +108,29 @@ describe("runGarbageCollection drive deletion", () => {
     );
     await seedResource("u1", new Date(Date.now() - 31 * 60 * 1000), "file-abc");
 
-    await runGarbageCollection();
+    await runGarbageCollection(mockStorageAdapter);
 
-    expect(filesDelete).toHaveBeenCalledWith({ fileId: "file-abc" });
+    expect(mockStorageAdapter.deleteFiles).toHaveBeenCalledWith("u1", [
+      "file-abc",
+    ]);
     const count = await ResourceModel.countDocuments({}, {
       skipTenant: true,
     } as any);
     expect(count).toBe(0);
   });
 
-  it("does not delete Drive files when user row is missing", async () => {
-    await seedResource("u1", new Date(Date.now() - 31 * 60 * 1000), "file-abc");
-    await runGarbageCollection();
-    expect(filesDelete).not.toHaveBeenCalled();
-  });
-
-  it("does not delete Drive files when user lacks driveRefreshToken", async () => {
-    await tenantContext.run({ ownerId: "u1" }, () =>
-      UserModel.create({ ownerId: "u1" }),
-    );
-    await seedResource("u1", new Date(Date.now() - 31 * 60 * 1000), "file-abc");
-    await runGarbageCollection();
-    expect(filesDelete).not.toHaveBeenCalled();
-  });
-
   it("never throws, even if Drive deletion rejects, but keeps DB record", async () => {
-    filesDelete.mockRejectedValueOnce(new Error("Drive API down"));
+    vi.mocked(mockStorageAdapter.deleteFiles).mockRejectedValueOnce(
+      new Error("Drive API down"),
+    );
     await tenantContext.run({ ownerId: "u1" }, () =>
       UserModel.create({ ownerId: "u1", driveRefreshToken: "tok-1" }),
     );
     await seedResource("u1", new Date(Date.now() - 31 * 60 * 1000), "file-abc");
 
-    await expect(runGarbageCollection()).resolves.toBeUndefined();
+    await expect(
+      runGarbageCollection(mockStorageAdapter),
+    ).resolves.toBeUndefined();
     // DB record should be kept so it can be retried next sweep
     const count = await ResourceModel.countDocuments({}, {
       skipTenant: true,
@@ -159,7 +146,9 @@ describe("runGarbageCollection concurrency and integration", () => {
     const deletePromise = new Promise((r) => {
       resolveDelete = r;
     });
-    filesDelete.mockReturnValueOnce(deletePromise);
+    vi.mocked(mockStorageAdapter.deleteFiles).mockReturnValueOnce(
+      deletePromise as any,
+    );
 
     await tenantContext.run({ ownerId: "u1" }, () =>
       UserModel.create({ ownerId: "u1", driveRefreshToken: "tok-1" }),
@@ -167,14 +156,14 @@ describe("runGarbageCollection concurrency and integration", () => {
     await seedResource("u1", new Date(Date.now() - 31 * 60 * 1000), "file-abc");
 
     // Start first run (will hang on filesDelete)
-    const run1 = runGarbageCollection();
+    const run1 = runGarbageCollection(mockStorageAdapter);
     // Start second run synchronously
-    const run2 = runGarbageCollection();
+    const run2 = runGarbageCollection(mockStorageAdapter);
 
     resolveDelete();
     await Promise.all([run1, run2]);
 
     // Should only sweep once, so filesDelete only called once
-    expect(filesDelete).toHaveBeenCalledTimes(1);
+    expect(mockStorageAdapter.deleteFiles).toHaveBeenCalledTimes(1);
   });
 });

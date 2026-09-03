@@ -22,26 +22,6 @@ import {
 import { resourceRoutes } from "../src/routes/resources.js";
 import multipart from "@fastify/multipart";
 import FormData from "form-data";
-import { google } from "googleapis";
-
-vi.mock("googleapis", () => {
-  const deleteMock = vi.fn();
-  return {
-    google: {
-      auth: {
-        OAuth2: vi.fn().mockImplementation(function () {
-          return { setCredentials: vi.fn() };
-        }),
-      },
-      drive: vi.fn().mockReturnValue({
-        files: {
-          delete: deleteMock,
-        },
-      }),
-    },
-    __deleteMock: deleteMock,
-  };
-});
 
 let ctx: TestAppContext;
 const ownerId = "test-user-1";
@@ -382,9 +362,10 @@ describe("Backend Integrity Fixes", () => {
   });
 
   describe("Fix C: garbage collection — Drive failure handling", () => {
-    it("does not delete the DB record when drive.files.delete throws", async () => {
-      const { __deleteMock } = (await import("googleapis")) as any;
-      __deleteMock.mockRejectedValueOnce(new Error("Drive API Error"));
+    it("does not delete the DB record when storage adapter throws", async () => {
+      const deleteMock = vi
+        .spyOn(ctx.app.storage, "deleteFiles")
+        .mockRejectedValueOnce(new Error("Drive API Error"));
 
       process.env.AUTH_GOOGLE_ID = "test";
       process.env.AUTH_GOOGLE_SECRET = "test";
@@ -412,7 +393,7 @@ describe("Backend Integrity Fixes", () => {
         );
       });
 
-      await runGarbageCollection();
+      await runGarbageCollection(ctx.app.storage);
 
       const resources = await ResourceModel.find({}, null, {
         skipTenant: true,
@@ -421,9 +402,10 @@ describe("Backend Integrity Fixes", () => {
       expect(resources[0]._id.toHexString()).toBe(resourceId);
     });
 
-    it("deletes the DB record after a successful drive.files.delete", async () => {
-      const { __deleteMock } = (await import("googleapis")) as any;
-      __deleteMock.mockResolvedValueOnce({});
+    it("deletes the DB record after a successful storage delete", async () => {
+      const deleteMock = vi
+        .spyOn(ctx.app.storage, "deleteFiles")
+        .mockResolvedValueOnce();
 
       process.env.AUTH_GOOGLE_ID = "test";
       process.env.AUTH_GOOGLE_SECRET = "test";
@@ -451,7 +433,7 @@ describe("Backend Integrity Fixes", () => {
         );
       });
 
-      await runGarbageCollection();
+      await runGarbageCollection(ctx.app.storage);
 
       const resources = await ResourceModel.find({}, null, {
         skipTenant: true,
@@ -460,6 +442,8 @@ describe("Backend Integrity Fixes", () => {
     });
 
     it("deletes the DB record when the user has no driveRefreshToken", async () => {
+      // In FakeStorageAdapter, we don't care about tokens, so it will just succeed.
+      // But we will test that it calls the storage adapter properly.
       await UserModel.create({ ownerId, email: "test@test.com" }); // No refresh token
       const resourceId = new mongoose.Types.ObjectId().toHexString();
       await inTenant(ownerId, async () => {
@@ -479,7 +463,7 @@ describe("Backend Integrity Fixes", () => {
         );
       });
 
-      await runGarbageCollection();
+      await runGarbageCollection(ctx.app.storage);
 
       const resources = await ResourceModel.find({}, null, {
         skipTenant: true,

@@ -2,11 +2,19 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import Fastify from "fastify";
 import { errorHandlerPlugin } from "../../src/plugins/errorHandler.js";
 import { NotFoundError, ApplicationError } from "../../src/utils/errors.js";
+import { TokenRevokedError } from "../../src/utils/storage/types.js";
+import { UserModel } from "../../src/models/User.js";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
+import { connectDB } from "../../src/db.js";
+import mongoose from "mongoose";
 
 describe("errorHandlerPlugin", () => {
   let app: any;
+  let mongoServer: MongoMemoryReplSet;
 
   beforeAll(async () => {
+    mongoServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+    await connectDB(mongoServer.getUri());
     app = Fastify({ logger: false });
 
     // Silence the fastify logger so tests don't get noisy
@@ -56,11 +64,18 @@ describe("errorHandlerPlugin", () => {
       throw new Error("Something broke!");
     });
 
+    // 7. TokenRevokedError simulation
+    app.get("/test/token-revoked", async () => {
+      throw new TokenRevokedError("Google Drive token revoked", "user-456");
+    });
+
     await app.ready();
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) await app.close();
+    await mongoose.connection.close();
+    if (mongoServer) await mongoServer.stop();
   });
 
   it("should format Zod/Fastify validation errors as 400 VALIDATION_ERROR", async () => {
@@ -133,5 +148,31 @@ describe("errorHandlerPlugin", () => {
     const data = JSON.parse(response.payload);
     expect(data.ok).toBe(false);
     expect(data.error.code).toBe("INTERNAL_ERROR");
+  });
+
+  it("should catch TokenRevokedError, clear token from DB, and return 401 INTEGRATION_ERROR", async () => {
+    // Setup a dummy user with a token
+    await UserModel.create({
+      ownerId: "user-456",
+      driveRefreshToken: "valid-token",
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/test/token-revoked",
+    });
+
+    expect(response.statusCode).toBe(401);
+    const data = JSON.parse(response.payload);
+    expect(data.ok).toBe(false);
+    expect(data.error.code).toBe("INTEGRATION_ERROR");
+
+    // Verify token was cleared
+    const user = await UserModel.findOne({ ownerId: "user-456" });
+    expect(user).toBeDefined();
+    expect(user!.driveRefreshToken).toBeUndefined();
+
+    // Clean up
+    await UserModel.deleteOne({ ownerId: "user-456" });
   });
 });

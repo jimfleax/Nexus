@@ -41,6 +41,15 @@ export interface IStorageAdapter {
   ): Promise<string>;
   deleteFiles(ownerId: string, fileIds: string[]): Promise<void>;
   getQuota(ownerId: string): Promise<StorageQuota | null>;
+  getFileStream(
+    ownerId: string,
+    fileId: string,
+    rangeHeader?: string,
+  ): Promise<{
+    stream: Readable;
+    headers: Record<string, string>;
+    status: number;
+  }>;
 }
 
 /**
@@ -55,4 +64,30 @@ export class StorageError extends Error {
     super(message);
     this.name = "StorageError";
   }
+}
+
+/**
+ * @class TokenRevokedError
+ * @description Error type thrown when Google Drive API returns 401 or invalid_grant.
+ */
+export class TokenRevokedError extends StorageError {
+  constructor(
+    message: string,
+    public readonly ownerId: string,
+    cause?: any,
+  ) {
+    super(message, cause);
+    this.name = "TokenRevokedError";
+  }
+}
+
+/**
+ * @interface IDriveCredentialProvider
+ * @description Decouples the DriveStorageAdapter from the Domain UserModel.
+ */
+export interface IDriveCredentialProvider {
+  getCredentials(
+    ownerId: string,
+  ): Promise<{ refreshToken: string; folderId?: string } | null>;
+  saveFolderId(ownerId: string, folderId: string): Promise<void>;
 }

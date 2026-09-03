@@ -6,9 +6,18 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, ChatText, Sparkle, User } from "@phosphor-icons/react";
+import {
+  Check,
+  Copy,
+  ChatText,
+  Sparkle,
+  User,
+  CircleNotch,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import type { Resource } from "@nexus/shared";
+import { useResourceText } from "@/hooks/use-resources";
 
 type Message = { role: string; content: string; timestamp?: string };
 
@@ -52,28 +61,37 @@ function parseMessages(content?: string): Message[] {
 
 /**
  * @desc    Render a chat transcript as a conversation with copy actions
- * @param   {{title: string; content?: string}} props - Title and raw transcript
+ * @param   {{resource: Resource}} props - Resource
  * @returns {JSX.Element} The chat viewer
  */
-export function ChatViewer({
-  title,
-  content,
-}: {
-  title: string;
-  content?: string;
-}) {
+export function ChatViewer({ resource }: { resource: Resource }) {
   const [copiedAll, setCopiedAll] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
+  const { data: content, isLoading, isError } = useResourceText(resource.id);
   const messages = parseMessages(content);
 
-  if (!content) {
+  if (isLoading) {
+    return (
+      <div className="flex h-64 w-full flex-col items-center justify-center gap-4 bg-[#f8f4fb] border border-[#dec9e9] rounded-xl">
+        <CircleNotch className="h-8 w-8 animate-spin text-[#6247aa]" />
+        <span className="text-sm font-medium text-[#6247aa]">
+          Loading chat...
+        </span>
+      </div>
+    );
+  }
+
+  if (isError || !content) {
     return (
       <section className="rounded-2xl border border-dashed border-[#d2b7e5] bg-[#f8f4fb] px-6 py-16 text-center">
         <ChatText className="mx-auto size-10 text-[#6247aa]" />
-        <h2 className="mt-3 font-serif text-xl text-[#6247aa]">{title}</h2>
+        <h2 className="mt-3 font-serif text-xl text-[#6247aa]">
+          {resource.title}
+        </h2>
         <p className="mt-2 text-sm text-[#6247aa]">
-          This conversation transcript has no messages recorded.
+          This conversation transcript has no messages recorded or could not be
+          loaded.
         </p>
       </section>
     );
@@ -101,7 +119,10 @@ export function ChatViewer({
   };
 
   return (
-    <section aria-label={`${title} conversation`} className="space-y-4">
+    <section
+      aria-label={`${resource.title} conversation`}
+      className="space-y-4"
+    >
       <div className="flex items-center justify-between border-b border-[#dec9e9] pb-3 text-xs text-[#6247aa]">
         <span>{messages.length} messages in conversation</span>
         <Button

@@ -7,22 +7,42 @@
 import type { Resource } from "@nexus/shared";
 import { ViewerHeader } from "@/components/ui/viewer-header";
 import { ViewerEmptyState } from "@/components/ui/viewer-empty-state";
-
-import { ArrowSquareOut, Globe, Info } from "@phosphor-icons/react";
+import { useResourceText } from "@/hooks/use-resources";
+import {
+  ArrowSquareOut,
+  Globe,
+  Info,
+  CircleNotch,
+} from "@phosphor-icons/react";
 import { buttonVariants } from "@/components/ui/button";
 
 /**
  * @desc    Render a web link card with an iframe preview and open-site action
- * @param   {{title: string; url?: string}} props - Resource title and target URL
+ * @param   {{resource: Resource}} props - Resource
  * @returns {JSX.Element} The web resource viewer
  */
 export function WebResourceViewer({ resource }: { resource: Resource }) {
-  if (!resource.url) {
+  const { data: urlContent, isLoading, isError } = useResourceText(resource.id);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 w-full flex-col items-center justify-center gap-4 bg-[#f8f4fb] border border-[#dec9e9] rounded-xl">
+        <CircleNotch className="h-8 w-8 animate-spin text-[#6247aa]" />
+        <span className="text-sm font-medium text-[#6247aa]">
+          Loading URL...
+        </span>
+      </div>
+    );
+  }
+
+  const url = urlContent?.trim();
+
+  if (isError || !url) {
     return (
       <ViewerEmptyState
         icon={Globe}
         title={resource.title}
-        message="Add a website URL to preview or link this resource."
+        message="This web resource has no URL or could not be loaded."
       />
     );
   }
@@ -38,7 +58,7 @@ export function WebResourceViewer({ resource }: { resource: Resource }) {
           actions={
             <a
               className={buttonVariants({ variant: "default", size: "sm" })}
-              href={resource.url!}
+              href={url}
               target="_blank"
               rel="noreferrer"
             >
@@ -50,7 +70,7 @@ export function WebResourceViewer({ resource }: { resource: Resource }) {
 
         <iframe
           title={resource.title}
-          src={resource.url}
+          src={url}
           className="h-[75vh] min-h-[500px] w-full bg-white border-none"
           sandbox="allow-scripts allow-forms allow-popups allow-same-origin"
         />

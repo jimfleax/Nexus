@@ -150,6 +150,26 @@ export function ResourceDialog({
       const parsedTags = parseTags(tagsInput);
 
       if (mode === "create" && activeProjectId && activeListId) {
+        let payloadFile = file || undefined;
+        if (!payloadFile) {
+          if (type === "url" && url.trim()) {
+            payloadFile = new File([url.trim()], title.trim() + ".txt", {
+              type: "text/plain",
+            });
+          } else if (
+            (type === "markdown" ||
+              type === "note" ||
+              type === "chat" ||
+              type === "text" ||
+              type === "ebook") &&
+            content.trim()
+          ) {
+            payloadFile = new File([content.trim()], title.trim() + ".md", {
+              type: "text/markdown",
+            });
+          }
+        }
+
         await createResource({
           projectId: activeProjectId,
           listId: activeListId,
@@ -160,11 +180,9 @@ export function ResourceDialog({
             title: title.trim(),
             type,
             description: description.trim(),
-            url: url.trim() || undefined,
-            content: content.trim() || undefined,
             tags: parsedTags,
-            mimeType: file ? file.type : undefined,
-            file: file || undefined,
+            mimeType: payloadFile ? payloadFile.type : undefined,
+            file: payloadFile,
           },
         });
       } else if (mode === "edit" && resource) {
@@ -174,8 +192,6 @@ export function ResourceDialog({
             title: title.trim(),
             type,
             description: description.trim(),
-            url: url.trim() || undefined,
-            content: content.trim() || undefined,
             tags: parsedTags,
             listId: selectedListId,
           },
@@ -367,7 +383,7 @@ export function ResourceDialog({
               />
             </FormField>
 
-            {isUrlMode && (
+            {isUrlMode && mode === "create" && (
               <FormField
                 label={
                   type === "pdf"
@@ -389,7 +405,7 @@ export function ResourceDialog({
               </FormField>
             )}
 
-            {isContentMode && (
+            {isContentMode && mode === "create" && (
               <FormField label="Content" htmlFor="resource-content">
                 <textarea
                   id="resource-content"

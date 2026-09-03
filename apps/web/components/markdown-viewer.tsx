@@ -50,13 +50,40 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
   );
 }
 
+import type { Resource } from "@nexus/shared";
+import { useResourceText } from "@/hooks/use-resources";
+import { CircleNotch, FileText } from "@phosphor-icons/react";
+import { ViewerEmptyState } from "@/components/ui/viewer-empty-state";
+
 /**
  * @desc    Render Markdown content as a styled article
- * @param   {{content: string}} props - The Markdown source
+ * @param   {{resource: Resource}} props - The Markdown resource
  * @returns {JSX.Element} The rendered article
  */
-export function MarkdownViewer({ content }: { content: string }) {
+export function MarkdownViewer({ resource }: { resource: Resource }) {
   const reduceMotion = useReducedMotion();
+  const { data: content, isLoading, isError } = useResourceText(resource.id);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 w-full flex-col items-center justify-center gap-4 bg-[#f8f4fb] border border-[#dec9e9] rounded-xl">
+        <CircleNotch className="h-8 w-8 animate-spin text-[#6247aa]" />
+        <span className="text-sm font-medium text-[#6247aa]">
+          Loading markdown...
+        </span>
+      </div>
+    );
+  }
+
+  if (isError || !content) {
+    return (
+      <ViewerEmptyState
+        icon={FileText}
+        title={resource.title}
+        message="This markdown resource is empty or could not be loaded from Google Drive."
+      />
+    );
+  }
 
   return (
     <motion.article

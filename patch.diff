@@ -1,0 +1,173 @@
+--- apps/api/src/routes/resources.ts
++++ apps/api/src/routes/resources.ts
+@@ -10,13 +10,15 @@
+ import { CreateResourceSchema, ResourceSchema } from "@nexus/shared";
+ import {
+   createResource,
+   deleteResourceById,
+   findResourceById,
+   isDuplicateTitle,
+   listResourcesByProject,
+   toggleFavoriteResource,
+   updateResource,
+   validateListMembership,
++  createResourceWithUpload,
+ } from "../services/resource.service.js";
++import { parseMultipartResourceRequest } from "../utils/multipart.js";
+ import { FastifyReply } from "fastify";
+ 
+ /** Send a 404 with the raw `{ error }` shape matching this route file's existing responses. */
+@@ -82,136 +84,33 @@
+     async (request, reply) => {
+       let body: any;
+       let fileStream: any;
+       let mimeType = "";
+ 
+       if (request.isMultipart()) {
+-        body = {};
+-        let fileBuffer: Buffer | null = null;
+-
+-        // Iterate all parts in order. The file stream MUST be fully consumed
+-        // inside the loop — leaving it open stalls the iterator.
+-        for await (const part of request.parts()) {
+-          if (part.type === "file") {
+-            mimeType = part.mimetype;
+-            const chunks: Buffer[] = [];
+-            for await (const chunk of part.file) {
+-              chunks.push(chunk as Buffer);
+-            }
+-            fileBuffer = Buffer.concat(chunks);
+-          } else {
+-            body[part.fieldname] = part.value;
+-          }
+-        }
+-
+-        if (body.isFavorite !== undefined) {
+-          body.isFavorite = body.isFavorite === "true";
+-        }
+-
+-        if (!fileBuffer) {
+-          return reply
+-            .status(400)
+-            .send({ error: "Missing file in multipart request" } as any);
+-        }
+-
+-        // Wrap the buffer in a Readable so storage adapters receive a stream
+-        const { Readable } = await import("stream");
+-        fileStream = Readable.from(fileBuffer);
++        const parsed = await parseMultipartResourceRequest(request);
++        body = parsed.body;
++        fileStream = parsed.fileStream;
++        mimeType = parsed.mimeType;
+       } else {
+         body = request.body;
+       }
+ 
+       const parsedBody = CreateResourceSchema.safeParse(body);
+       if (!parsedBody.success) {
+         return reply.status(400).send({
+           error: "Invalid payload: " + parsedBody.error.message,
+         } as any);
+       }
+ 
+-      body = parsedBody.data;
+-      const ownerId = request.ownerId;
+-
+-      // Validate list membership via service
+-      const list = await validateListMembership(body.listId, body.projectId);
+-      if (!list) {
+-        return reply.status(404).send({
+-          error: "Knowledge List not found in the specified project",
+-        } as any);
+-      }
+-
+-      // Check title uniqueness via service
+-      const exists = await isDuplicateTitle(
+-        body.projectId,
+-        body.title,
+-        ownerId,
+-      );
+-      if (exists) {
+-        return reply.status(400).send({
+-          error: "A resource with this name already exists in the project",
+-        } as any);
+-      }
+-
+-      const isFileUpload =
+-        (body.type === "pdf" || body.type === "image") &&
+-        !body.url &&
+-        !body.content;
+-
+-      if (isFileUpload && !fileStream) {
+-        return reply.status(400).send({
+-          error: "File stream required for this resource type",
+-        } as any);
+-      }
+-
+-      // Create resource via service in pending or ready state
+-      const resource = await createResource({
+-        ...body,
+-        status: isFileUpload ? "pending" : "ready",
+-      });
+-
+-      if (!isFileUpload) {
+-        return reply.status(201).send(resource);
+-      }
+-
+       try {
+-        const mType =
+-          mimeType ||
+-          body.mimeType ||
+-          (body.type === "pdf" ? "application/pdf" : "image/jpeg");
+-        const uploadResult = await server.storage.uploadFile(
+-          ownerId,
+-          {
+-            title: body.title,
+-            mimeType: mType,
+-            projectId: body.projectId,
+-            listId: body.listId,
+-          },
+-          fileStream,
++        const resource = await createResourceWithUpload(
++          request.ownerId,
++          parsedBody.data,
++          server.storage,
++          fileStream,
++          mimeType
+         );
+-
+-        const updatedResource = await updateResource(resource._id.toString(), {
+-          driveFileId: uploadResult.driveFileId,
+-          size: uploadResult.size,
+-          status: "ready",
+-        });
+-
+-        if (!updatedResource) {
+-          const finalResource = await findResourceById(resource._id.toString());
+-          return reply.status(201).send(finalResource);
+-        }
+-
+-        return reply.status(201).send(updatedResource);
+-      } catch (error: any) {
+-        request.log.error(error, "Storage upload failed");
+-
+-        // Remove the newly created pending resource record so retries with the same title succeed
+-        await deleteResourceById(resource._id.toString());
+-
+-        if (error.name === "StorageError") {
+-          return reply.status(400).send({ error: error.message } as any);
++        return reply.status(201).send(resource);
++      } catch (err: any) {
++        if (err.message.includes("Knowledge List not found")) {
++            return reply.status(404).send({ error: err.message } as any);
+         }
+-        return reply
+-          .status(500)
+-          .send({ error: "Failed to upload file to storage" } as any);
++        if (err.message.includes("already exists") || err.name === "StorageError" || err.message.includes("stream required")) {
++            return reply.status(400).send({ error: err.message } as any);
++        }
++        request.log.error(err, "Resource creation failed");
++        return reply.status(500).send({ error: "Internal server error" } as any);
+       }
+     },
