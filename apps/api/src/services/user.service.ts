@@ -153,7 +153,7 @@ export async function getMetrics(
     KnowledgeListModel.countDocuments(),
   ]);
 
-  let drive: StorageMetrics["drive"] = {
+  const drive: StorageMetrics["drive"] = {
     connected: false,
     usedInDrive: null,
     limit: null,

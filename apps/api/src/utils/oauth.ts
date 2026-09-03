@@ -91,13 +91,19 @@ export async function exchangeCodeForToken(
   },
   extraHeaders: Record<string, string> = {},
 ) {
+  const { clientId, clientSecret, redirectUri, ...rest } = params;
   const res = await fetch(tokenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       ...extraHeaders,
     },
-    body: new URLSearchParams({ ...(params as any) }),
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      ...rest,
+    }),
   });
   return res;
 }
