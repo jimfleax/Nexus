@@ -87,23 +87,37 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       let mimeType = "";
 
       if (request.isMultipart()) {
-        const data = await request.file();
-        if (!data) {
+        body = {};
+        let fileBuffer: Buffer | null = null;
+
+        // Iterate all parts in order. The file stream MUST be fully consumed
+        // inside the loop — leaving it open stalls the iterator.
+        for await (const part of request.parts()) {
+          if (part.type === "file") {
+            mimeType = part.mimetype;
+            const chunks: Buffer[] = [];
+            for await (const chunk of part.file) {
+              chunks.push(chunk as Buffer);
+            }
+            fileBuffer = Buffer.concat(chunks);
+          } else {
+            body[part.fieldname] = part.value;
+          }
+        }
+
+        if (body.isFavorite !== undefined) {
+          body.isFavorite = body.isFavorite === "true";
+        }
+
+        if (!fileBuffer) {
           return reply
             .status(400)
             .send({ error: "Missing file in multipart request" } as any);
         }
-        body = {};
-        for (const [key, field] of Object.entries(data.fields)) {
-          if (field && (field as any).value !== undefined) {
-            body[key] = (field as any).value;
-          }
-        }
-        if (body.isFavorite !== undefined) {
-          body.isFavorite = body.isFavorite === "true";
-        }
-        fileStream = data.file;
-        mimeType = data.mimetype;
+
+        // Wrap the buffer in a Readable so storage adapters receive a stream
+        const { Readable } = await import("stream");
+        fileStream = Readable.from(fileBuffer);
       } else {
         body = request.body;
       }
