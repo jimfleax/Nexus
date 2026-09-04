@@ -26,6 +26,12 @@ export const SessionManager = {
       return request.cookies[SESSION_COOKIE];
     }
 
+    // Fall back to query parameter for cross-origin OAuth initiations
+    const query = request.query as Record<string, string>;
+    if (query && query.token) {
+      return query.token;
+    }
+
     return null;
   },
 

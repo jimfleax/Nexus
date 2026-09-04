@@ -70,6 +70,7 @@ function SidebarContent({
   onToggleCollapse,
   user,
   apiUrl,
+  sessionToken,
 }: {
   pathname: string;
   collapsed?: boolean;
@@ -77,6 +78,7 @@ function SidebarContent({
   onToggleCollapse?: () => void;
   user?: { name?: string | null; email?: string | null; image?: string | null };
   apiUrl?: string;
+  sessionToken?: string;
 }) {
   const { data: projects = [] } = useProjects();
 
@@ -249,7 +251,12 @@ function SidebarContent({
       {/* ── User Banner ── */}
       {user && (
         <div className={`mt-4 ${collapsed ? "px-1" : ""}`}>
-          <ProfileModal user={user} collapsed={collapsed} apiUrl={apiUrl} />
+          <ProfileModal
+            user={user}
+            collapsed={collapsed}
+            apiUrl={apiUrl}
+            sessionToken={sessionToken}
+          />
         </div>
       )}
     </div>
@@ -267,10 +274,12 @@ export function AppShell({
   children,
   user,
   apiUrl,
+  sessionToken,
 }: {
   children: React.ReactNode;
   user?: { name?: string | null; email?: string | null; image?: string | null };
   apiUrl?: string;
+  sessionToken?: string;
 }) {
   // Initialise from localStorage to avoid flash on reload
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -320,6 +329,7 @@ export function AppShell({
               onToggleCollapse={() => setCollapsed((c) => !c)}
               user={user}
               apiUrl={apiUrl}
+              sessionToken={sessionToken}
             />
           </motion.div>
         </div>
@@ -366,6 +376,7 @@ export function AppShell({
                 onNavigate={() => setIsMobileNavOpen(false)}
                 user={user}
                 apiUrl={apiUrl}
+                sessionToken={sessionToken}
               />
             </SheetContent>
           </Sheet>

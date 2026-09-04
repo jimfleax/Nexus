@@ -64,6 +64,9 @@ export default async function DashboardLayout({
     redirect("/signin");
   }
 
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("nexus-session")?.value || "";
+
   const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
     /\/+$/,
     "",
@@ -71,7 +74,7 @@ export default async function DashboardLayout({
 
   return (
     <Providers>
-      <AppShell user={user} apiUrl={apiUrl}>
+      <AppShell user={user} apiUrl={apiUrl} sessionToken={sessionToken}>
         {children}
       </AppShell>
     </Providers>
