@@ -199,8 +199,6 @@ export const apiClient = {
     ): Promise<Resource> {
       if (input.file) {
         const form = new FormData();
-        form.append("projectId", projectId);
-        form.append("listId", listId);
         Object.keys(input).forEach((key) => {
           const val = input[key];
           if (val !== undefined) {
