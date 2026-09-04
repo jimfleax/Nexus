@@ -7,4 +7,7 @@ export default tseslint.config(
   {
     ignores: [".next/**", "node_modules/**", "components/ui/**"],
   },
+  {
+    rules: { "@next/next/no-html-link-for-pages": "off" },
+  },
 );
