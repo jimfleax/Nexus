@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { ResourceCard } from "@/components/resource-card";
 import { Skeleton } from "boneyard-js/react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { AnimatePresence, motion } from "motion/react";
 
 export function ResourceList({
   items,
@@ -33,28 +34,52 @@ export function ResourceList({
 }) {
   return (
     <div className={cn("mt-6 max-w-4xl", className)}>
-      {isLoading ? (
-        <div className="flex flex-col border-y border-[#dec9e9]">
-          {Array.from({ length: skeletonCount }).map((_, i) => (
-            <Skeleton key={i} name="resource-card" loading>
-              {null}
-            </Skeleton>
-          ))}
-        </div>
-      ) : items.length > 0 ? (
-        <div className="border-y border-[#dec9e9]">
-          {items.map((r) => (
-            <ResourceCard key={r.id} resource={r} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          icon={emptyIcon}
-          title={emptyTitle}
-          description={emptyDescription}
-          action={action}
-        />
-      )}
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col border-y border-[#dec9e9]"
+          >
+            {Array.from({ length: skeletonCount }).map((_, i) => (
+              <Skeleton key={i} name="resource-card" loading>
+                {null}
+              </Skeleton>
+            ))}
+          </motion.div>
+        ) : items.length > 0 ? (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="border-y border-[#dec9e9]"
+          >
+            {items.map((r) => (
+              <ResourceCard key={r.id} resource={r} />
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <EmptyState
+              icon={emptyIcon}
+              title={emptyTitle}
+              description={emptyDescription}
+              action={action}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

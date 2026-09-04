@@ -11,6 +11,7 @@ import { apiClient } from "@/lib/api-client";
 import { Skeleton } from "boneyard-js/react";
 import type { Resource } from "@nexus/shared";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "motion/react";
 import { searchKeys } from "@/lib/query-keys";
 import { useProject } from "@/hooks/use-projects";
 import { useList } from "@/hooks/use-lists";
@@ -95,31 +96,50 @@ export default function Search({
           {results.length} result{results.length === 1 ? "" : "s"} for “{q}”
         </p>
       )}
-      {loading && (
-        <div className="mt-4 max-w-3xl divide-y divide-[#dec9e9] flex flex-col gap-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} name="search-result" loading={true}>
-              {null}
-            </Skeleton>
-          ))}
-        </div>
-      )}
-      <div className="mt-4 max-w-3xl divide-y divide-[#dec9e9]">
-        {!loading && results.map((r) => <SearchResultItem key={r.id} r={r} />)}
-        {q && !results.length && !loading && (
-          <div className="py-16 text-center">
-            <h2 className="font-serif text-xl">No results found</h2>
-            <p className="mt-2 text-[#6247aa]">
-              Try a title, tag, or another phrase.
-            </p>
-          </div>
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-4 max-w-3xl divide-y divide-[#dec9e9] flex flex-col gap-2"
+          >
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} name="search-result" loading={true}>
+                {null}
+              </Skeleton>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-4 max-w-3xl divide-y divide-[#dec9e9]"
+          >
+            {results.map((r) => (
+              <SearchResultItem key={r.id} r={r} />
+            ))}
+            {q && !results.length && (
+              <div className="py-16 text-center">
+                <h2 className="font-serif text-xl">No results found</h2>
+                <p className="mt-2 text-[#6247aa]">
+                  Try a title, tag, or another phrase.
+                </p>
+              </div>
+            )}
+            {!q && (
+              <div className="py-16 text-center text-[#6247aa]">
+                Search across your workspace.
+              </div>
+            )}
+          </motion.div>
         )}
-        {!q && !loading && (
-          <div className="py-16 text-center text-[#6247aa]">
-            Search across your workspace.
-          </div>
-        )}
-      </div>
+      </AnimatePresence>
     </>
   );
 }
