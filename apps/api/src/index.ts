@@ -36,8 +36,7 @@ import rateLimit from "@fastify/rate-limit";
 
 const fastify = Fastify({
   logger: true,
-  ignoreTrailingSlash: true,
-  ignoreDuplicateSlashes: true,
+  routerOptions: { ignoreTrailingSlash: true, ignoreDuplicateSlashes: true },
 }).withTypeProvider<ZodTypeProvider>();
 
 fastify.setValidatorCompiler(validatorCompiler);
