@@ -23,7 +23,10 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
       "",
     );
     const redirectUri = `${apiUrl}/api/integrations/google-drive/callback`;
-    const state = generateState();
+    const rawState = generateState();
+    const state = Buffer.from(
+      JSON.stringify({ nonce: rawState, ownerId: (request as any).ownerId }),
+    ).toString("base64");
 
     SessionManager.setIntegrationState(reply, state);
 
@@ -41,7 +44,7 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
   /**
    * @desc    Handle Google Drive callback — exchange code, update user settings with refresh token
    * @route   GET /api/integrations/google-drive/callback
-   * @access  Private
+   * @access  Private (Auth bypassed in authPlugin, verified via state cookie)
    */
   fastify.get(
     "/api/integrations/google-drive/callback",
@@ -58,6 +61,20 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
       }
       SessionManager.clearIntegrationState(reply);
 
+      let ownerId = "";
+      try {
+        const decoded = JSON.parse(
+          Buffer.from(state, "base64").toString("utf8"),
+        );
+        ownerId = decoded.ownerId;
+      } catch (e) {
+        return reply.redirect(`${frontendUrl()}/?error=state_invalid`);
+      }
+
+      if (!ownerId) {
+        return reply.redirect(`${frontendUrl()}/?error=state_invalid`);
+      }
+
       try {
         const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
           /\/+$/,
@@ -71,7 +88,7 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
           code,
           redirectUri,
           (refreshToken) =>
-            updateSettings(request.ownerId, {
+            updateSettings(ownerId, {
               driveRefreshToken: refreshToken,
             }),
         );

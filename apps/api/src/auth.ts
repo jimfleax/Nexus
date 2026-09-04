@@ -53,7 +53,11 @@ export const authPlugin = fp(async (fastify) => {
       const routeUrl = request.routeOptions?.url || rawUrl;
 
       // Public routes — skip auth entirely
-      if (routeUrl === "/health" || routeUrl.startsWith("/api/auth/")) {
+      if (
+        routeUrl === "/health" ||
+        routeUrl.startsWith("/api/auth/") ||
+        routeUrl === "/api/integrations/google-drive/callback"
+      ) {
         return;
       }
 
