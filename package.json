@@ -11,6 +11,7 @@
     "build:all": "npm run build --workspaces --if-present",
     "lint:all": "npm run lint --workspaces --if-present",
     "typecheck:all": "npm run typecheck --workspaces --if-present",
+    "typecheck:ci": "npm run build --workspace=packages/shared && npm run typecheck:all",
     "prepare": "husky || true"
   },
   "devDependencies": {
