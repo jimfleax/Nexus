@@ -36,6 +36,10 @@ const CreateResourceDialog = React.lazy(() =>
  * @returns {JSX.Element} The project page
  */
 export function ProjectPage({ project }: { project: Project }) {
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const { data: collections = [], isLoading } = useLists(project.id);
   const { mutate: reorderLists } = useReorderLists();
   const router = useRouter();
@@ -125,7 +129,7 @@ export function ProjectPage({ project }: { project: Project }) {
             {!isLoading && `(${collections.length})`}
           </span>
         </h2>
-        {isLoading || collections.length > 0 ? (
+        {!isMounted || isLoading || collections.length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 7 }}
             animate={{ opacity: 1, y: 0 }}

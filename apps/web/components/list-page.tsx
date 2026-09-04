@@ -49,6 +49,10 @@ export function ListPage({
   project: Project;
   list: KnowledgeList;
 }) {
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const { data: items = [], isLoading } = useResources(project.id, list.id);
   const router = useRouter();
   const { mutate: deleteList, isPending: isDeletingList } = useDeleteList();
@@ -144,7 +148,7 @@ export function ListPage({
         />
       </div>
       <div className="mt-3 max-w-4xl">
-        {isLoading || items.length > 0 ? (
+        {!isMounted || isLoading || items.length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 7 }}
             animate={{ opacity: 1, y: 0 }}

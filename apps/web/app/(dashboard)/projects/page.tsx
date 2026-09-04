@@ -60,8 +60,13 @@ function ProjectItem({ p }: { p: Project }) {
  * @desc    Render the projects grid, header, and create dialog
  * @returns {JSX.Element} Page header plus the project grid
  */
-export default function ProjectsPage() {
+export default function Projects() {
   const { data: projects = [], isLoading } = useProjects();
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
     <>
@@ -81,7 +86,7 @@ export default function ProjectsPage() {
         }
       />
 
-      {isLoading || projects.length > 0 ? (
+      {!isMounted || isLoading || projects.length > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 7 }}
           animate={{ opacity: 1, y: 0 }}

@@ -2,9 +2,11 @@
 
 /**
  * @file resource-list.tsx
-import { motion } from "framer-motion";
+
  * @description Shared resource list with loading skeleton, empty state, and card rendering. Eliminates the P3 ternary duplication across recent/favorites/list-page/dashboard.
  */
+import React from "react";
+import { motion } from "framer-motion";
 import type { Icon } from "@phosphor-icons/react";
 import type { Resource } from "@nexus/shared";
 import type { ReactNode } from "react";
@@ -32,9 +34,13 @@ export function ResourceList({
   className?: string;
   skeletonCount?: number;
 }) {
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
   return (
     <div className={cn("mt-6 max-w-4xl", className)}>
-      {isLoading || items.length > 0 ? (
+      {!isMounted || isLoading || items.length > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 7 }}
           animate={{ opacity: 1, y: 0 }}

@@ -70,6 +70,10 @@ export default function Search({
     setQ(query);
   }, [query]);
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const { data: results = [], isLoading: loading } = useQuery({
     queryKey: searchKeys.query(query),
     queryFn: () => apiClient.search.query(query),
@@ -96,7 +100,7 @@ export default function Search({
           {results.length} result{results.length === 1 ? "" : "s"} for “{q}”
         </p>
       )}
-      {loading || results.length > 0 ? (
+      {!isMounted || loading || results.length > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 7 }}
           animate={{ opacity: 1, y: 0 }}
