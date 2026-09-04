@@ -1,3 +1,5 @@
+"use client";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { ResourceList } from "@/components/ui/resource-list";
 import { Skeleton } from "boneyard-js/react";

@@ -1,3 +1,5 @@
+"use client";
+
 import { Skeleton } from "boneyard-js/react";
 
 export default function Loading() {

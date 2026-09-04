@@ -1,3 +1,5 @@
+"use client";
+
 import { Skeleton } from "boneyard-js/react";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { formatLongDate } from "@/lib/utils";
