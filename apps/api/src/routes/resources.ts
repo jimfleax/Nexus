@@ -160,7 +160,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
    * @access  Private
    */
   server.get(
-    "/api/v1/resources/:id/content",
+    "/api/resources/:id/content",
     {
       schema: {
         params: z.object({ id: z.string() }),
