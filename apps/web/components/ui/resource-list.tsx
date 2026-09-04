@@ -2,6 +2,7 @@
 
 /**
  * @file resource-list.tsx
+import { motion } from "framer-motion";
  * @description Shared resource list with loading skeleton, empty state, and card rendering. Eliminates the P3 ternary duplication across recent/favorites/list-page/dashboard.
  */
 import type { Icon } from "@phosphor-icons/react";
@@ -34,7 +35,12 @@ export function ResourceList({
   return (
     <div className={cn("mt-6 max-w-4xl", className)}>
       {isLoading || items.length > 0 ? (
-        <div className="flex flex-col border-y border-[#dec9e9]">
+        <motion.div
+          initial={{ opacity: 0, y: 7 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          className="flex flex-col border-y border-[#dec9e9]"
+        >
           {(isLoading
             ? (Array.from({ length: skeletonCount }) as Resource[])
             : items
@@ -50,7 +56,7 @@ export function ResourceList({
               </Skeleton>
             );
           })}
-        </div>
+        </motion.div>
       ) : (
         <EmptyState
           icon={emptyIcon}

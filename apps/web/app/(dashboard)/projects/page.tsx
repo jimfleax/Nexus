@@ -9,6 +9,7 @@ import React, { Suspense } from "react";
 import Link from "next/link";
 import { Skeleton } from "boneyard-js/react";
 import { MagicContainer, MagicCard } from "@/components/ui/magic-card";
+import { motion } from "framer-motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { useProjects } from "@/hooks/use-projects";
@@ -81,26 +82,32 @@ export default function ProjectsPage() {
       />
 
       {isLoading || projects.length > 0 ? (
-        <MagicContainer
-          className="mt-8 grid gap-4 sm:grid-cols-2"
-          glowColor="129, 90, 192"
+        <motion.div
+          initial={{ opacity: 0, y: 7 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
         >
-          {(isLoading
-            ? (Array.from({ length: 4 }) as Project[])
-            : projects
-          ).map((item, i) => {
-            const isDummy = isLoading;
-            return (
-              <Skeleton key={i} name="project-card" loading={isLoading}>
-                {isDummy ? (
-                  <div style={{ minHeight: 180 }} />
-                ) : (
-                  <ProjectItem p={item as Project} />
-                )}
-              </Skeleton>
-            );
-          })}
-        </MagicContainer>
+          <MagicContainer
+            className="mt-8 grid gap-4 sm:grid-cols-2"
+            glowColor="129, 90, 192"
+          >
+            {(isLoading
+              ? (Array.from({ length: 4 }) as Project[])
+              : projects
+            ).map((item, i) => {
+              const isDummy = isLoading;
+              return (
+                <Skeleton key={i} name="project-card" loading={isLoading}>
+                  {isDummy ? (
+                    <div style={{ minHeight: 180 }} />
+                  ) : (
+                    <ProjectItem p={item as Project} />
+                  )}
+                </Skeleton>
+              );
+            })}
+          </MagicContainer>
+        </motion.div>
       ) : (
         <EmptyState
           title="No projects yet"

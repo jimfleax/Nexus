@@ -23,7 +23,11 @@ import {
   Square,
 } from "@phosphor-icons/react";
 import { buttonVariants } from "@/components/ui/button";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { Document, Page, pdfjs } from "react-pdf";
 
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -49,7 +53,11 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const transitionTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  const { data: blob, isPending: isLoadingPdf, error: queryError } = useQuery({
+  const {
+    data: blob,
+    isPending: isLoadingPdf,
+    error: queryError,
+  } = useQuery({
     queryKey: ["pdf", url],
     queryFn: async () => {
       if (!url) return null;
@@ -65,7 +73,11 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
     staleTime: Infinity,
   });
 
-  const pdfError = queryError ? (queryError instanceof Error ? queryError.message : String(queryError)) : undefined;
+  const pdfError = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : String(queryError)
+    : undefined;
 
   useEffect(() => {
     if (blob) {

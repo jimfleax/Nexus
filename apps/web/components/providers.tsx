@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import { useState } from "react";
 import { ReaderSettingsProvider } from "./reader-settings-provider";
 import { GlobalBootLoader } from "./global-boot-loader";
+import "@/components/bones/registry";
 
 /**
  * @desc    Wrap children with the query, reader-settings, and toast providers

@@ -4,6 +4,7 @@ import { resourceUrl } from "@/lib/urls";
  * @file page.tsx
  * @description Search page: full-text search across the workspace driven by the ?q= query param.
  */
+import { motion } from "framer-motion";
 
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
@@ -96,7 +97,12 @@ export default function Search({
         </p>
       )}
       {loading || results.length > 0 ? (
-        <div className="mt-4 max-w-3xl divide-y divide-[#dec9e9] flex flex-col gap-2">
+        <motion.div
+          initial={{ opacity: 0, y: 7 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          className="mt-4 max-w-3xl divide-y divide-[#dec9e9] flex flex-col gap-2"
+        >
           {(loading ? (Array.from({ length: 3 }) as Resource[]) : results).map(
             (item, i) => {
               const isDummy = loading;
@@ -111,7 +117,7 @@ export default function Search({
               );
             },
           )}
-        </div>
+        </motion.div>
       ) : null}
 
       {!loading && q && !results.length && (

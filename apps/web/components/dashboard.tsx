@@ -7,6 +7,7 @@
  */
 import React from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ResourceCard } from "@/components/resource-card";
 import type { Project, Resource } from "@nexus/shared";
 import { useProjects } from "@/hooks/use-projects";
@@ -85,30 +86,36 @@ export function Dashboard() {
                 View all ({projects.length})
               </Link>
             </div>
-            <MagicContainer
-              className="gap-3 md:grid-cols-3 grid"
-              glowColor="255, 255, 255"
+            <motion.div
+              initial={{ opacity: 0, y: 7 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
             >
-              {(projectsLoading
-                ? (Array.from({ length: 3 }) as Project[])
-                : projects
-              ).map((item, i) => {
-                const isDummy = projectsLoading;
-                return (
-                  <Skeleton
-                    key={i}
-                    name="project-card"
-                    loading={projectsLoading}
-                  >
-                    {isDummy ? (
-                      <div style={{ minHeight: 180 }} />
-                    ) : (
-                      <ProjectCard p={item as Project} />
-                    )}
-                  </Skeleton>
-                );
-              })}
-            </MagicContainer>
+              <MagicContainer
+                className="gap-3 md:grid-cols-3 grid"
+                glowColor="255, 255, 255"
+              >
+                {(projectsLoading
+                  ? (Array.from({ length: 3 }) as Project[])
+                  : projects
+                ).map((item, i) => {
+                  const isDummy = projectsLoading;
+                  return (
+                    <Skeleton
+                      key={i}
+                      name="project-card"
+                      loading={projectsLoading}
+                    >
+                      {isDummy ? (
+                        <div style={{ minHeight: 180 }} />
+                      ) : (
+                        <ProjectCard p={item as Project} />
+                      )}
+                    </Skeleton>
+                  );
+                })}
+              </MagicContainer>
+            </motion.div>
           </section>
         )}
       </BackgroundGradientAnimation>
@@ -130,7 +137,12 @@ export function Dashboard() {
           )}
         >
           {recentLoading || recentResources.length > 0 ? (
-            <div className="flex flex-col gap-2">
+            <motion.div
+              initial={{ opacity: 0, y: 7 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="flex flex-col gap-2"
+            >
               {(recentLoading
                 ? (Array.from({ length: 3 }) as Resource[])
                 : recentResources
@@ -150,7 +162,7 @@ export function Dashboard() {
                   </Skeleton>
                 );
               })}
-            </div>
+            </motion.div>
           ) : (
             <EmptyState
               icon={BookOpen}

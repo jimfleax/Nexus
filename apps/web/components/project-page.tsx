@@ -9,6 +9,7 @@ import React, { Suspense } from "react";
 import type { Project, KnowledgeList } from "@nexus/shared";
 import { Skeleton } from "boneyard-js/react";
 import { useLists, useReorderLists } from "@/hooks/use-lists";
+import { motion } from "framer-motion";
 import { ProjectListCard } from "@/components/project-list-card";
 import { useRouter } from "next/navigation";
 import { useDeleteProject } from "@/hooks/use-projects";
@@ -125,7 +126,12 @@ export function ProjectPage({ project }: { project: Project }) {
           </span>
         </h2>
         {isLoading || collections.length > 0 ? (
-          <div className="flex flex-col gap-2">
+          <motion.div
+            initial={{ opacity: 0, y: 7 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="flex flex-col gap-2"
+          >
             {(isLoading
               ? (Array.from({ length: 3 }) as KnowledgeList[])
               : collections
@@ -148,7 +154,7 @@ export function ProjectPage({ project }: { project: Project }) {
                 </Skeleton>
               );
             })}
-          </div>
+          </motion.div>
         ) : (
           <div className="py-12 text-center border border-dashed border-[#dec9e9] rounded-2xl">
             <h3 className="font-serif text-lg text-[#6247aa]">

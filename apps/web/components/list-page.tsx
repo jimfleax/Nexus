@@ -9,6 +9,7 @@ import React, { Suspense } from "react";
 import type { KnowledgeList, Project, Resource } from "@nexus/shared";
 import { ResourceCard } from "@/components/resource-card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { motion } from "framer-motion";
 import { Skeleton } from "boneyard-js/react";
 import { useResources } from "@/hooks/use-resources";
 import { useRouter } from "next/navigation";
@@ -144,7 +145,12 @@ export function ListPage({
       </div>
       <div className="mt-3 max-w-4xl">
         {isLoading || items.length > 0 ? (
-          <div className="flex flex-col">
+          <motion.div
+            initial={{ opacity: 0, y: 7 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="flex flex-col"
+          >
             {(isLoading
               ? (Array.from({ length: 5 }) as Resource[])
               : items
@@ -160,7 +166,7 @@ export function ListPage({
                 </Skeleton>
               );
             })}
-          </div>
+          </motion.div>
         ) : (
           <EmptyState
             title="No resources yet"

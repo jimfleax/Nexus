@@ -14,12 +14,10 @@ import { DriveStorageAdapter } from "../src/utils/storage/drive.js";
 describe("DriveStorageAdapter client-builder injection", () => {
   it("uses the injected client builder with the user's refresh token", async () => {
     const credentialProvider = {
-      getCredentials: vi
-        .fn()
-        .mockResolvedValue({
-          refreshToken: "refresh-token",
-          folderId: "folder",
-        }),
+      getCredentials: vi.fn().mockResolvedValue({
+        refreshToken: "refresh-token",
+        folderId: "folder",
+      }),
       saveFolderId: vi.fn().mockResolvedValue(undefined),
     };
     const buildClient = vi
