@@ -10,7 +10,6 @@ import type { KnowledgeList, Project } from "@nexus/shared";
 import { ResourceCard } from "@/components/resource-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "boneyard-js/react";
-import { AnimatePresence, motion } from "motion/react";
 import { useResources } from "@/hooks/use-resources";
 import { useRouter } from "next/navigation";
 import { useDeleteList } from "@/hooks/use-lists";
@@ -144,65 +143,40 @@ export function ListPage({
         />
       </div>
       <div className="mt-3 max-w-4xl">
-        <AnimatePresence mode="wait">
-          {isLoading ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col"
-            >
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} name="resource-card" loading>
-                  {null}
-                </Skeleton>
-              ))}
-            </motion.div>
-          ) : items.length ? (
-            <motion.div
-              key="content"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {items.map((item) => (
-                <ResourceCard key={item.id} resource={item} />
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <EmptyState
-                title="No resources yet"
-                description="Create your first Markdown note or add a resource."
-                action={
-                  <Suspense
-                    fallback={
-                      <div className="mx-auto mt-4">
-                        <Skeleton name="button" loading>
-                          {null}
-                        </Skeleton>
-                      </div>
-                    }
-                  >
-                    <CreateResourceDialog
-                      projectId={project.id}
-                      listId={list.id}
-                    />
-                  </Suspense>
+        {isLoading || items.length > 0 ? (
+          <div className="flex flex-col">
+            {(isLoading ? (Array.from({ length: 5 }) as unknown[]) : items).map(
+              (item, i) => {
+                const isDummy = isLoading;
+                return (
+                  <Skeleton key={i} name="resource-card" loading={isLoading}>
+                    {isDummy ? (
+                      <div style={{ minHeight: 93 }} />
+                    ) : (
+                      <ResourceCard resource={item} />
+                    )}
+                  </Skeleton>
+                );
+              },
+            )}
+          </div>
+        ) : (
+          <EmptyState
+            title="No resources yet"
+            description="Create your first Markdown note or add a resource."
+            action={
+              <Suspense
+                fallback={
+                  <Skeleton name="button" loading>
+                    {null}
+                  </Skeleton>
                 }
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+              >
+                <CreateResourceDialog projectId={project.id} listId={list.id} />
+              </Suspense>
+            }
+          />
+        )}
       </div>
     </>
   );

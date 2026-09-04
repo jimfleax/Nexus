@@ -8,6 +8,7 @@
 import React from "react";
 import Link from "next/link";
 import { ResourceCard } from "@/components/resource-card";
+import type { Project, Resource } from "@nexus/shared";
 import { useProjects } from "@/hooks/use-projects";
 import { useRecentResources } from "@/hooks/use-recent-resources";
 import { ProjectCard } from "@/components/project-card";
@@ -16,7 +17,6 @@ import { formatLongDate } from "@/lib/utils";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "boneyard-js/react";
-import { AnimatePresence, motion } from "motion/react";
 import { QuickAddNotch } from "@/components/layout/quick-add-notch";
 import { MagicContainer } from "@/components/ui/magic-card";
 import { BookOpen } from "@phosphor-icons/react";
@@ -85,41 +85,30 @@ export function Dashboard() {
                 View all ({projects.length})
               </Link>
             </div>
-            <AnimatePresence mode="wait">
-              {projectsLoading ? (
-                <motion.div
-                  key="loading"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="gap-3 md:grid-cols-3 grid"
-                >
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} name="project-card" loading={true}>
-                      {null}
-                    </Skeleton>
-                  ))}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="content"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <MagicContainer
-                    className="grid gap-3 sm:grid-cols-2 md:grid-cols-3"
-                    glowColor="255, 255, 255"
+            <MagicContainer
+              className="gap-3 md:grid-cols-3 grid"
+              glowColor="255, 255, 255"
+            >
+              {(projectsLoading
+                ? (Array.from({ length: 3 }) as unknown[])
+                : projects
+              ).map((item, i) => {
+                const isDummy = projectsLoading;
+                return (
+                  <Skeleton
+                    key={i}
+                    name="project-card"
+                    loading={projectsLoading}
                   >
-                    {projects.map((p) => (
-                      <ProjectCard key={p.id} p={p} />
-                    ))}
-                  </MagicContainer>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    {isDummy ? (
+                      <div style={{ minHeight: 180 }} />
+                    ) : (
+                      <ProjectCard p={item as Project} />
+                    )}
+                  </Skeleton>
+                );
+              })}
+            </MagicContainer>
           </section>
         )}
       </BackgroundGradientAnimation>
@@ -140,50 +129,35 @@ export function Dashboard() {
             recentResources.length === 0 && "border-0",
           )}
         >
-          <AnimatePresence mode="wait">
-            {recentLoading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col gap-2"
-              >
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} name="resource-card" loading={true}>
-                    {null}
+          {recentLoading || recentResources.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {(recentLoading
+                ? (Array.from({ length: 3 }) as unknown[])
+                : recentResources
+              ).map((item, i) => {
+                const isDummy = recentLoading;
+                return (
+                  <Skeleton
+                    key={i}
+                    name="resource-card"
+                    loading={recentLoading}
+                  >
+                    {isDummy ? (
+                      <div style={{ minHeight: 93 }} />
+                    ) : (
+                      <ResourceCard resource={item as Resource} />
+                    )}
                   </Skeleton>
-                ))}
-              </motion.div>
-            ) : recentResources.length ? (
-              <motion.div
-                key="content"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {recentResources.map((r) => (
-                  <ResourceCard key={r.id} resource={r} />
-                ))}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <EmptyState
-                  icon={BookOpen}
-                  title="No resources yet"
-                  description="Create your first resource to get started."
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyState
+              icon={BookOpen}
+              title="No resources yet"
+              description="Create your first resource to get started."
+            />
+          )}
         </div>
       </section>
     </div>

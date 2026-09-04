@@ -8,7 +8,6 @@ import { projectUrl } from "@/lib/urls";
 import React, { Suspense } from "react";
 import Link from "next/link";
 import { Skeleton } from "boneyard-js/react";
-import { AnimatePresence, motion } from "motion/react";
 import { MagicContainer, MagicCard } from "@/components/ui/magic-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -81,66 +80,45 @@ export default function ProjectsPage() {
         }
       />
 
-      <AnimatePresence mode="wait">
-        {isLoading ? (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-8 grid gap-4 sm:grid-cols-2"
-          >
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} name="project-card" loading={true}>
-                {null}
+      {isLoading || projects.length > 0 ? (
+        <MagicContainer
+          className="mt-8 grid gap-4 sm:grid-cols-2"
+          glowColor="129, 90, 192"
+        >
+          {(isLoading
+            ? (Array.from({ length: 4 }) as unknown[])
+            : projects
+          ).map((item, i) => {
+            const isDummy = isLoading;
+            return (
+              <Skeleton key={i} name="project-card" loading={isLoading}>
+                {isDummy ? (
+                  <div style={{ minHeight: 180 }} />
+                ) : (
+                  <ProjectItem p={item as Project} />
+                )}
               </Skeleton>
-            ))}
-          </motion.div>
-        ) : projects.length === 0 ? (
-          <motion.div
-            key="empty"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <EmptyState
-              title="No projects yet"
-              description="Create your first project to start organizing your knowledge contexts."
-              action={
-                <Suspense
-                  fallback={
-                    <Skeleton name="button" loading>
-                      {null}
-                    </Skeleton>
-                  }
-                >
-                  <CreateProjectDialog />
-                </Suspense>
+            );
+          })}
+        </MagicContainer>
+      ) : (
+        <EmptyState
+          title="No projects yet"
+          description="Create your first project to start organizing your knowledge contexts."
+          action={
+            <Suspense
+              fallback={
+                <Skeleton name="button" loading>
+                  {null}
+                </Skeleton>
               }
-              className="mt-12"
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <MagicContainer
-              className="mt-8 grid gap-4 sm:grid-cols-2"
-              glowColor="129, 90, 192"
             >
-              {projects.map((p) => (
-                <ProjectItem key={p.id} p={p} />
-              ))}
-            </MagicContainer>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <CreateProjectDialog />
+            </Suspense>
+          }
+          className="mt-12"
+        />
+      )}
     </>
   );
 }

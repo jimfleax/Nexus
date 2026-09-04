@@ -8,8 +8,6 @@
 import React, { Suspense } from "react";
 import type { Project } from "@nexus/shared";
 import { Skeleton } from "boneyard-js/react";
-import { AnimatePresence, motion } from "motion/react";
-
 import { useLists, useReorderLists } from "@/hooks/use-lists";
 import { ProjectListCard } from "@/components/project-list-card";
 import { useRouter } from "next/navigation";
@@ -126,60 +124,41 @@ export function ProjectPage({ project }: { project: Project }) {
             {!isLoading && `(${collections.length})`}
           </span>
         </h2>
-        <AnimatePresence mode="wait">
-          {isLoading ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col gap-2"
-            >
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} name="project-list-card" loading>
-                  {null}
+        {isLoading || collections.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {(isLoading
+              ? (Array.from({ length: 3 }) as unknown[])
+              : collections
+            ).map((item, i) => {
+              const isDummy = isLoading;
+              return (
+                <Skeleton key={i} name="project-list-card" loading={isLoading}>
+                  {isDummy ? (
+                    <div style={{ minHeight: 68 }} />
+                  ) : (
+                    <ProjectListCard
+                      key={item.id}
+                      project={project}
+                      list={item}
+                      index={i}
+                      total={collections.length}
+                      onReorder={handleReorder}
+                    />
+                  )}
                 </Skeleton>
-              ))}
-            </motion.div>
-          ) : collections.length ? (
-            <motion.div
-              key="content"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col gap-2"
-            >
-              {collections.map((list, index) => (
-                <ProjectListCard
-                  key={list.id}
-                  project={project}
-                  list={list}
-                  index={index}
-                  total={collections.length}
-                  onReorder={handleReorder}
-                />
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="py-12 text-center border border-dashed border-[#dec9e9] rounded-2xl"
-            >
-              <h3 className="font-serif text-lg text-[#6247aa]">
-                No collections yet
-              </h3>
-              <p className="mt-1 text-sm text-[#815ac0]">
-                Create a collection to organize your resources.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="py-12 text-center border border-dashed border-[#dec9e9] rounded-2xl">
+            <h3 className="font-serif text-lg text-[#6247aa]">
+              No collections yet
+            </h3>
+            <p className="mt-1 text-sm text-[#815ac0]">
+              Create a collection to organize your resources.
+            </p>
+          </div>
+        )}
       </section>
     </>
   );
