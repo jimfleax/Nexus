@@ -6,9 +6,16 @@
 
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
+import { SignJWT, jwtVerify } from "jose";
 import { updateSettings } from "../services/user.service.js";
 import { frontendUrl, generateState } from "../utils/oauth.js";
 import { SessionManager } from "../utils/session.js";
+
+function getSigningKey(): Uint8Array {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) throw new Error("AUTH_SECRET is not configured");
+  return new TextEncoder().encode(secret);
+}
 
 export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
   /**
@@ -22,16 +29,20 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
       "",
     );
     const redirectUri = `${apiUrl}/api/integrations/google-drive/callback`;
-    const rawState = generateState();
-    const state = Buffer.from(
-      JSON.stringify({ nonce: rawState, ownerId: (request as any).ownerId }),
-    ).toString("base64");
+    const nonce = generateState();
+    const ownerId = (request as any).ownerId;
 
-    SessionManager.setIntegrationState(reply, state);
+    const stateJwt = await new SignJWT({ nonce, ownerId })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("5m")
+      .sign(getSigningKey());
+
+    SessionManager.setIntegrationState(reply, stateJwt);
 
     try {
       const provider = fastify.oauth.getProvider("google");
-      const url = provider.getAuthorizationUrl(state, redirectUri, [
+      const url = provider.getAuthorizationUrl(nonce, redirectUri, [
         "https://www.googleapis.com/auth/drive.file",
       ]);
       return reply.redirect(url);
@@ -53,19 +64,22 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
         return reply.redirect(`${frontendUrl()}/?error=drive_auth_failed`);
       }
 
-      const stateCookie = SessionManager.getIntegrationState(request);
+      const stateJwt = SessionManager.getIntegrationState(request);
 
-      if (!stateCookie || stateCookie !== state) {
-        return reply.redirect(`${frontendUrl()}/?error=state_mismatch`);
+      if (!stateJwt) {
+        return reply.redirect(`${frontendUrl()}/?error=state_missing`);
       }
       SessionManager.clearIntegrationState(reply);
 
       let ownerId = "";
       try {
-        const decoded = JSON.parse(
-          Buffer.from(state, "base64").toString("utf8"),
-        );
-        ownerId = decoded.ownerId;
+        const { payload } = await jwtVerify(stateJwt, getSigningKey());
+
+        if (payload.nonce !== state) {
+          return reply.redirect(`${frontendUrl()}/?error=state_mismatch`);
+        }
+
+        ownerId = payload.ownerId as string;
       } catch (e) {
         return reply.redirect(`${frontendUrl()}/?error=state_invalid`);
       }
