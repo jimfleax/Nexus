@@ -48,15 +48,6 @@ export async function findResourceById(id: string) {
 }
 
 /**
- * @desc    Find resource content by ID
- * @param   {string} id - The resource ID
- * @returns {Promise<any|null>} The resource content
- */
-export async function findResourceContent(id: string) {
-  return ResourceModel.findById(id).select("content type -_id");
-}
-
-/**
  * @desc    Check if a resource with the same title already exists in a project for a given owner
  * @param   {string} projectId - The project scope
  * @param   {string} title - The resource title to check
@@ -151,10 +142,7 @@ export async function createResourceWithUpload(
     throw new Error("A resource with this name already exists in the project");
   }
 
-  const isFileUpload =
-    (body.type === "pdf" || body.type === "image") &&
-    !body.url &&
-    !body.content;
+  const isFileUpload = body.type !== "url";
   if (isFileUpload && !fileStream) {
     throw new Error("File stream required for this resource type");
   }
@@ -172,7 +160,11 @@ export async function createResourceWithUpload(
     const mType =
       mimeType ||
       body.mimeType ||
-      (body.type === "pdf" ? "application/pdf" : "image/jpeg");
+      (body.type === "pdf"
+        ? "application/pdf"
+        : body.type === "image"
+          ? "image/jpeg"
+          : "text/plain");
     const uploadResult = await storageAdapter.uploadFile(
       ownerId,
       {

@@ -41,7 +41,6 @@ const ResourceSchema = new Schema<IResource>(
     },
     mimeType: { type: String },
     description: { type: String },
-    content: { type: String },
     url: { type: String },
     tags: { type: [String], default: [] },
     isFavorite: { type: Boolean, default: false },
@@ -71,9 +70,9 @@ const ResourceSchema = new Schema<IResource>(
 
 ResourceSchema.index({ ownerId: 1, projectId: 1, listId: 1 });
 ResourceSchema.index(
-  { title: "text", description: "text", tags: "text", content: "text" },
+  { title: "text", description: "text", tags: "text" },
   {
-    weights: { title: 10, tags: 5, description: 2, content: 1 },
+    weights: { title: 10, tags: 5, description: 2 },
     name: "resource_text_index",
   },
 );

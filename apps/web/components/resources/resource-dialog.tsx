@@ -150,6 +150,17 @@ export function ResourceDialog({
       const parsedTags = parseTags(tagsInput);
 
       if (mode === "create" && activeProjectId && activeListId) {
+        let fileToUpload = file;
+        let mime = file ? file.type : undefined;
+        if (type !== "url" && type !== "pdf" && type !== "image") {
+          fileToUpload = new File(
+            [content.trim()],
+            `${title.trim() || "untitled"}.md`,
+            { type: "text/plain" },
+          );
+          mime = "text/plain";
+        }
+
         await createResource({
           projectId: activeProjectId,
           listId: activeListId,
@@ -162,10 +173,8 @@ export function ResourceDialog({
             description: description.trim(),
             tags: parsedTags,
             url: type === "url" ? url.trim() : undefined,
-            content: isContentMode ? content.trim() : undefined,
-            mimeType: file ? file.type : undefined,
-            file:
-              (type === "pdf" || type === "image") && file ? file : undefined,
+            mimeType: mime,
+            file: fileToUpload || undefined,
           },
         });
       } else if (mode === "edit" && resource) {

@@ -278,7 +278,7 @@ export const apiClient = {
      * @returns {Promise<string>} The text content
      */
     async getFileText(resourceId: string): Promise<string> {
-      const { data } = await api.get(`/resources/${resourceId}/content`, {
+      const { data } = await api.get(`/resources/${resourceId}/file`, {
         responseType: "text",
       });
       return data;

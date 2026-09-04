@@ -70,7 +70,7 @@ describe("Valid resource creation", () => {
       projectId: testProject,
       listId: testList,
       title: "Note",
-      type: "note",
+      type: "url",
       content: "hello",
     };
     const res = await app.inject({
@@ -83,7 +83,7 @@ describe("Valid resource creation", () => {
       status: "ready",
       tags: [],
       isFavorite: false,
-      type: "note",
+      type: "url",
     });
   });
 
@@ -103,28 +103,12 @@ describe("Valid resource creation", () => {
     expect(res.statusCode).toBe(201);
   });
 
-  it("creates a markdown resource", async () => {
-    const payload = {
-      projectId: testProject,
-      listId: testList,
-      title: "MD",
-      type: "markdown",
-      content: "# hi",
-    };
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/resources",
-      payload,
-    });
-    expect(res.statusCode).toBe(201);
-  });
-
   it("honors tags and isFavorite", async () => {
     const payload = {
       projectId: testProject,
       listId: testList,
       title: "T",
-      type: "note",
+      type: "url",
       tags: ["a", "b"],
       isFavorite: true,
     };
@@ -162,7 +146,7 @@ describe("Validation and uniqueness", () => {
       projectId: testProject,
       listId: testList,
       title: "Doc",
-      type: "note",
+      type: "url",
     };
     await app.inject({ method: "POST", url: "/api/resources", payload });
     const res = await app.inject({
@@ -198,13 +182,13 @@ describe("Validation and uniqueness", () => {
       projectId: testProject,
       listId: testList,
       title: "Doc",
-      type: "note",
+      type: "url",
     };
     const payload2 = {
       projectId: p2Id,
       listId: l2Id,
       title: "Doc",
-      type: "note",
+      type: "url",
     };
 
     const res1 = await app.inject({
@@ -237,7 +221,7 @@ describe("Schema and relations", () => {
       projectId: otherProject,
       listId: testList,
       title: "T",
-      type: "note",
+      type: "url",
     };
     const res = await app.inject({
       method: "POST",
@@ -256,7 +240,7 @@ describe("Schema and relations", () => {
       projectId: testProject,
       listId: fakeList,
       title: "T",
-      type: "note",
+      type: "url",
     };
     const res = await app.inject({
       method: "POST",
@@ -267,7 +251,7 @@ describe("Schema and relations", () => {
   });
 
   it("rejects missing title", async () => {
-    const payload = { projectId: testProject, listId: testList, type: "note" };
+    const payload = { projectId: testProject, listId: testList, type: "url" };
     const res = await app.inject({
       method: "POST",
       url: "/api/resources",
@@ -282,7 +266,7 @@ describe("Schema and relations", () => {
       projectId: testProject,
       listId: testList,
       title: "",
-      type: "note",
+      type: "url",
     };
     const res = await app.inject({
       method: "POST",
@@ -316,7 +300,7 @@ describe("Isolation and persistence", () => {
       projectId: testProject,
       listId: testList,
       title: "ISO",
-      type: "note",
+      type: "url",
     };
     await app.inject({ method: "POST", url: "/api/resources", payload });
 

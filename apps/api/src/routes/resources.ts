@@ -18,7 +18,6 @@ import { Readable } from "stream";
 import {
   listResourcesByProject,
   findResourceById,
-  findResourceContent,
   isDuplicateTitle,
   validateListMembership,
   findListById,
@@ -151,31 +150,6 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       const resource = await findResourceById(request.params.id);
       if (!resource) return notFoundReply(reply);
       return resource;
-    },
-  );
-
-  /**
-   * @desc    Fetch a resource's raw text/markdown content as plain text
-   * @route   GET /api/v1/resources/:id/content
-   * @access  Private
-   */
-  server.get(
-    "/api/resources/:id/content",
-    {
-      schema: {
-        params: z.object({ id: z.string() }),
-        response: {
-          200: z.string(),
-          404: z.object({ error: z.string() }),
-        },
-      },
-    },
-    async (request, reply) => {
-      const resource = await findResourceContent(request.params.id);
-      if (!resource) return notFoundReply(reply);
-
-      reply.header("Content-Type", "text/plain; charset=utf-8");
-      return reply.send(resource.content || "");
     },
   );
 

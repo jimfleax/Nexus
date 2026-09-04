@@ -348,8 +348,8 @@ describe("Backend Integrity Fixes", () => {
           projectId,
           listId,
           title: "URL Resource",
-          type: "note",
-          content: "test note",
+          type: "url",
+          url: "https://example.com",
         },
       });
       expect(response.statusCode).toBe(201);
