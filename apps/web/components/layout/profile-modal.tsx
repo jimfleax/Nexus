@@ -51,7 +51,7 @@ function MetricSkeleton() {
  * @desc    Render Drive storage, resource/project counts, and storage-by-type metrics
  * @returns {JSX.Element} The metrics panels
  */
-function MetricContent() {
+function MetricContent({ apiUrl = "" }: { apiUrl?: string }) {
   const { data } = useUserMetrics();
   const queryClient = useQueryClient();
 
@@ -124,16 +124,16 @@ function MetricContent() {
             <CloudSlash className="size-4 shrink-0" />
             <span>Google Drive not connected.</span>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full border-[#dec9e9] text-[#6247aa]"
-            onClick={() =>
-              (window.location.href = "/api/integrations/google-drive")
-            }
-          >
-            Connect Google Drive
-          </Button>
+          <form action={`${apiUrl}/api/integrations/google-drive`} method="GET">
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full border-[#dec9e9] text-[#6247aa]"
+              type="submit"
+            >
+              Connect Google Drive
+            </Button>
+          </form>
         </div>
       )}
 
@@ -212,9 +212,11 @@ function MetricContent() {
 export function ProfileModal({
   user,
   collapsed = false,
+  apiUrl = "",
 }: {
   user: { name?: string | null; email?: string | null; image?: string | null };
   collapsed?: boolean;
+  apiUrl?: string;
 }) {
   return (
     <Dialog>
@@ -280,7 +282,7 @@ export function ProfileModal({
           {/* ── Metrics side ── */}
           <div className="flex flex-col gap-3">
             <Suspense fallback={<MetricSkeleton />}>
-              <MetricContent />
+              <MetricContent apiUrl={apiUrl} />
             </Suspense>
           </div>
         </div>

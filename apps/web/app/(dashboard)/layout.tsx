@@ -64,9 +64,16 @@ export default async function DashboardLayout({
     redirect("/signin");
   }
 
+  const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
+    /\/+$/,
+    "",
+  );
+
   return (
     <Providers>
-      <AppShell user={user}>{children}</AppShell>
+      <AppShell user={user} apiUrl={apiUrl}>
+        {children}
+      </AppShell>
     </Providers>
   );
 }

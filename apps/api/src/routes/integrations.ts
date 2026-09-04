@@ -18,7 +18,11 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
    * @access  Private
    */
   fastify.get("/api/integrations/google-drive", async (request, reply) => {
-    const redirectUri = `${frontendUrl()}/api/integrations/google-drive/callback`;
+    const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
+      /\/+$/,
+      "",
+    );
+    const redirectUri = `${apiUrl}/api/integrations/google-drive/callback`;
     const state = generateState();
 
     SessionManager.setIntegrationState(reply, state);
@@ -55,7 +59,11 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
       SessionManager.clearIntegrationState(reply);
 
       try {
-        const redirectUri = `${frontendUrl()}/api/integrations/google-drive/callback`;
+        const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
+          /\/+$/,
+          "",
+        );
+        const redirectUri = `${apiUrl}/api/integrations/google-drive/callback`;
         const provider = fastify.oauth.getProvider("google");
 
         const { tokens } = await authorizeWithGoogle(
