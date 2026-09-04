@@ -55,13 +55,19 @@ import { useResourceText } from "@/hooks/use-resources";
 import { CircleNotch, FileText } from "@phosphor-icons/react";
 import { ViewerEmptyState } from "@/components/ui/viewer-empty-state";
 
-export function StaticMarkdownViewer({ content }: { content: string }) {
+export function StaticMarkdownViewer({
+  content,
+  animate = true,
+}: {
+  content: string;
+  animate?: boolean;
+}) {
   const reduceMotion = useReducedMotion();
   return (
     <motion.article
-      initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
+      initial={animate ? (reduceMotion ? false : { opacity: 0, y: 10 }) : false}
+      animate={animate ? { opacity: 1, y: 0 } : undefined}
+      transition={animate ? { duration: 0.35, ease: "easeOut" } : undefined}
       className="reading prose prose-[#6247aa] max-w-none prose-headings:font-serif prose-headings:font-normal prose-a:text-[#6247aa] prose-a:no-underline hover:prose-a:underline"
     >
       <ReactMarkdown
@@ -161,5 +167,5 @@ export function MarkdownViewer({ resource }: { resource: Resource }) {
     );
   }
 
-  return <StaticMarkdownViewer content={content} />;
+  return <StaticMarkdownViewer content={content} animate={false} />;
 }
