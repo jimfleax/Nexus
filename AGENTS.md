@@ -84,3 +84,7 @@ Next.js rewrites (`apps/web/next.config.ts`): unmatched `/api/*` requests fall t
 - GC runs on every `/health` hit, sweeping stale pending resources older than 30 min.
 - **Edge Caching vs Cookies**: Vercel's CDN aggressively strips `Set-Cookie` headers from any cached responses. If the Fastify backend sets a cookie (e.g., auth), it MUST either send `Cache-Control: no-store` or rely on the global `onSend` hook in `index.ts` to disable caching automatically. Otherwise, subsequent users will get a cached proxy response without the cookie.
 - **Cross-Origin Proxies & Cookies**: When Next.js (`apps/web/next.config.ts`) proxies `/api/*` to an external `API_URL` (different origin in production), Vercel's Edge Network **strips the `Cookie` header** for security. Therefore, OAuth 2.0 flows MUST bypass the Next.js proxy. The frontend must link directly to the backend (`process.env.API_URL + '/api/auth/...'`) and the backend must handle the Google callback directly before redirecting the user back to the frontend's `/api/auth/sync` route.
+
+## API Client / FormData
+
+- **FormData Key Duplication**: When building `FormData` for multipart requests, always use `form.set(key, value)` or ensure you are not appending the same key multiple times using `form.append(key, value)`. Repeated `.append()` calls for the same key will cause Fastify's multipart parser to interpret the field as an array, which fails Zod validation if a string is expected.

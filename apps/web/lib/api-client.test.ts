@@ -130,6 +130,8 @@ describe("apiClient.resources", () => {
       type: "application/pdf",
     });
     const input = {
+      projectId: "proj-1",
+      listId: "list-1",
       title: "Test",
       type: "pdf" as const,
       file,
@@ -142,6 +144,11 @@ describe("apiClient.resources", () => {
     expect(mockPost).toHaveBeenCalledWith("/resources", expect.any(FormData), {
       headers: { "Content-Type": "multipart/form-data" },
     });
+
+    // TDD: Ensure fields are not duplicated into arrays
+    const formData = mockPost.mock.calls[0][1] as FormData;
+    expect(formData.getAll("projectId")).toEqual(["proj-1"]);
+    expect(formData.getAll("listId")).toEqual(["list-1"]);
   });
 
   it("create without file should POST JSON with projectId/listId", async () => {
