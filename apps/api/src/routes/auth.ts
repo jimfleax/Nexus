@@ -60,101 +60,127 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
    * @route   GET /api/auth/google
    * @access  Public
    */
-  fastify.get("/api/auth/google", async (_request, reply) => {
-    const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
-      /\/+$/,
-      "",
-    );
-    const redirectUri = `${apiUrl}/api/auth/callback/google`;
-    const state = generateState();
-    SessionManager.setOAuthState(reply, state);
+  fastify.get(
+    "/api/auth/google",
+    {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: "1 minute",
+        },
+      },
+    },
+    async (_request, reply) => {
+      const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
+        /\/+$/,
+        "",
+      );
+      const redirectUri = `${apiUrl}/api/auth/callback/google`;
+      const state = generateState();
+      SessionManager.setOAuthState(reply, state);
 
-    try {
-      const provider = fastify.oauth.getProvider("google");
-      const url = provider.getAuthorizationUrl(state, redirectUri, [
-        "openid",
-        "email",
-        "profile",
-        "https://www.googleapis.com/auth/drive.file",
-      ]);
-      return reply.redirect(url);
-    } catch (err) {
-      return reply.status(500).send({ error: "Google OAuth not configured" });
-    }
-  });
+      try {
+        const provider = fastify.oauth.getProvider("google");
+        const url = provider.getAuthorizationUrl(state, redirectUri, [
+          "openid",
+          "email",
+          "profile",
+          "https://www.googleapis.com/auth/drive.file",
+        ]);
+        return reply.redirect(url);
+      } catch (err) {
+        return reply.status(500).send({ error: "Google OAuth not configured" });
+      }
+    },
+  );
 
   /**
    * @desc    Handle Google OAuth callback — exchange code, upsert user, issue cookie
    * @route   GET /api/auth/callback/google
    * @access  Public
    */
-  fastify.get("/api/auth/callback/google", async (request, reply) => {
-    const { code, state, error } = request.query as Record<string, string>;
+  fastify.get(
+    "/api/auth/callback/google",
+    {
+      config: {
+        rateLimit: {
+          max: 10,
+          timeWindow: "1 minute",
+        },
+      },
+    },
+    async (request, reply) => {
+      const { code, state, error } = request.query as Record<string, string>;
 
-    if (error || !code || !state) {
-      fastify.log.warn({ error }, "Google OAuth error or missing code/state");
-      return reply.redirect(
-        `${frontendUrl()}/signin?error=auth_failed_missing_params`,
-      );
-    }
-
-    const stateCookie = SessionManager.getOAuthState(request);
-
-    if (!stateCookie || stateCookie !== state) {
-      fastify.log.warn("Google OAuth state mismatch");
-      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed_state`);
-    }
-
-    SessionManager.clearOAuthState(reply);
-
-    try {
-      const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
-        /\/+$/,
-        "",
-      );
-      const redirectUri = `${apiUrl}/api/auth/callback/google`;
-      const provider = fastify.oauth.getProvider("google");
-
-      // 1. Exchange code, persist a refresh token when issued, fetch identity
-      const { tokens, identity } = await authorizeWithGoogle(
-        provider,
-        code,
-        redirectUri,
-        (refreshToken, identity) =>
-          updateSettings(identity.id, {
-            driveRefreshToken: refreshToken,
-          }),
-      );
-
-      const ownerId = identity.id;
-
-      // 2. Ensure the account exists when no Drive token was issued
-      if (!tokens.refreshToken) {
-        await findOrCreateUser(ownerId);
-      }
-
-      // 3. Sign JWT and set cookie
-      const jwt = await signSessionJwt({
-        sub: ownerId,
-        email: identity.email,
-        name: identity.name,
-        image: identity.image,
-      });
-
-      return reply.redirect(`${frontendUrl()}/api/auth/sync?token=${jwt}`);
-    } catch (err: any) {
-      fastify.log.error(err, "Google OAuth callback error");
-      if (err.name === "OAuthExchangeError") {
+      if (error || !code || !state) {
+        fastify.log.warn({ error }, "Google OAuth error or missing code/state");
         return reply.redirect(
-          `${frontendUrl()}/signin?error=auth_failed_token`,
+          `${frontendUrl()}/signin?error=auth_failed_missing_params`,
         );
       }
-      if (err.name === "OAuthProfileError") {
+
+      const stateCookie = SessionManager.getOAuthState(request);
+
+      if (!stateCookie || stateCookie !== state) {
+        fastify.log.warn("Google OAuth state mismatch");
         return reply.redirect(
-          `${frontendUrl()}/signin?error=auth_failed_userinfo`,
+          `${frontendUrl()}/signin?error=auth_failed_state`,
         );
       }
-      return reply.redirect(`${frontendUrl()}/signin?error=auth_failed_catch`);
-    }
-  });
+
+      SessionManager.clearOAuthState(reply);
+
+      try {
+        const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
+          /\/+$/,
+          "",
+        );
+        const redirectUri = `${apiUrl}/api/auth/callback/google`;
+        const provider = fastify.oauth.getProvider("google");
+
+        // 1. Exchange code, persist a refresh token when issued, fetch identity
+        const { tokens, identity } = await authorizeWithGoogle(
+          provider,
+          code,
+          redirectUri,
+          (refreshToken, identity) =>
+            updateSettings(identity.id, {
+              driveRefreshToken: refreshToken,
+            }),
+        );
+
+        const ownerId = identity.id;
+
+        // 2. Ensure the account exists when no Drive token was issued
+        if (!tokens.refreshToken) {
+          await findOrCreateUser(ownerId);
+        }
+
+        // 3. Sign JWT and set cookie
+        const jwt = await signSessionJwt({
+          sub: ownerId,
+          email: identity.email,
+          name: identity.name,
+          image: identity.image,
+        });
+
+        return reply.redirect(`${frontendUrl()}/api/auth/sync?token=${jwt}`);
+      } catch (err: any) {
+        fastify.log.error(err, "Google OAuth callback error");
+        if (err.name === "OAuthExchangeError") {
+          return reply.redirect(
+            `${frontendUrl()}/signin?error=auth_failed_token`,
+          );
+        }
+        if (err.name === "OAuthProfileError") {
+          return reply.redirect(
+            `${frontendUrl()}/signin?error=auth_failed_userinfo`,
+          );
+        }
+        return reply.redirect(
+          `${frontendUrl()}/signin?error=auth_failed_catch`,
+        );
+      }
+    },
+  );
 });

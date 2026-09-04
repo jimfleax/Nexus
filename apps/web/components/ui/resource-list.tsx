@@ -43,8 +43,8 @@ export function ResourceList({
         </div>
       ) : items.length > 0 ? (
         <div className="border-y border-[#dec9e9]">
-          {items.map((r, index) => (
-            <ResourceCard key={r.id} resource={r} index={index} />
+          {items.map((r) => (
+            <ResourceCard key={r.id} resource={r} />
           ))}
         </div>
       ) : (

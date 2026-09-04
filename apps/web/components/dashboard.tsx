@@ -131,9 +131,7 @@ export function Dashboard() {
               ))}
             </div>
           ) : recentResources.length ? (
-            recentResources.map((r, index) => (
-              <ResourceCard key={r.id} resource={r} index={index} />
-            ))
+            recentResources.map((r) => <ResourceCard key={r.id} resource={r} />)
           ) : (
             <EmptyState
               icon={BookOpen}

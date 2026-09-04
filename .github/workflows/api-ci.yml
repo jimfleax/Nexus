@@ -16,6 +16,9 @@ on:
       - "package-lock.json"
       - ".github/workflows/api-ci.yml"
 
+permissions:
+  contents: read
+
 jobs:
   # ────────────────────────────────────────────────────────────────────────────
   # 1. Lint

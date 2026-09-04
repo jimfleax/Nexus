@@ -3,5 +3,6 @@
   "registry": "./components/bones/registry.ts",
   "routes": ["/bones-preview"],
   "color": "#d9c9e8",
-  "darkColor": "#3a2a5a"
+  "darkColor": "#3a2a5a",
+  "transition": true
 }

@@ -51,7 +51,10 @@ export function FilePicker({
       const droppedFile = e.dataTransfer.files[0];
       // Basic mime type check if accept is provided (e.g., "image/*")
       if (accept) {
-        const acceptRegex = new RegExp(accept.replace("*", ".*"));
+        const sanitizedAccept = accept
+          .replace(/\./g, "\\.")
+          .replace(/\*/g, ".*");
+        const acceptRegex = new RegExp(sanitizedAccept);
         if (!acceptRegex.test(droppedFile.type)) {
           alert(`Invalid file type. Accepted: ${accept}`);
           return;

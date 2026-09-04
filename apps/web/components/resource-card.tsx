@@ -1,7 +1,7 @@
 /**
  * @file resource-card.tsx
  * @description List row for a resource with type icon, metadata, favorite toggle, and a right-click context menu (Open/Rename/Edit/Info/Delete).
- * @architecture Client component used across recent/favorites/dashboard lists; animated with Framer Motion on scroll into view. Dialogs render as siblings (not nested) so the menu never auto-focuses them.
+ * @architecture Client component used across recent/favorites/dashboard lists; revealed via the boneyard skeleton cross-fade. Dialogs render as siblings (not nested) so the menu never auto-focuses them.
  */
 "use client";
 
@@ -41,16 +41,10 @@ const icons: Record<Resource["type"], React.ElementType> = {
 
 /**
  * @desc    Render a resource row with favorite toggle, context menu, and delete confirmation
- * @param   {{resource: Resource; index?: number}} props - Resource and scroll-animation index
+ * @param   {{resource: Resource}} props - The resource to render
  * @returns {JSX.Element} The resource card
  */
-export function ResourceCard({
-  resource,
-  index = 0,
-}: {
-  resource: Resource;
-  index?: number;
-}) {
+export function ResourceCard({ resource }: { resource: Resource }) {
   const reduceMotion = useReducedMotion();
   const router = useRouter();
   const { mutate: deleteResource } = useDeleteResource();
@@ -94,14 +88,6 @@ export function ResourceCard({
         info={{ id: resource.id, type: "resource" }}
       >
         <motion.article
-          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{
-            duration: 0.28,
-            delay: Math.min(index * 0.035, 0.18),
-            ease: "easeOut",
-          }}
           whileHover={reduceMotion ? undefined : { x: 3 }}
           className="group flex gap-3 border-b border-[#dec9e9] py-4 last:border-b-0"
         >

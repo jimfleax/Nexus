@@ -13,7 +13,7 @@ import _button from "./button.bones.json";
 import _text_line from "./text-line.bones.json";
 import _resource_viewer from "./resource-viewer.bones.json";
 
-configureBoneyard({ color: "#d9c9e8", darkColor: "#3a2a5a" });
+configureBoneyard({ color: "#d9c9e8", darkColor: "#3a2a5a", transition: true });
 
 registerBones({
   "resource-card": _resource_card,

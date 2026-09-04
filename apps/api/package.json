@@ -13,6 +13,7 @@
   "dependencies": {
     "@fastify/cookie": "^11.1.2",
     "@fastify/multipart": "^10.1.1",
+    "@fastify/rate-limit": "^11.2.0",
     "@fastify/type-provider-zod": "^1.0.0",
     "@nexus/shared": "*",
     "dotenv": "^17.4.2",

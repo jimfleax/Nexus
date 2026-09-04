@@ -152,9 +152,7 @@ export function ListPage({
             ))}
           </div>
         ) : items.length ? (
-          items.map((item, index) => (
-            <ResourceCard key={item.id} resource={item} index={index} />
-          ))
+          items.map((item) => <ResourceCard key={item.id} resource={item} />)
         ) : (
           <EmptyState
             title="No resources yet"

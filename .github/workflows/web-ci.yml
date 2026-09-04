@@ -16,6 +16,9 @@ on:
       - "package-lock.json"
       - ".github/workflows/web-ci.yml"
 
+permissions:
+  contents: read
+
 env:
   # Provide fallback env vars so Next.js build doesn't fail on missing build-time variables
   API_URL: http://localhost:8080

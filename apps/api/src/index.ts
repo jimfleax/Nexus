@@ -32,6 +32,7 @@ import { infoRoutes } from "./routes/info.js";
 
 import { gcPlugin } from "./plugins/gc.js";
 import cookiePlugin from "@fastify/cookie";
+import rateLimit from "@fastify/rate-limit";
 
 const fastify = Fastify({
   logger: true,
@@ -44,6 +45,10 @@ fastify.setSerializerCompiler(serializerCompiler);
 
 fastify.register(errorHandlerPlugin);
 fastify.register(cookiePlugin);
+fastify.register(rateLimit, {
+  max: 100,
+  timeWindow: "1 minute",
+});
 // Register multipart support globally so file-upload routes can parse
 // multipart/form-data requests (POST /api/resources, etc.)
 fastify.register(multipart, { attachFieldsToBody: false });
