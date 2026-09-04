@@ -10,6 +10,7 @@
     "test:all": "npm run test --workspaces --if-present",
     "build:all": "npm run build --workspaces --if-present",
     "lint:all": "npm run lint --workspaces --if-present",
+    "typecheck:all": "npm run typecheck --workspaces --if-present",
     "prepare": "husky || true"
   },
   "devDependencies": {

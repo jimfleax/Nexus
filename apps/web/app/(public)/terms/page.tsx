@@ -3,7 +3,7 @@
  * @description Renders the public terms of service page.
  * @architecture Next.js App Router server component for static marketing pages.
  */
-import { MarkdownViewer } from "@/components/markdown-viewer";
+import { StaticMarkdownViewer } from "@/components/markdown-viewer";
 import Link from "next/link";
 import { ArrowLeft, Hexagon } from "lucide-react";
 import { Metadata } from "next";
@@ -83,7 +83,7 @@ export default function TermsOfServicePage() {
 
       <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 md:py-16">
         <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm sm:p-12">
-          <MarkdownViewer content={termsMarkdown} />
+          <StaticMarkdownViewer content={termsMarkdown} />
         </div>
       </main>
     </div>

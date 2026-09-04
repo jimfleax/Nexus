@@ -1,4 +1,4 @@
-import { MarkdownViewer } from "@/components/markdown-viewer";
+import { StaticMarkdownViewer } from "@/components/markdown-viewer";
 import Link from "next/link";
 import { ArrowLeft, Hexagon } from "lucide-react";
 /**
@@ -79,7 +79,7 @@ export default function PolicyPage() {
 
       <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 md:py-16">
         <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm sm:p-12">
-          <MarkdownViewer content={privacyMarkdown} />
+          <StaticMarkdownViewer content={privacyMarkdown} />
         </div>
       </main>
     </div>
