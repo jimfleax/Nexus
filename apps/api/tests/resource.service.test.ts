@@ -20,7 +20,6 @@ import { KnowledgeListModel } from "../src/models/KnowledgeList.js";
 import {
   listResourcesByProject,
   findResourceById,
-  findResourceContent,
   isDuplicateTitle,
   validateListMembership,
   createResource,
@@ -68,14 +67,12 @@ describe("ResourceService", () => {
           listId,
           title: "Test Resource",
           type: "note",
-          content: "Hello world",
         });
       });
 
       expect(resource.title).toBe("Test Resource");
       expect(resource.type).toBe("note");
       expect(resource.status).toBe("ready");
-      expect(resource.content).toBe("Hello world");
     });
   });
 
@@ -94,20 +91,6 @@ describe("ResourceService", () => {
         const fakeId = new mongoose.Types.ObjectId().toHexString();
         const found = await findResourceById(fakeId);
         expect(found).toBeNull();
-      });
-    });
-  });
-
-  describe("findResourceContent", () => {
-    it("should return only content and type fields", async () => {
-      await tenantContext.run({ ownerId: OWNER }, async () => {
-        const all = await ResourceModel.find({}, null, { skipTenant: true });
-        const content = await findResourceContent(all[0]._id.toString());
-        expect(content).not.toBeNull();
-        expect(content!.content).toBe("Hello world");
-        expect(content!.type).toBe("note");
-        // title should not be selected
-        expect((content as any).title).toBeUndefined();
       });
     });
   });
@@ -252,13 +235,13 @@ describe("ResourceService", () => {
           {
             projectId,
             listId,
-            title: "Note Resource",
-            type: "note",
-            content: "note content",
+            title: "URL Resource",
+            type: "url",
+            url: "https://example.com",
           },
           fakeStorage as any,
         );
-        expect(resource.title).toBe("Note Resource");
+        expect(resource.title).toBe("URL Resource");
         expect(resource.status).toBe("ready");
         expect(fakeStorage.uploadFile).not.toHaveBeenCalled();
       });

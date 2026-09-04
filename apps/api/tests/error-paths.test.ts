@@ -213,7 +213,8 @@ describe("Error Paths", () => {
           projectId,
           listId,
           title: "Unique Resource",
-          type: "note",
+          type: "url",
+          url: "https://example.com",
         },
       });
 
@@ -224,7 +225,8 @@ describe("Error Paths", () => {
           projectId,
           listId,
           title: "Unique Resource",
-          type: "note",
+          type: "url",
+          url: "https://example.com",
         },
       });
       expect(response.statusCode).toBe(400);
