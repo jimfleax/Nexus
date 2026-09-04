@@ -1,0 +1,47 @@
+{
+  "breakpoints": {
+    "375": {
+      "name": "button",
+      "viewportWidth": 311,
+      "width": 311,
+      "height": 38,
+      "bones": [[0, 0, 32.1543, 38, 4]]
+    },
+    "640": {
+      "name": "button",
+      "viewportWidth": 576,
+      "width": 576,
+      "height": 38,
+      "bones": [[0, 0, 17.3611, 38, 4]]
+    },
+    "768": {
+      "name": "button",
+      "viewportWidth": 704,
+      "width": 704,
+      "height": 38,
+      "bones": [[0, 0, 14.2045, 38, 4]]
+    },
+    "1024": {
+      "name": "button",
+      "viewportWidth": 832,
+      "width": 832,
+      "height": 38,
+      "bones": [[0, 0, 12.0192, 38, 4]]
+    },
+    "1280": {
+      "name": "button",
+      "viewportWidth": 832,
+      "width": 832,
+      "height": 38,
+      "bones": [[0, 0, 12.0192, 38, 4]]
+    },
+    "1536": {
+      "name": "button",
+      "viewportWidth": 832,
+      "width": 832,
+      "height": 38,
+      "bones": [[0, 0, 12.0192, 38, 4]]
+    }
+  },
+  "_hash": "a1ad0978274f53f7914d8556a5a1ca86"
+}

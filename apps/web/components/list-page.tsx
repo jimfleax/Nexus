@@ -70,7 +70,11 @@ export function ListPage({
                 </span>
               )}
               {isLoading ? (
-                <div className="mt-2 h-4 w-24 rounded bg-gray-200 animate-pulse" />
+                <div className="mt-2">
+                  <Skeleton name="text-line" loading>
+                    {null}
+                  </Skeleton>
+                </div>
               ) : (
                 <span className="mt-2 block text-sm text-[#6247aa]">
                   {items.length} {items.length === 1 ? "resource" : "resources"}
@@ -82,7 +86,9 @@ export function ListPage({
             <div className="flex gap-2">
               <Suspense
                 fallback={
-                  <div className="h-[38px] w-[130px] rounded bg-gray-200 animate-pulse" />
+                  <Skeleton name="button" loading>
+                    {null}
+                  </Skeleton>
                 }
               >
                 <CreateResourceDialog projectId={project.id} listId={list.id} />
@@ -96,7 +102,9 @@ export function ListPage({
               </Button>
               <Suspense
                 fallback={
-                  <div className="h-[38px] w-[80px] rounded bg-gray-200 animate-pulse" />
+                  <Skeleton name="button" loading>
+                    {null}
+                  </Skeleton>
                 }
               >
                 <EditListDialog list={list}>
@@ -154,7 +162,11 @@ export function ListPage({
             action={
               <Suspense
                 fallback={
-                  <div className="h-[38px] w-[130px] mx-auto mt-4 rounded bg-gray-200 animate-pulse" />
+                  <div className="mx-auto mt-4">
+                    <Skeleton name="button" loading>
+                      {null}
+                    </Skeleton>
+                  </div>
                 }
               >
                 <CreateResourceDialog projectId={project.id} listId={list.id} />

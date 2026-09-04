@@ -109,6 +109,46 @@ export default function BonesPreviewPage() {
           </div>
         </Skeleton>
       </section>
+      <section>
+        <h2 className="text-sm text-gray-400 mb-2">breadcrumb</h2>
+        <Skeleton name="breadcrumb" loading={false}>
+          <div data-boneyard="breadcrumb" className="flex items-center gap-4">
+            <div className="h-6 w-24 rounded bg-gray-100" />
+            <div className="h-4 w-4 rounded bg-gray-100" />
+            <div className="h-6 w-32 rounded bg-gray-100" />
+          </div>
+        </Skeleton>
+      </section>
+
+      <section>
+        <h2 className="text-sm text-gray-400 mb-2">button</h2>
+        <Skeleton name="button" loading={false}>
+          <div
+            data-boneyard="button"
+            className="h-[38px] w-[100px] rounded bg-gray-100"
+          />
+        </Skeleton>
+      </section>
+
+      <section>
+        <h2 className="text-sm text-gray-400 mb-2">text-line</h2>
+        <Skeleton name="text-line" loading={false}>
+          <div
+            data-boneyard="text-line"
+            className="h-4 w-24 rounded bg-gray-100"
+          />
+        </Skeleton>
+      </section>
+
+      <section>
+        <h2 className="text-sm text-gray-400 mb-2">resource-viewer</h2>
+        <Skeleton name="resource-viewer" loading={false}>
+          <div
+            data-boneyard="resource-viewer"
+            className="h-[400px] w-full max-w-4xl rounded-2xl bg-gray-100"
+          />
+        </Skeleton>
+      </section>
     </div>
   );
 }

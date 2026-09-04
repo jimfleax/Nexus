@@ -26,11 +26,9 @@ export default function Page() {
   if (projectLoading || listLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="h-6 w-24 rounded bg-gray-200 animate-pulse" />
-          <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
-          <div className="h-6 w-32 rounded bg-gray-200 animate-pulse" />
-        </div>
+        <Skeleton name="breadcrumb" loading>
+          {null}
+        </Skeleton>
         <div className="flex flex-col border-y border-[#dec9e9]">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} name="resource-card" loading>

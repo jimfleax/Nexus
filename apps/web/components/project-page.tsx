@@ -7,6 +7,7 @@
  */
 import React, { Suspense } from "react";
 import type { Project } from "@nexus/shared";
+import { Skeleton } from "boneyard-js/react";
 
 import { useLists, useReorderLists } from "@/hooks/use-lists";
 import { ProjectListCard } from "@/components/project-list-card";
@@ -79,7 +80,9 @@ export function ProjectPage({ project }: { project: Project }) {
           <div className="flex gap-2">
             <Suspense
               fallback={
-                <div className="h-[38px] w-[130px] rounded bg-gray-200 animate-pulse" />
+                <Skeleton name="button" loading>
+                  {null}
+                </Skeleton>
               }
             >
               <CreateResourceDialog
@@ -89,7 +92,9 @@ export function ProjectPage({ project }: { project: Project }) {
             </Suspense>
             <Suspense
               fallback={
-                <div className="h-[38px] w-[100px] rounded bg-gray-200 animate-pulse" />
+                <Skeleton name="button" loading>
+                  {null}
+                </Skeleton>
               }
             >
               <CreateListDialog projectId={project.id} />
@@ -122,9 +127,11 @@ export function ProjectPage({ project }: { project: Project }) {
         </h2>
         {isLoading ? (
           <div className="flex flex-col gap-2">
-            <div className="h-[72px] w-full rounded bg-gray-200 animate-pulse" />
-            <div className="h-[72px] w-full rounded bg-gray-200 animate-pulse" />
-            <div className="h-[72px] w-full rounded bg-gray-200 animate-pulse" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} name="project-list-card" loading>
+                {null}
+              </Skeleton>
+            ))}
           </div>
         ) : collections.length ? (
           <div className="flex flex-col gap-2">

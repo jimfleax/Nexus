@@ -9,6 +9,7 @@ import { projectUrl, listUrl } from "@/lib/urls";
 import React, { useEffect } from "react";
 import { useReaderSettings } from "@/components/reader-settings-provider";
 import { useFavorites } from "@/hooks/use-favorites";
+import { Skeleton } from "boneyard-js/react";
 import { useProject } from "@/hooks/use-projects";
 import { useList } from "@/hooks/use-lists";
 import {
@@ -80,12 +81,12 @@ export function ResourcePage({
   if (projectLoading || listLoading || resourceLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="h-6 w-24 rounded bg-gray-200 animate-pulse" />
-          <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
-          <div className="h-6 w-32 rounded bg-gray-200 animate-pulse" />
-        </div>
-        <div className="h-[400px] w-full rounded-2xl bg-gray-200 animate-pulse" />
+        <Skeleton name="breadcrumb" loading>
+          {null}
+        </Skeleton>
+        <Skeleton name="resource-viewer" loading>
+          {null}
+        </Skeleton>
       </div>
     );
   }

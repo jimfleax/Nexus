@@ -7,6 +7,10 @@ import _project_card from "./project-card.bones.json";
 import _project_list_card from "./project-list-card.bones.json";
 import _search_result from "./search-result.bones.json";
 import _profile_metrics from "./profile-metrics.bones.json";
+import _breadcrumb from "./breadcrumb.bones.json";
+import _button from "./button.bones.json";
+import _text_line from "./text-line.bones.json";
+import _resource_viewer from "./resource-viewer.bones.json";
 
 registerBones({
   "resource-card": _resource_card,
@@ -14,4 +18,8 @@ registerBones({
   "project-list-card": _project_list_card,
   "search-result": _search_result,
   "profile-metrics": _profile_metrics,
+  breadcrumb: _breadcrumb,
+  button: _button,
+  "text-line": _text_line,
+  "resource-viewer": _resource_viewer,
 });

@@ -1,0 +1,47 @@
+{
+  "breakpoints": {
+    "375": {
+      "name": "text-line",
+      "viewportWidth": 311,
+      "width": 311,
+      "height": 16,
+      "bones": [[0, 0, 30.8682, 16, 4]]
+    },
+    "640": {
+      "name": "text-line",
+      "viewportWidth": 576,
+      "width": 576,
+      "height": 16,
+      "bones": [[0, 0, 16.6667, 16, 4]]
+    },
+    "768": {
+      "name": "text-line",
+      "viewportWidth": 704,
+      "width": 704,
+      "height": 16,
+      "bones": [[0, 0, 13.6364, 16, 4]]
+    },
+    "1024": {
+      "name": "text-line",
+      "viewportWidth": 832,
+      "width": 832,
+      "height": 16,
+      "bones": [[0, 0, 11.5385, 16, 4]]
+    },
+    "1280": {
+      "name": "text-line",
+      "viewportWidth": 832,
+      "width": 832,
+      "height": 16,
+      "bones": [[0, 0, 11.5385, 16, 4]]
+    },
+    "1536": {
+      "name": "text-line",
+      "viewportWidth": 832,
+      "width": 832,
+      "height": 16,
+      "bones": [[0, 0, 11.5385, 16, 4]]
+    }
+  },
+  "_hash": "046107035d6029ab9f234b62a399c216"
+}

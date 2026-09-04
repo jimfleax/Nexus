@@ -5,6 +5,7 @@ import { api } from "../axios";
 describe("apiClient", () => {
   let getSpy: ReturnType<typeof vi.spyOn>;
   let postSpy: ReturnType<typeof vi.spyOn>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let patchSpy: ReturnType<typeof vi.spyOn>;
   let putSpy: ReturnType<typeof vi.spyOn>;
 

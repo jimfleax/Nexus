@@ -70,7 +70,9 @@ export default function ProjectsPage() {
         actions={
           <Suspense
             fallback={
-              <div className="h-10 w-32 rounded bg-gray-200 animate-pulse" />
+              <Skeleton name="button" loading>
+                {null}
+              </Skeleton>
             }
           >
             <CreateProjectDialog />
@@ -93,7 +95,9 @@ export default function ProjectsPage() {
           action={
             <Suspense
               fallback={
-                <div className="h-10 w-32 rounded bg-gray-200 animate-pulse" />
+                <Skeleton name="button" loading>
+                  {null}
+                </Skeleton>
               }
             >
               <CreateProjectDialog />
