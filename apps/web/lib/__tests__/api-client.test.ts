@@ -40,18 +40,20 @@ describe("apiClient", () => {
   });
 
   describe("lists", () => {
-    it("reorder calls PATCH /projects/p1/lists/reorder", async () => {
+    it("reorder calls PUT /projects/p1/lists/reorder", async () => {
       await apiClient.lists.reorder("p1", { items: [] });
-      expect(patchSpy).toHaveBeenCalledWith("/projects/p1/lists/reorder", {
+      expect(putSpy).toHaveBeenCalledWith("/projects/p1/lists/reorder", {
         items: [],
       });
     });
   });
 
   describe("resources", () => {
-    it("list calls GET /projects/p1/lists/l1/resources", async () => {
+    it("list calls GET /projects/p1/resources with listId param", async () => {
       await apiClient.resources.list("p1", "l1");
-      expect(getSpy).toHaveBeenCalledWith("/projects/p1/lists/l1/resources");
+      expect(getSpy).toHaveBeenCalledWith("/projects/p1/resources", {
+        params: { listId: "l1" },
+      });
     });
 
     it("toggleFavorite calls PUT /resources/r1/favorite", async () => {

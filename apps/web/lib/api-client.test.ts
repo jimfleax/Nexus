@@ -94,21 +94,18 @@ describe("apiClient.lists", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const input = { name: "Updated List" } as any;
     await apiClient.lists.update("proj-1", "list-1", input);
-    expect(mockPatch).toHaveBeenCalledWith(
-      "/projects/proj-1/lists/list-1",
-      input,
-    );
+    expect(mockPatch).toHaveBeenCalledWith("/lists/list-1", input);
   });
 
   it("delete(projectId, listId) should DELETE", async () => {
     await apiClient.lists.delete("proj-1", "list-1");
-    expect(mockDelete).toHaveBeenCalledWith("/projects/proj-1/lists/list-1");
+    expect(mockDelete).toHaveBeenCalledWith("/lists/list-1");
   });
 
-  it("reorder(projectId, input) should PATCH reorder endpoint", async () => {
+  it("reorder(projectId, input) should PUT reorder endpoint", async () => {
     const input = { items: [{ id: "l1", position: 1 }] };
     await apiClient.lists.reorder("proj-1", input);
-    expect(mockPatch).toHaveBeenCalledWith(
+    expect(mockPut).toHaveBeenCalledWith(
       "/projects/proj-1/lists/reorder",
       input,
     );
@@ -118,9 +115,9 @@ describe("apiClient.lists", () => {
 describe("apiClient.resources", () => {
   it("list(projectId, listId) should GET resources endpoint", async () => {
     await apiClient.resources.list("proj-1", "list-1");
-    expect(mockGet).toHaveBeenCalledWith(
-      "/projects/proj-1/lists/list-1/resources",
-    );
+    expect(mockGet).toHaveBeenCalledWith("/projects/proj-1/resources", {
+      params: { listId: "list-1" },
+    });
   });
 
   it("get(resourceId) should GET /resources/:id", async () => {

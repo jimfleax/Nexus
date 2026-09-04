@@ -17,7 +17,15 @@ export async function parseMultipartResourceRequest(request: FastifyRequest) {
       }
       fileBuffer = Buffer.concat(chunks);
     } else {
-      body[part.fieldname] = part.value;
+      if (body[part.fieldname] !== undefined) {
+        if (Array.isArray(body[part.fieldname])) {
+          body[part.fieldname].push(part.value);
+        } else {
+          body[part.fieldname] = [body[part.fieldname], part.value];
+        }
+      } else {
+        body[part.fieldname] = part.value;
+      }
     }
   }
 
