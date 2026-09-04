@@ -7,7 +7,6 @@
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
 import { updateSettings } from "../services/user.service.js";
-import { authorizeWithGoogle } from "../utils/oauth/google.js";
 import { frontendUrl, generateState } from "../utils/oauth.js";
 import { SessionManager } from "../utils/session.js";
 
@@ -83,17 +82,12 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
         const redirectUri = `${apiUrl}/api/integrations/google-drive/callback`;
         const provider = fastify.oauth.getProvider("google");
 
-        const { tokens } = await authorizeWithGoogle(
-          provider,
-          code,
-          redirectUri,
-          (refreshToken) =>
-            updateSettings(ownerId, {
-              driveRefreshToken: refreshToken,
-            }),
-        );
+        const tokens = await provider.exchangeCode(code, redirectUri);
 
         if (tokens.refreshToken) {
+          await updateSettings(ownerId, {
+            driveRefreshToken: tokens.refreshToken,
+          });
           return reply.redirect(frontendUrl());
         } else {
           return reply.redirect(`${frontendUrl()}/?error=drive_token_missing`);
