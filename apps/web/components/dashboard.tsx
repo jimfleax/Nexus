@@ -90,7 +90,7 @@ export function Dashboard() {
               glowColor="255, 255, 255"
             >
               {(projectsLoading
-                ? (Array.from({ length: 3 }) as unknown[])
+                ? (Array.from({ length: 3 }) as Project[])
                 : projects
               ).map((item, i) => {
                 const isDummy = projectsLoading;
@@ -132,7 +132,7 @@ export function Dashboard() {
           {recentLoading || recentResources.length > 0 ? (
             <div className="flex flex-col gap-2">
               {(recentLoading
-                ? (Array.from({ length: 3 }) as unknown[])
+                ? (Array.from({ length: 3 }) as Resource[])
                 : recentResources
               ).map((item, i) => {
                 const isDummy = recentLoading;

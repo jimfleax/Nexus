@@ -86,7 +86,7 @@ export default function ProjectsPage() {
           glowColor="129, 90, 192"
         >
           {(isLoading
-            ? (Array.from({ length: 4 }) as unknown[])
+            ? (Array.from({ length: 4 }) as Project[])
             : projects
           ).map((item, i) => {
             const isDummy = isLoading;

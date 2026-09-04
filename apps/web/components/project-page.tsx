@@ -6,7 +6,7 @@
  * @architecture Client component; lazy-loads create dialogs and swaps list positions locally before persisting via useReorderLists.
  */
 import React, { Suspense } from "react";
-import type { Project } from "@nexus/shared";
+import type { Project, KnowledgeList } from "@nexus/shared";
 import { Skeleton } from "boneyard-js/react";
 import { useLists, useReorderLists } from "@/hooks/use-lists";
 import { ProjectListCard } from "@/components/project-list-card";
@@ -127,7 +127,7 @@ export function ProjectPage({ project }: { project: Project }) {
         {isLoading || collections.length > 0 ? (
           <div className="flex flex-col gap-2">
             {(isLoading
-              ? (Array.from({ length: 3 }) as unknown[])
+              ? (Array.from({ length: 3 }) as KnowledgeList[])
               : collections
             ).map((item, i) => {
               const isDummy = isLoading;

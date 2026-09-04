@@ -6,7 +6,7 @@
  * @architecture Client component; lazy-loads create/edit dialogs and renders resources via ResourceCard.
  */
 import React, { Suspense } from "react";
-import type { KnowledgeList, Project } from "@nexus/shared";
+import type { KnowledgeList, Project, Resource } from "@nexus/shared";
 import { ResourceCard } from "@/components/resource-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "boneyard-js/react";
@@ -145,20 +145,21 @@ export function ListPage({
       <div className="mt-3 max-w-4xl">
         {isLoading || items.length > 0 ? (
           <div className="flex flex-col">
-            {(isLoading ? (Array.from({ length: 5 }) as unknown[]) : items).map(
-              (item, i) => {
-                const isDummy = isLoading;
-                return (
-                  <Skeleton key={i} name="resource-card" loading={isLoading}>
-                    {isDummy ? (
-                      <div style={{ minHeight: 93 }} />
-                    ) : (
-                      <ResourceCard resource={item} />
-                    )}
-                  </Skeleton>
-                );
-              },
-            )}
+            {(isLoading
+              ? (Array.from({ length: 5 }) as Resource[])
+              : items
+            ).map((item, i) => {
+              const isDummy = isLoading;
+              return (
+                <Skeleton key={i} name="resource-card" loading={isLoading}>
+                  {isDummy ? (
+                    <div style={{ minHeight: 93 }} />
+                  ) : (
+                    <ResourceCard resource={item as Resource} />
+                  )}
+                </Skeleton>
+              );
+            })}
           </div>
         ) : (
           <EmptyState

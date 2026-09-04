@@ -36,7 +36,7 @@ export function ResourceList({
       {isLoading || items.length > 0 ? (
         <div className="flex flex-col border-y border-[#dec9e9]">
           {(isLoading
-            ? (Array.from({ length: skeletonCount }) as unknown[])
+            ? (Array.from({ length: skeletonCount }) as Resource[])
             : items
           ).map((item, i) => {
             const isDummy = isLoading;

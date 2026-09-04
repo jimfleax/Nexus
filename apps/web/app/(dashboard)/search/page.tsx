@@ -97,7 +97,7 @@ export default function Search({
       )}
       {loading || results.length > 0 ? (
         <div className="mt-4 max-w-3xl divide-y divide-[#dec9e9] flex flex-col gap-2">
-          {(loading ? (Array.from({ length: 3 }) as unknown[]) : results).map(
+          {(loading ? (Array.from({ length: 3 }) as Resource[]) : results).map(
             (item, i) => {
               const isDummy = loading;
               return (
