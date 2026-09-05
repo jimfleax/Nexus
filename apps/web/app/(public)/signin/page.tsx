@@ -75,7 +75,7 @@ export default async function SignInPage({
         <div className="flex w-full lg:w-1/2 flex-col gap-10 text-left h-full justify-center">
           <div className="flex flex-col gap-8">
             <Image
-              src="/DarkIcon.png"
+              src="/nexus-icon-128x128.png"
               alt="Nexus Icon"
               width={64}
               height={64}
