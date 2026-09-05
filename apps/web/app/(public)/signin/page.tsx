@@ -10,16 +10,42 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+const ERROR_MESSAGES: Record<string, string> = {
+  auth_failed_state: "Authentication failed. Please try again.",
+  auth_failed_missing_params: "Authentication was cancelled or incomplete.",
+  auth_failed_token:
+    "Failed to complete sign-in with Google. Please try again.",
+  auth_failed_userinfo:
+    "Could not retrieve your Google profile. Please try again.",
+  auth_failed_catch: "An unexpected error occurred during sign-in.",
+  auth_failed_sync: "Failed to establish your session. Please try again.",
+};
+
 /**
  * @desc    Render the sign-in card with provider buttons; each form GETs the Fastify OAuth initiation endpoint
  * @returns {JSX.Element} The sign-in UI
  */
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  const errorMessage = error
+    ? ERROR_MESSAGES[error] || "Sign-in failed. Please try again."
+    : null;
+
   return (
     <BackgroundGradientAnimation
       containerClassName="min-h-screen w-full"
       className="flex min-h-screen w-full items-center justify-center p-4 selection:bg-[#6247aa]/40"
     >
+      {errorMessage && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-2 backdrop-blur-md">
+          <p className="text-sm font-medium text-red-200">{errorMessage}</p>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="absolute top-0 w-full z-50">
         <div className="mx-auto flex h-16 max-w-7xl items-center px-6 md:px-12">

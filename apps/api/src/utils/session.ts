@@ -9,7 +9,7 @@ function getCookieOptions() {
   return {
     httpOnly: true,
     secure: apiUrl.startsWith("https://"),
-    sameSite: "none" as const,
+    sameSite: "lax" as const,
     path: "/",
   };
 }

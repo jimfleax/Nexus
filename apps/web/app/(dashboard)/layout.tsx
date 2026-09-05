@@ -3,8 +3,7 @@
  * @description Authenticated app shell: resolves the session server-side by verifying the nexus-session JWT
  *   cookie and wraps the dashboard in providers and the AppShell frame.
  * @architecture Reads the nexus-session HttpOnly cookie via next/headers, verifies it with jose's jwtVerify
- *   against AUTH_SECRET, and extracts the user payload. If missing or invalid, redirects to /signin
- *   (middleware also handles this as a belt-and-suspenders guard).
+ *   against AUTH_SECRET, and extracts the user payload. If missing or invalid, redirects to /signin.
  */
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";

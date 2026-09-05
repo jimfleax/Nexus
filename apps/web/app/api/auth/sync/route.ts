@@ -4,6 +4,7 @@
  * @architecture Handles redirect from the API auth flow and stores the JWT as an HttpOnly cookie.
  */
 import { NextResponse } from "next/server";
+import { jwtVerify } from "jose";
 
 /**
  * @desc Handles GET requests with a token query param to establish the local session.
@@ -15,6 +16,22 @@ export async function GET(request: Request) {
   const token = url.searchParams.get("token");
 
   if (!token) {
+    return NextResponse.redirect(
+      new URL("/signin?error=auth_failed_sync", request.url),
+    );
+  }
+
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    return NextResponse.redirect(
+      new URL("/signin?error=auth_failed_sync", request.url),
+    );
+  }
+
+  try {
+    const key = new TextEncoder().encode(secret);
+    await jwtVerify(token, key, { clockTolerance: 30 });
+  } catch {
     return NextResponse.redirect(
       new URL("/signin?error=auth_failed_sync", request.url),
     );
