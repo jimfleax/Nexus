@@ -39,67 +39,80 @@ export function LandingHero() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top top",
-        end: "+=300%", // Pins for 300vh of scrolling
-        pin: pinRef.current,
-        scrub: 2.5, // 2.5 seconds of smoothing interpolation on fast scroll or Home key
-      },
-    });
+    const mm = gsap.matchMedia();
 
-    // Scroll indicator fades out immediately
-    tl.to(
-      scrollIndicatorRef.current,
+    mm.add(
       {
-        opacity: 0,
-        y: 20,
-        ease: "power2.out",
-        duration: 0.5,
+        isMobile: "(max-width: 768px)",
+        isDesktop: "(min-width: 769px)",
       },
-      0,
-    );
+      (context) => {
+        const { isMobile } = context.conditions as { isMobile: boolean };
 
-    // Nexus floats up and fades out
-    tl.to(
-      nexusRef.current,
-      {
-        opacity: 0,
-        y: -80,
-        ease: "power2.inOut",
-        duration: 1,
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top top",
+            end: isMobile ? "+=150%" : "+=300%",
+            pin: pinRef.current,
+            scrub: 2.5,
+          },
+        });
+
+        // Scroll indicator fades out immediately
+        tl.to(
+          scrollIndicatorRef.current,
+          {
+            opacity: 0,
+            y: 20,
+            ease: "power2.out",
+            duration: 0.5,
+          },
+          0,
+        );
+
+        // Nexus floats up and fades out
+        tl.to(
+          nexusRef.current,
+          {
+            opacity: 0,
+            y: -80,
+            ease: "power2.inOut",
+            duration: 1,
+          },
+          0,
+        );
+
+        // Description characters unfold and float up
+        if (descRef.current) {
+          gsap.set(descRef.current, { opacity: 1 }); // Remove FOUC wrapper hide
+          const pieces = descRef.current.querySelectorAll(".fold-text-piece");
+          tl.fromTo(
+            pieces,
+            {
+              opacity: 0,
+              y: 20,
+              rotateX: -90, // Match the initial FoldText state
+              "--fold-crease": 0.55,
+            },
+            {
+              opacity: 1,
+              y: 0,
+              rotateX: 0,
+              "--fold-crease": 0,
+              stagger: { amount: 1 },
+              ease: "power3.out",
+              duration: 0.2,
+              clearProps: "willChange",
+            },
+            0.8, // slight delay after Nexus fades out
+          );
+        }
       },
-      0,
     );
-
-    // Description characters unfold and float up
-    if (descRef.current) {
-      gsap.set(descRef.current, { opacity: 1 }); // Remove FOUC wrapper hide
-      const pieces = descRef.current.querySelectorAll(".fold-text-piece");
-      tl.fromTo(
-        pieces,
-        {
-          opacity: 0,
-          y: 20,
-          rotateX: -90, // Match the initial FoldText state
-          "--fold-crease": 0.55,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          rotateX: 0,
-          "--fold-crease": 0,
-          stagger: { amount: 1 },
-          ease: "power3.out",
-          duration: 0.2,
-          clearProps: "willChange",
-        },
-        0.8, // slight delay after Nexus fades out
-      );
-    }
 
     return () => {
+      mm.revert();
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
@@ -146,7 +159,7 @@ export function LandingHero() {
             perspective={700}
             creaseShading={0.55}
             className="leading-tight"
-            fontSize="2.5em"
+            fontSize="clamp(1.5rem, 6vw, 2.5rem)"
             fontWeight={800}
             color="rgba(255, 255, 255, 0.7)"
           />

@@ -46,49 +46,62 @@ export function LandingFeatures() {
       gsap.set(titleRef.current, { xPercent: -50, yPercent: -50 });
       gsap.set(cardsRef.current, { yPercent: -50 });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "+=800%", // Pins the section for 800vh
-          scrub: 2.5, // 2.5 seconds of smoothing interpolation on fast scroll or Home key
-          pin: true,
-          invalidateOnRefresh: true, // Recalculates viewport dimensions on resize
-        },
-      });
+      const mm = gsap.matchMedia();
 
-      // Phase 1: Title shrinks but not as far out
-      tl.to(
-        titleRef.current,
+      mm.add(
         {
-          top: "6rem",
-          left: "5vw",
-          xPercent: 0,
-          yPercent: 0,
-          scale: 0.4,
-          duration: 1,
-          ease: "power2.inOut",
+          isMobile: "(max-width: 768px)",
+          isDesktop: "(min-width: 769px)",
         },
-        0,
-      );
+        (context) => {
+          const { isMobile } = context.conditions as { isMobile: boolean };
 
-      // Phase 2: Cards slide in and stop when the last card is visible (they don't exit the screen)
-      tl.fromTo(
-        cardsRef.current,
-        { x: () => window.innerWidth },
-        {
-          x: () => {
-            const scrollW = cardsRef.current?.scrollWidth ?? window.innerWidth;
-            const maxScroll = Math.max(
-              0,
-              scrollW - window.innerWidth + window.innerWidth * 0.05,
-            );
-            return -maxScroll;
-          },
-          duration: 3,
-          ease: "none",
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top top",
+              end: isMobile ? "+=300%" : "+=800%",
+              scrub: 2.5,
+              pin: true,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          // Phase 1: Title shrinks but not as far out
+          tl.to(
+            titleRef.current,
+            {
+              top: "6rem",
+              left: "5vw",
+              xPercent: 0,
+              yPercent: 0,
+              scale: 0.4,
+              duration: 1,
+              ease: "power2.inOut",
+            },
+            0,
+          );
+
+          // Phase 2: Cards slide in and stop when the last card is visible
+          tl.fromTo(
+            cardsRef.current,
+            { x: () => window.innerWidth },
+            {
+              x: () => {
+                const scrollW =
+                  cardsRef.current?.scrollWidth ?? window.innerWidth;
+                const maxScroll = Math.max(
+                  0,
+                  scrollW - window.innerWidth + window.innerWidth * 0.05,
+                );
+                return -maxScroll;
+              },
+              duration: 3,
+              ease: "none",
+            },
+            1,
+          );
         },
-        1,
       );
     }, containerRef);
 

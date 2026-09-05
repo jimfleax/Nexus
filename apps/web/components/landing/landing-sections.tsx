@@ -60,91 +60,100 @@ export function LandingWorkspace() {
         opacity: 0,
       });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "+=1000%", // Pins for 1000vh to slow down the animation scroll intensity
-          scrub: 2.5, // 2.5 seconds of smoothing interpolation on fast scroll or Home key
-          pin: true,
-          invalidateOnRefresh: true,
-        },
-      });
+      const mm = gsap.matchMedia();
 
-      // Phase 1: Shrink the massive title and move it up
-      // Since origin is left, we must animate xPercent to keep it visually centered (50 * 0.7 = 35)
-      tl.to(
-        titleRef.current,
+      mm.add(
         {
-          scale: 0.7,
-          xPercent: -35,
-          top: "35%",
-          duration: 2,
-          ease: "power2.inOut",
+          isMobile: "(max-width: 768px)",
+          isDesktop: "(min-width: 769px)",
         },
-        0,
-      );
+        (context) => {
+          const { isMobile } = context.conditions as { isMobile: boolean };
 
-      // Phase 2: "Type out" the subtitle
-      tl.to(
-        ".subtitle-word",
-        {
-          opacity: 1,
-          duration: 2,
-          stagger: 0.1,
-          ease: "none",
-        },
-        1.5,
-      );
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top top",
+              end: isMobile ? "+=200%" : "+=1000%",
+              scrub: 2.5,
+              pin: true,
+              invalidateOnRefresh: true,
+            },
+          });
 
-      // Phase 3: Pop the button in
-      tl.to(
-        buttonRef.current,
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 1,
-          ease: "back.out(2)",
-        },
-        3.5,
-      );
+          // Phase 1: Shrink the massive title and move it up
+          tl.to(
+            titleRef.current,
+            {
+              scale: 0.7,
+              xPercent: -35,
+              top: "35%",
+              duration: 2,
+              ease: "power2.inOut",
+            },
+            0,
+          );
 
-      // Phase 4: Prepare for 50/50 Footer Split!
-      // Move elements to the BOTTOM 50vh of this container (top: 75%).
-      // When unpinned, user scrolls 50vh, so these elements end up at 25vh (center of top half of screen).
-      tl.to(
-        titleRef.current,
-        {
-          top: "75%",
-          left: "5vw",
-          xPercent: 0,
-          scale: 0.5,
-          duration: 2,
-          ease: "power2.inOut",
-        },
-        5,
-      );
+          // Phase 2: "Type out" the subtitle
+          tl.to(
+            ".subtitle-word",
+            {
+              opacity: 1,
+              duration: 2,
+              stagger: 0.1,
+              ease: "none",
+            },
+            1.5,
+          );
 
-      tl.to(
-        buttonRef.current,
-        {
-          top: "75%",
-          left: "95vw",
-          xPercent: -100,
-          duration: 2,
-          ease: "power2.inOut",
-        },
-        5,
-      );
+          // Phase 3: Pop the button in
+          tl.to(
+            buttonRef.current,
+            {
+              scale: 1,
+              opacity: 1,
+              duration: 1,
+              ease: "back.out(2)",
+            },
+            3.5,
+          );
 
-      tl.to(
-        subtitleRef.current,
-        {
-          opacity: 0,
-          duration: 1,
-          ease: "power2.inOut",
+          // Phase 4: Prepare for 50/50 Footer Split!
+          tl.to(
+            titleRef.current,
+            {
+              top: "75%",
+              left: "5vw",
+              xPercent: 0,
+              scale: 0.5,
+              duration: 2,
+              ease: "power2.inOut",
+            },
+            5,
+          );
+
+          tl.to(
+            buttonRef.current,
+            {
+              top: "75%",
+              left: "95vw",
+              xPercent: -100,
+              duration: 2,
+              ease: "power2.inOut",
+            },
+            5,
+          );
+
+          tl.to(
+            subtitleRef.current,
+            {
+              opacity: 0,
+              duration: 1,
+              ease: "power2.inOut",
+            },
+            5,
+          );
         },
-        5,
       );
     }, containerRef);
 
@@ -199,13 +208,13 @@ export function LandingWorkspace() {
  */
 export function LandingFooter() {
   return (
-    <footer className="relative border-t border-white/10 bg-[#2d1b4e] h-[50vh] flex flex-col justify-between overflow-hidden">
+    <footer className="relative border-t border-white/10 bg-[#2d1b4e] min-h-[50vh] h-auto md:h-[50vh] flex flex-col justify-between overflow-hidden py-12 md:py-0">
       {/* Decorative Glow */}
       <div className="absolute top-0 right-0 size-96 bg-[#6247aa] rounded-full blur-[120px] opacity-20 pointer-events-none" />
       <div className="absolute bottom-0 left-0 size-96 bg-[#dec9e9] rounded-full blur-[120px] opacity-10 pointer-events-none" />
 
       {/* Main Footer Content */}
-      <div className="mx-auto flex w-full max-w-6xl flex-col md:flex-row justify-between gap-12 px-6 pt-16 md:pt-24 relative z-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-col md:flex-row justify-between gap-12 px-6 md:pt-24 relative z-10">
         {/* Brand Column */}
         <div className="flex flex-col gap-6 max-w-md">
           <div className="flex items-center gap-5 text-white">
@@ -226,49 +235,49 @@ export function LandingFooter() {
         </div>
 
         {/* Links Columns */}
-        <div className="flex gap-16 md:gap-28 pt-4">
-          <div className="flex flex-col gap-5">
-            <h4 className="text-white font-semibold text-lg tracking-wide uppercase">
+        <div className="flex gap-8 md:gap-28 pt-4">
+          <div className="flex flex-col gap-2 md:gap-5">
+            <h4 className="text-white font-semibold text-lg tracking-wide uppercase mb-2 md:mb-0">
               Platform
             </h4>
             <Link
               href="/signin"
-              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg"
+              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg py-3 block"
             >
               Login
             </Link>
             <Link
               href="/signin"
-              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg"
+              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg py-3 block"
             >
               Sign Up
             </Link>
             <Link
               href="/#features"
-              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg"
+              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg py-3 block"
             >
               Features
             </Link>
           </div>
-          <div className="flex flex-col gap-5">
-            <h4 className="text-white font-semibold text-lg tracking-wide uppercase">
+          <div className="flex flex-col gap-2 md:gap-5">
+            <h4 className="text-white font-semibold text-lg tracking-wide uppercase mb-2 md:mb-0">
               Legal
             </h4>
             <Link
               href="/terms"
-              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg"
+              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg py-3 block"
             >
               Terms
             </Link>
             <Link
               href="/policy"
-              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg"
+              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg py-3 block"
             >
               Privacy
             </Link>
             <a
               href="mailto:reetabrata.bhandari@gmail.com"
-              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg"
+              className="text-[#dec9e9]/70 hover:text-white transition-colors text-lg py-3 block"
             >
               Contact
             </a>
