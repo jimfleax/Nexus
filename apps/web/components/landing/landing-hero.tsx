@@ -56,6 +56,12 @@ export function LandingHero() {
             end: isMobile ? "+=150%" : "+=300%",
             pin: pinRef.current,
             scrub: 1,
+            snap: {
+              snapTo: [0, 1],
+              duration: { min: 0.2, max: 0.8 },
+              delay: 0.2,
+              ease: "power1.inOut",
+            },
           },
         });
 

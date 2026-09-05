@@ -78,8 +78,16 @@ export function LandingWorkspace() {
               scrub: 1,
               pin: true,
               invalidateOnRefresh: true,
+              snap: {
+                snapTo: "labels",
+                duration: { min: 0.2, max: 0.8 },
+                delay: 0.2,
+                ease: "power1.inOut",
+              },
             },
           });
+
+          tl.addLabel("start", 0);
 
           // Phase 1: Shrink the massive title and move it up
           tl.to(
@@ -94,6 +102,8 @@ export function LandingWorkspace() {
             0,
           );
 
+          tl.addLabel("title", 2);
+
           // Phase 2: "Type out" the subtitle
           tl.to(
             ".subtitle-word",
@@ -105,6 +115,8 @@ export function LandingWorkspace() {
             },
             1.5,
           );
+
+          tl.addLabel("subtitle", 3.5);
 
           // Phase 3: Pop the button in
           tl.to(
@@ -118,7 +130,11 @@ export function LandingWorkspace() {
             3.5,
           );
 
+          tl.addLabel("button", 4.5);
+
           // Phase 4: Prepare for 50/50 Footer Split!
+          // Move elements to the BOTTOM 50vh of this container (top: 75%).
+          // When unpinned, user scrolls 50vh, so these elements end up at 25vh (center of top half of screen).
           tl.to(
             titleRef.current,
             {
@@ -153,6 +169,8 @@ export function LandingWorkspace() {
             },
             5,
           );
+
+          tl.addLabel("end", 7);
         },
       );
     }, containerRef);

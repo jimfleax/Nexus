@@ -64,8 +64,16 @@ export function LandingFeatures() {
               scrub: 1,
               pin: true,
               invalidateOnRefresh: true,
+              snap: {
+                snapTo: "labels",
+                duration: { min: 0.2, max: 0.8 },
+                delay: 0.2,
+                ease: "power1.inOut",
+              },
             },
           });
+
+          tl.addLabel("start", 0);
 
           // Phase 1: Title shrinks but not as far out
           tl.to(
@@ -81,6 +89,8 @@ export function LandingFeatures() {
             },
             0,
           );
+
+          tl.addLabel("card1", 1); // After title shrinks, Card 1 is visible
 
           // Phase 2: Cards slide in and stop when the last card is visible
           tl.fromTo(
@@ -101,6 +111,12 @@ export function LandingFeatures() {
             },
             1,
           );
+
+          // Cards smoothly scroll over 3 seconds. Let's add labels for each card.
+          // Total distance covers 4 cards. So card 2 is at time 2, card 3 is at time 3, card 4 is at time 4.
+          tl.addLabel("card2", 2);
+          tl.addLabel("card3", 3);
+          tl.addLabel("card4", 4);
         },
       );
     }, containerRef);
