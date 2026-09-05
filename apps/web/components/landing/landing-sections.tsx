@@ -226,7 +226,7 @@ export function LandingWorkspace() {
  */
 export function LandingFooter() {
   return (
-    <footer className="relative border-t border-white/10 bg-[#2d1b4e] min-h-[50vh] h-auto md:h-[50vh] flex flex-col justify-between overflow-hidden py-12 md:py-0">
+    <footer className="relative border-t border-white/10 bg-[#2d1b4e] min-h-[50vh] flex flex-col justify-between overflow-hidden py-12 md:py-0">
       {/* Decorative Glow */}
       <div className="absolute top-0 right-0 size-96 bg-[#6247aa] rounded-full blur-[120px] opacity-20 pointer-events-none" />
       <div className="absolute bottom-0 left-0 size-96 bg-[#dec9e9] rounded-full blur-[120px] opacity-10 pointer-events-none" />
