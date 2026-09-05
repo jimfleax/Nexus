@@ -22,7 +22,17 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 /**
- * @desc    Render the sign-in card with provider buttons; each form GETs the Fastify OAuth initiation endpoint
+ * @desc    Render the sign-in card with provider buttons.
+ *          Reads `error` search parameters (e.g., from failed OAuth callbacks)
+ *          and translates them into user-friendly error banners.
+ *
+ * @architecture
+ *          The form performs a direct GET navigation to the backend API origin
+ *          instead of proxying through Next.js (e.g., via `/api/auth/google`).
+ *          This is strictly required because Edge networks (like Vercel) aggressively
+ *          strip `Set-Cookie` headers on cross-origin proxy rewrites, which would
+ *          prevent the backend from setting the `oauth_state` cookie securely.
+ *
  * @returns {JSX.Element} The sign-in UI
  */
 export default async function SignInPage({

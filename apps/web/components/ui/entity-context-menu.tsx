@@ -69,11 +69,13 @@ export function EntityContextMenu({
   const [infoOpen, setInfoOpen] = useState(false);
 
   const handleDelete = () => {
-    if (onDelete) {
-      onDelete();
-    } else {
-      setDeleteOpen(true);
-    }
+    setTimeout(() => {
+      if (onDelete) {
+        onDelete();
+      } else {
+        setDeleteOpen(true);
+      }
+    }, 10);
   };
 
   return (
@@ -118,7 +120,7 @@ export function EntityContextMenu({
 
           {rename && (
             <ContextMenuItem
-              onSelect={() => setRenameOpen(true)}
+              onSelect={() => setTimeout(() => setRenameOpen(true), 10)}
               className="flex cursor-pointer items-center gap-2 focus:bg-[#f8f4fb]"
             >
               <TextAa className="size-4" /> Rename {entityKind}
@@ -127,7 +129,7 @@ export function EntityContextMenu({
 
           {onEdit && (
             <ContextMenuItem
-              onSelect={onEdit}
+              onSelect={() => setTimeout(() => onEdit(), 10)}
               className="flex cursor-pointer items-center gap-2 focus:bg-[#f8f4fb]"
             >
               <PencilSimple className="size-4" /> Edit {entityKind}
@@ -136,7 +138,7 @@ export function EntityContextMenu({
 
           {editDialog && (
             <ContextMenuItem
-              onSelect={() => setEditOpen(true)}
+              onSelect={() => setTimeout(() => setEditOpen(true), 10)}
               className="flex cursor-pointer items-center gap-2 focus:bg-[#f8f4fb]"
             >
               <PencilSimple className="size-4" /> Edit {entityKind}
@@ -147,7 +149,7 @@ export function EntityContextMenu({
 
           {info && (
             <ContextMenuItem
-              onSelect={() => setInfoOpen(true)}
+              onSelect={() => setTimeout(() => setInfoOpen(true), 10)}
               className="flex cursor-pointer items-center gap-2 focus:bg-[#f8f4fb]"
             >
               <Info className="size-4" />{" "}

@@ -28,6 +28,12 @@ export async function GET(request: Request) {
     );
   }
 
+  // CRITICAL SECURITY GUARD: Session Fixation Prevention
+  // We must cryptographically verify the token before establishing the session.
+  // Because this route bridges the cross-origin gap by accepting the token via
+  // a URL parameter (?token=...), an attacker could send a victim a link with
+  // a spoofed or malicious token. By strictly verifying the signature against
+  // AUTH_SECRET, we guarantee the token was genuinely issued by our backend.
   try {
     const key = new TextEncoder().encode(secret);
     await jwtVerify(token, key, { clockTolerance: 30 });

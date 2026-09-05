@@ -4,6 +4,17 @@ const OAUTH_STATE_COOKIE = "oauth_state";
 const INTEGRATION_STATE_COOKIE = "integration_state";
 const SESSION_COOKIE = "nexus-session";
 
+/**
+ * @desc    Generates standard security options for backend cookies.
+ *
+ * @warning CRITICAL OAUTH COOKIE LOGIC
+ *          The `sameSite` policy MUST be set to "lax", NOT "none".
+ *          During the OAuth flow, the browser is redirected from Google (accounts.google.com)
+ *          back to this API backend. Because of aggressive third-party cookie blocking in
+ *          modern browsers (like Chrome), a `SameSite=None` cookie will often be silently dropped
+ *          during this cross-site redirect, resulting in an `auth_failed_state` error.
+ *          A `SameSite=Lax` cookie is safely permitted because the Google callback is a top-level GET navigation.
+ */
 function getCookieOptions() {
   const apiUrl = process.env.API_URL || "http://localhost:8080";
   return {
