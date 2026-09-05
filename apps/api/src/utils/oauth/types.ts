@@ -1,8 +1,20 @@
+/**
+ * @file types.ts
+ * @description Shared contracts and types for the OAuth authentication layer.
+ * @architecture Defines the IOAuthProvider interface and shared data structures used across various provider implementations.
+ */
+
+/**
+ * @desc    Standard OAuth token response containing access and optional refresh tokens
+ */
 export interface OAuthTokens {
   accessToken: string;
   refreshToken?: string;
 }
 
+/**
+ * @desc    Normalized user identity data retrieved from an OAuth provider
+ */
 export interface OAuthIdentity {
   id: string; // e.g., 'google_12345'
   email: string | null;
@@ -10,6 +22,9 @@ export interface OAuthIdentity {
   image: string | null;
 }
 
+/**
+ * @desc    Interface defining the required methods for any OAuth provider integration
+ */
 export interface IOAuthProvider {
   getAuthorizationUrl(
     state: string,

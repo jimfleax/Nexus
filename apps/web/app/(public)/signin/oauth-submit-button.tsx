@@ -3,6 +3,7 @@
 /**
  * @file oauth-submit-button.tsx
  * @description Client-side submit button for provider OAuth sign-in forms. Uses React's useFormStatus to show a spinner while the server action is pending.
+ * @architecture Client Component utilizing useFormStatus.
  */
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,9 @@ interface OAuthSubmitButtonProps {
   children: React.ReactNode;
 }
 
+/**
+ * @desc Renders a submit button that displays a loading spinner when the form is pending.
+ */
 export function OAuthSubmitButton({ children }: OAuthSubmitButtonProps) {
   const { pending } = useFormStatus();
 

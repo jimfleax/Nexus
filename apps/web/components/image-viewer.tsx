@@ -13,7 +13,8 @@ import { buttonVariants } from "@/components/ui/button";
 
 /**
  * @desc    Render an image preview with alt caption and full-resolution action
- * @param   {{title: string; url?: string; alt?: string}} props - Title, image URL, and optional alt text
+ * @param   {Object} props - Component props
+ * @param   {Resource} props.resource - The resource to view
  * @returns {JSX.Element} The image viewer
  */
 export function ImageViewer({ resource }: { resource: Resource }) {

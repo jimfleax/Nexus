@@ -3,6 +3,7 @@ import { resourceUrl } from "@/lib/urls";
 /**
  * @file page.tsx
  * @description Search page: full-text search across the workspace driven by the ?q= query param.
+ * @architecture Fetches search results via React Query and updates UI from URL query state.
  */
 import { motion } from "framer-motion";
 

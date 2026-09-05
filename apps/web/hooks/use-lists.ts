@@ -17,6 +17,7 @@ import { useCacheInvalidatingMutation } from "./use-cache-mutation";
 /**
  * @desc    Query all lists in a project
  * @param   {string} projectId - Project ID
+ * @returns React Query result with array of lists
  */
 export function useLists(projectId: string) {
   return useQuery({
@@ -30,6 +31,7 @@ export function useLists(projectId: string) {
  * @desc    Query a single list within a project
  * @param   {string} projectId - Project ID
  * @param   {string} listId - List ID
+ * @returns React Query result with single list data
  */
 export function useList(projectId: string, listId: string) {
   return useQuery({
@@ -41,6 +43,7 @@ export function useList(projectId: string, listId: string) {
 
 /**
  * @desc    Mutation that creates a list in a project and invalidates its list cache
+ * @returns React Query mutation object for list creation
  */
 export function useCreateList() {
   return useCacheInvalidatingMutation({
@@ -57,6 +60,7 @@ export function useCreateList() {
 
 /**
  * @desc    Mutation that updates a list and refreshes the project and single-list caches
+ * @returns React Query mutation object for list update
  */
 export function useUpdateList() {
   return useCacheInvalidatingMutation({
@@ -78,6 +82,7 @@ export function useUpdateList() {
 
 /**
  * @desc    Mutation that deletes a list and invalidates the project's list cache
+ * @returns React Query mutation object for list deletion
  */
 export function useDeleteList() {
   return useCacheInvalidatingMutation({
@@ -94,6 +99,7 @@ export function useDeleteList() {
 
 /**
  * @desc    Mutation that reorders lists and invalidates the project's list cache
+ * @returns React Query mutation object for lists reordering
  */
 export function useReorderLists() {
   return useCacheInvalidatingMutation({

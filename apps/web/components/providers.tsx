@@ -15,7 +15,8 @@ import "@/components/bones/registry";
 
 /**
  * @desc    Wrap children with the query, reader-settings, and toast providers
- * @param   {{children: React.ReactNode}} props - Child tree
+ * @param   {Object} props - Component props
+ * @param   {React.ReactNode} props.children - Child tree
  * @returns {JSX.Element} The provider stack
  */
 export function Providers({ children }: { children: React.ReactNode }) {

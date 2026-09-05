@@ -1,7 +1,16 @@
+/**
+ * @file loading.tsx
+ * @description Loading state for a specific project list page.
+ * @architecture Displays skeleton loaders for breadcrumbs and resource lists.
+ */
 "use client";
 
 import { Skeleton } from "boneyard-js/react";
 
+/**
+ * @desc    Renders a loading skeleton for the List detail page
+ * @returns {JSX.Element} The loading UI component
+ */
 export default function Loading() {
   return (
     <div className="space-y-6">

@@ -1,7 +1,7 @@
 /**
  * @file index.ts
  * @description Application entry point that boots the Fastify server, connects to MongoDB, and mounts every API plugin.
- * @architecture Registers Fastify with the Zod type provider, configures the storage, deletion, and auth plugins plus all route plugins, and triggers background garbage collection on the health endpoint.
+ * @architecture Registers Fastify with the Zod type provider, configures the storage, deletion, and auth plugins plus all route plugins, and registers background garbage collection on a scheduled interval.
  */
 
 import "dotenv/config";

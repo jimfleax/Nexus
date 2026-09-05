@@ -57,6 +57,11 @@ type User = {
   image?: string | null;
 };
 
+/**
+ * @desc Command palette triggered by Ctrl+K to handle global navigation and actions.
+ * @param {{ user?: User }} props - The user session object
+ * @returns {JSX.Element}
+ */
 export function CommandMenu({ user }: { user?: User }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");

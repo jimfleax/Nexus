@@ -1,3 +1,8 @@
+/**
+ * @file oauthProvider.ts
+ * @description Fastify plugin that registers and provides OAuth providers for the application.
+ * @architecture Decorates the Fastify instance with an `oauth` object to manage and retrieve OAuth providers like Google.
+ */
 import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
 import { IOAuthProvider } from "../utils/oauth/types.js";
@@ -12,6 +17,10 @@ declare module "fastify" {
   }
 }
 
+/**
+ * @plugin oauthProviderPlugin
+ * @description Registers OAuth providers and decorates the Fastify instance with OAuth management methods.
+ */
 export const oauthProviderPlugin: FastifyPluginAsync = fp(
   async (fastify) => {
     const providers = new Map<string, IOAuthProvider>();

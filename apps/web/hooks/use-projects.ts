@@ -12,6 +12,7 @@ import { useCacheInvalidatingMutation } from "./use-cache-mutation";
 
 /**
  * @desc    Query all projects
+ * @returns React Query result with array of projects
  */
 export function useProjects() {
   return useQuery({
@@ -23,6 +24,7 @@ export function useProjects() {
 /**
  * @desc    Query a single project by ID
  * @param   {string} id - Project ID
+ * @returns React Query result with single project data
  */
 export function useProject(id: string) {
   return useQuery({
@@ -34,6 +36,7 @@ export function useProject(id: string) {
 
 /**
  * @desc    Mutation that creates a project and invalidates the project list
+ * @returns React Query mutation object for project creation
  */
 export function useCreateProject() {
   return useCacheInvalidatingMutation({
@@ -44,6 +47,7 @@ export function useCreateProject() {
 
 /**
  * @desc    Mutation that updates a project and refreshes the affected cache entries
+ * @returns React Query mutation object for project update
  */
 export function useUpdateProject() {
   return useCacheInvalidatingMutation({
@@ -58,6 +62,7 @@ export function useUpdateProject() {
 
 /**
  * @desc    Mutation that deletes a project and evicts its cached data
+ * @returns React Query mutation object for project deletion
  */
 export function useDeleteProject() {
   const queryClient = useQueryClient();

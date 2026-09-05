@@ -322,6 +322,12 @@ export const apiClient = {
    * @description Info endpoints.
    */
   info: {
+    /**
+     * @desc    Fetch info (metadata/details) for a specific entity
+     * @param   {"project" | "list" | "resource"} type - The entity type
+     * @param   {string} id - The entity ID
+     * @returns {Promise<InfoDto>} The info data
+     */
     async get(
       type: "project" | "list" | "resource",
       id: string,

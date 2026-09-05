@@ -3,6 +3,7 @@
 /**
  * @file page.tsx
  * @description Recent page: lists recently opened resources with a create-resource dialog in the header.
+ * @architecture Fetches recent resources using the useRecentResources hook.
  */
 import { PageHeader } from "@/components/ui/page-header";
 import { CreateResourceDialog } from "@/components/resources/resource-dialog";

@@ -73,6 +73,10 @@ const ResourceSchema = new Schema<IResource>(
     lastOpenedAt: { type: Date },
     readingTime: { type: String },
     ownerId: { type: String, required: true, index: true },
+    /**
+     * @field ai
+     * @description AI-generated metadata for semantic search, summarization, and smart organization.
+     */
     ai: {
       summary: { type: String },
       shortSummary: { type: String },
@@ -102,6 +106,7 @@ const ResourceSchema = new Schema<IResource>(
     timestamps: true,
     toJSON: {
       transform: (_, ret: any) => {
+        // Map _id to id and strip Mongoose internal fields for cleaner API responses
         ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;

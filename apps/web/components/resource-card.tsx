@@ -41,7 +41,8 @@ const icons: Record<Resource["type"], React.ElementType> = {
 
 /**
  * @desc    Render a resource row with favorite toggle, context menu, and delete confirmation
- * @param   {{resource: Resource}} props - The resource to render
+ * @param   {Object} props - Component props
+ * @param   {Resource} props.resource - The resource to render
  * @returns {JSX.Element} The resource card
  */
 export function ResourceCard({ resource }: { resource: Resource }) {

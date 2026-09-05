@@ -1,3 +1,8 @@
+/**
+ * @file loading.tsx
+ * @description Loading state for the dashboard home page.
+ * @architecture Displays skeleton loaders for greeting, projects, and recent resources.
+ */
 "use client";
 
 import { Skeleton } from "boneyard-js/react";
@@ -15,6 +20,10 @@ function getGreeting() {
   return "Good evening";
 }
 
+/**
+ * @desc    Renders a loading skeleton for the Dashboard Home page
+ * @returns {JSX.Element} The loading UI component
+ */
 export default function Loading() {
   return (
     <div>

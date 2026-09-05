@@ -1,6 +1,7 @@
 /**
  * @file not-found.tsx
  * @description Global 404 page shown for unknown routes, with a link back home.
+ * @architecture Global not-found fallback component.
  */
 
 import Link from "next/link";

@@ -3,6 +3,7 @@ import { projectUrl } from "@/lib/urls";
 /**
  * @file page.tsx
  * @description Projects page: grid of the user's projects as animated magic cards with a lazy-loaded create dialog.
+ * @architecture Fetches projects using useProjects, handles empty states, and lazy-loads the create modal.
  */
 
 import React, { Suspense } from "react";

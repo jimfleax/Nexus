@@ -1,3 +1,8 @@
+/**
+ * @file page.tsx
+ * @description Privacy Policy page for Nexus.
+ * @architecture Static public route.
+ */
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { LandingFooter } from "@/components/landing/landing-sections";
@@ -7,6 +12,9 @@ export const metadata = {
   description: "Privacy Policy for Nexus Workspace",
 };
 
+/**
+ * @desc Renders the Privacy Policy content with a standard layout.
+ */
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-[#2d1b4e] flex flex-col font-sans selection:bg-[#6247aa]/40">

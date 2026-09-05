@@ -32,7 +32,8 @@ const CreateResourceDialog = React.lazy(() =>
 
 /**
  * @desc    Render the project header, actions, and ordered collection list
- * @param   {{project: Project}} props - The project to display
+ * @param   {Object} props - Component props
+ * @param   {Project} props.project - The project to display
  * @returns {JSX.Element} The project page
  */
 export function ProjectPage({ project }: { project: Project }) {
@@ -48,6 +49,7 @@ export function ProjectPage({ project }: { project: Project }) {
 
   const handleReorder = (index: number, direction: "up" | "down") => {
     const newLists = [...collections];
+    // Swap list positions locally to reflect the reorder direction
     if (direction === "up" && index > 0) {
       const temp = newLists[index - 1].position;
       newLists[index - 1].position = newLists[index].position;

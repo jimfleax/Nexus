@@ -1,6 +1,7 @@
 /**
  * @file info.ts
  * @description Fastify plugin defining the endpoint to fetch metadata for projects, collections, and resources.
+ * @architecture Provides lightweight metadata queries for UI hydration, relying on Mongoose models directly for simplicity.
  */
 
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";

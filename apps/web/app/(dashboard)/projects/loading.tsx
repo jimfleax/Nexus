@@ -1,8 +1,17 @@
+/**
+ * @file loading.tsx
+ * @description Loading state for the projects page.
+ * @architecture Displays skeleton loaders for the project grid.
+ */
 "use client";
 
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "boneyard-js/react";
 
+/**
+ * @desc    Renders a loading skeleton for the Projects page
+ * @returns {JSX.Element} The loading UI component
+ */
 export default function Loading() {
   return (
     <>

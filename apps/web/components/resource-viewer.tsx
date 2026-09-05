@@ -52,7 +52,8 @@ function ViewerFallback() {
 
 /**
  * @desc    Render the type-appropriate viewer for a resource
- * @param   {{resource: Resource}} props - The resource to view
+ * @param   {Object} props - Component props
+ * @param   {Resource} props.resource - The resource to view
  * @returns {JSX.Element} The viewer wrapped in Suspense
  */
 export function ResourceViewer({ resource }: { resource: Resource }) {

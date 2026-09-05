@@ -1,9 +1,18 @@
+/**
+ * @file back-to-top.tsx
+ * @description A floating action button to scroll back to the top of the page.
+ * @architecture Client component, manages visibility based on window scroll position.
+ */
 "use client";
 
 import { useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * @desc Floating button that smoothly scrolls the window to the top.
+ * @returns {JSX.Element}
+ */
 export function BackToTop() {
   const [isVisible, setIsVisible] = useState(false);
 

@@ -18,7 +18,8 @@ import { buttonVariants } from "@/components/ui/button";
 
 /**
  * @desc    Render a web link card with an iframe preview and open-site action
- * @param   {{resource: Resource}} props - Resource
+ * @param   {Object} props - Component props
+ * @param   {Resource} props.resource - Resource
  * @returns {JSX.Element} The web resource viewer
  */
 export function WebResourceViewer({ resource }: { resource: Resource }) {

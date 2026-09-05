@@ -38,7 +38,8 @@ const ReaderSettingsContext = createContext<{
 
 /**
  * @desc    Provide reader settings, hydrating from localStorage and syncing changes to the document root
- * @param   {{children: React.ReactNode}} props - Child tree
+ * @param   {Object} props - Component props
+ * @param   {React.ReactNode} props.children - Child tree
  * @returns {JSX.Element} The reader-settings context provider
  */
 export function ReaderSettingsProvider({

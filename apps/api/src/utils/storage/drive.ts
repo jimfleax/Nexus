@@ -69,6 +69,7 @@ export class DriveStorageAdapter implements IStorageAdapter {
   ): Promise<string | null> {
     if (cachedFolderId) {
       try {
+        // Attempt to fetch the cached folder to verify it hasn't been trashed or permanently deleted
         const folderRes = await drive.files.get({
           fileId: cachedFolderId,
           fields: "id,trashed",
@@ -155,6 +156,12 @@ export class DriveStorageAdapter implements IStorageAdapter {
     return createRes.data.id!;
   }
 
+  /**
+   * @desc    Map a Drive API error to a standardized StorageError/TokenRevokedError
+   * @param   {any} err - The error returned from Google API
+   * @param   {string} ownerId - The owning user ID to associate with auth errors
+   * @throws  {TokenRevokedError} If the user's Google tokens are invalid/revoked
+   */
   private handleDriveError(err: any, ownerId: string) {
     const message = err?.message?.toLowerCase() || "";
     const status = err?.response?.status || err?.status;
@@ -377,6 +384,13 @@ export class DriveStorageAdapter implements IStorageAdapter {
     }
   }
 
+  /**
+   * @desc    Retrieve a file stream from Drive to download to the client
+   * @param   {string} ownerId - The owning user
+   * @param   {string} fileId - The ID of the file in Google Drive
+   * @param   {string} [rangeHeader] - Optional HTTP range header for partial downloads
+   * @returns {Promise<{ stream: import("stream").Readable; headers: Record<string, string>; status: number }>}
+   */
   async getFileStream(
     ownerId: string,
     fileId: string,

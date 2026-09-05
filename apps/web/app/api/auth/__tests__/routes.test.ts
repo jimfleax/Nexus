@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET as syncGET } from "../sync/route";
 import { POST as signoutPOST } from "../signout/route";
+vi.mock("jose", () => ({ jwtVerify: vi.fn().mockResolvedValue({}) }));
 
 vi.mock("next/server", () => {
   class NextResponse extends Response {
@@ -29,6 +30,7 @@ vi.mock("next/server", () => {
 
 beforeEach(() => {
   vi.unstubAllEnvs();
+  vi.stubEnv("AUTH_SECRET", "test-secret");
 });
 
 describe("GET /api/auth/sync", () => {

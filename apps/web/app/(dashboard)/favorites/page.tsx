@@ -3,6 +3,7 @@
 /**
  * @file page.tsx
  * @description Favorites page: lists the user's starred resources fetched from the backend.
+ * @architecture Fetches favorite resources using the useFavorites hook.
  */
 import { PageHeader } from "@/components/ui/page-header";
 import { Star } from "@phosphor-icons/react";

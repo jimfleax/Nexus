@@ -4,10 +4,14 @@
  * @file bones-preview/page.tsx
  * @description Boneyard capture page — renders all skeleton fixtures so the CLI can snapshot them.
  * NOT auth-gated. Only used during `npm run build:bones`.
+ * @architecture Static public route used for tooling.
  */
 
 import { Skeleton } from "boneyard-js/react";
 
+/**
+ * @desc Renders skeleton fixtures for the Boneyard CLI to capture.
+ */
 export default function BonesPreviewPage() {
   return (
     <div className="p-8 space-y-12 bg-white max-w-4xl mx-auto">

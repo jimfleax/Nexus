@@ -1,3 +1,8 @@
+/**
+ * @file session.ts
+ * @description Manages session tokens and OAuth states using cookies and headers.
+ * @architecture Acts as the central utility for managing authentication state and security tokens in HTTP requests/responses.
+ */
 import { FastifyReply, FastifyRequest } from "fastify";
 
 const OAUTH_STATE_COOKIE = "oauth_state";
@@ -26,6 +31,11 @@ function getCookieOptions() {
 }
 
 export const SessionManager = {
+  /**
+   * @desc Extracts the authentication token from the request headers, cookies, or query parameters.
+   * @param {FastifyRequest} request - The Fastify request object.
+   * @returns {string | null} The extracted token or null if not found.
+   */
   getAuthToken(request: FastifyRequest): string | null {
     const authHeader = request.headers.authorization;
     if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -46,6 +56,12 @@ export const SessionManager = {
     return null;
   },
 
+  /**
+   * @desc Sets the OAuth state cookie in the response.
+   * @param {FastifyReply} reply - The Fastify reply object.
+   * @param {string} state - The OAuth state string to set.
+   * @returns {void}
+   */
   setOAuthState(reply: FastifyReply, state: string) {
     reply.cookie(OAUTH_STATE_COOKIE, state, {
       ...getCookieOptions(),
@@ -53,14 +69,30 @@ export const SessionManager = {
     });
   },
 
+  /**
+   * @desc Retrieves the OAuth state from the request cookies.
+   * @param {FastifyRequest} request - The Fastify request object.
+   * @returns {string | null} The OAuth state or null if not found.
+   */
   getOAuthState(request: FastifyRequest): string | null {
     return request.cookies ? request.cookies[OAUTH_STATE_COOKIE] || null : null;
   },
 
+  /**
+   * @desc Clears the OAuth state cookie from the response.
+   * @param {FastifyReply} reply - The Fastify reply object.
+   * @returns {void}
+   */
   clearOAuthState(reply: FastifyReply) {
     reply.clearCookie(OAUTH_STATE_COOKIE, getCookieOptions());
   },
 
+  /**
+   * @desc Sets the integration state cookie in the response.
+   * @param {FastifyReply} reply - The Fastify reply object.
+   * @param {string} state - The integration state string to set.
+   * @returns {void}
+   */
   setIntegrationState(reply: FastifyReply, state: string) {
     reply.cookie(INTEGRATION_STATE_COOKIE, state, {
       ...getCookieOptions(),
@@ -68,12 +100,22 @@ export const SessionManager = {
     });
   },
 
+  /**
+   * @desc Retrieves the integration state from the request cookies.
+   * @param {FastifyRequest} request - The Fastify request object.
+   * @returns {string | null} The integration state or null if not found.
+   */
   getIntegrationState(request: FastifyRequest): string | null {
     return request.cookies
       ? request.cookies[INTEGRATION_STATE_COOKIE] || null
       : null;
   },
 
+  /**
+   * @desc Clears the integration state cookie from the response.
+   * @param {FastifyReply} reply - The Fastify reply object.
+   * @returns {void}
+   */
   clearIntegrationState(reply: FastifyReply) {
     reply.clearCookie(INTEGRATION_STATE_COOKIE, getCookieOptions());
   },

@@ -1,7 +1,15 @@
 "use client";
+/**
+ * @file page.tsx
+ * @description Test skeleton page to verify skeleton loading states.
+ * @architecture Client component.
+ */
 import { Skeleton } from "boneyard-js/react";
 import { useState, useEffect } from "react";
 
+/**
+ * @desc Renders a test page for skeleton loading states.
+ */
 export default function TestSkeleton() {
   const [loading, setLoading] = useState(true);
 

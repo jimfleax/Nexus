@@ -1,9 +1,9 @@
 /**
  * @file auth.ts
- * @description Fastify plugin exposing OAuth 2.0 login flows for Google and GitHub, issuing signed HttpOnly JWT cookies on success.
+ * @description Fastify plugin exposing OAuth 2.0 login flows for Google and GitHub, issuing a signed JWT on success.
  * @architecture Public routes — registered BEFORE authPlugin so they are not gated. Each provider flow is a pair of routes:
  *   1. Initiate: redirect the browser to the provider's authorization URL.
- *   2. Callback: exchange the code for a token, fetch the user profile, upsert the user in MongoDB, sign a JWT, set the nexus-session cookie, and redirect home.
+ *   2. Callback: exchange the code for a token, fetch the user profile, upsert the user in MongoDB, sign a JWT, and redirect to the frontend sync route.
  */
 
 import fp from "fastify-plugin";
@@ -95,7 +95,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
   );
 
   /**
-   * @desc    Handle Google OAuth callback — exchange code, upsert user, issue cookie
+   * @desc    Handle Google OAuth callback — exchange code, upsert user, issue JWT and redirect to sync route
    * @route   GET /api/auth/callback/google
    * @access  Public
    */

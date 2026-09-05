@@ -1,7 +1,16 @@
+/**
+ * @file loading.tsx
+ * @description Loading state for the search page.
+ * @architecture Displays skeleton loaders for the search input and results list.
+ */
 "use client";
 
 import { Skeleton } from "boneyard-js/react";
 
+/**
+ * @desc    Renders a loading skeleton for the Search page
+ * @returns {JSX.Element} The loading UI component
+ */
 export default function Loading() {
   return (
     <>

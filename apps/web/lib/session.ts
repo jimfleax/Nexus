@@ -8,6 +8,9 @@
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 
+/**
+ * @desc Shape of the decoded JWT payload
+ */
 export type SessionUser = {
   id: string;
   name: string | null;
@@ -17,6 +20,7 @@ export type SessionUser = {
 
 /**
  * @desc    Verify the nexus-session JWT and return the decoded user payload, or null if invalid
+ * @returns {Promise<SessionUser | null>} The decoded user or null if unauthenticated
  */
 export async function getSessionUser(): Promise<SessionUser | null> {
   try {

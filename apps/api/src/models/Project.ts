@@ -23,6 +23,10 @@ export interface IProject
 const ProjectSchema = new Schema<IProject>(
   {
     name: { type: String, required: true },
+    /**
+     * @field slug
+     * @description URL-friendly identifier. Enforced unique per owner via compound index.
+     */
     slug: { type: String, required: true }, // We'll enforce unique per owner later if needed, but uniqueness across all requires careful tenant scoping or just compound index
     description: { type: String },
     icon: { type: String },
@@ -32,6 +36,7 @@ const ProjectSchema = new Schema<IProject>(
     timestamps: true,
     toJSON: {
       transform: (_, ret: any) => {
+        // Map _id to id and strip Mongoose internal fields for cleaner API responses
         ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;

@@ -1,3 +1,8 @@
+/**
+ * @file threejs-background.tsx
+ * @description A 3D WebGL fluid background using React Three Fiber.
+ * @architecture Renders a Three.js canvas in the background of the landing page hero section, reacting to scroll progress.
+ */
 "use client";
 
 import { useRef, useMemo } from "react";
@@ -100,6 +105,11 @@ function FluidMaterial({
   );
 }
 
+/**
+ * @desc Renders the fluid WebGL background canvas.
+ * @param {{ scrollYProgress: MotionValue<number> }} props - Scroll progress used in shader
+ * @returns {JSX.Element}
+ */
 export function ThreejsBackground({
   scrollYProgress,
 }: {

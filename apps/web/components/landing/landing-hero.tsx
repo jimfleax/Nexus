@@ -23,6 +23,10 @@ const ThreejsBackground = dynamic(
   { ssr: false },
 );
 
+/**
+ * @desc Hero section with title, animated folding text, and WebGL fluid background.
+ * @returns {JSX.Element}
+ */
 export function LandingHero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);

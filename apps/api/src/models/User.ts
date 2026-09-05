@@ -23,11 +23,16 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     ownerId: { type: String, required: true, unique: true },
+    /**
+     * @field driveRefreshToken
+     * @description Encrypted refresh token for Google Drive integration. Getters/setters automatically handle encryption, falling back for legacy unencrypted tokens.
+     */
     driveRefreshToken: {
       type: String,
       get: (val: string | undefined) => {
         if (!val) return val;
         try {
+          // Attempt to decrypt the stored token
           return decrypt(val);
         } catch (err: any) {
           if (
@@ -42,6 +47,7 @@ const UserSchema = new Schema<IUser>(
       set: (val: string | undefined) => {
         if (!val) return val;
         try {
+          // Encrypt before saving to DB
           return encrypt(val);
         } catch (err: any) {
           if (
@@ -50,7 +56,7 @@ const UserSchema = new Schema<IUser>(
           ) {
             throw err;
           }
-          return val;
+          return val; // Fallback if encryption fails (e.g. missing key)
         }
       },
     },

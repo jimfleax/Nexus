@@ -15,6 +15,13 @@ export class FakeStorageAdapter implements IStorageAdapter {
   public uploads = new Map<string, { title: string; mimeType: string }>();
   public deletedFiles = new Set<string>();
 
+  /**
+   * @desc    Simulate an upload by recording metadata and returning a fake file ID
+   * @param   {string} ownerId - The owning user (unused)
+   * @param   {object} metadata - Title and MIME type of the file
+   * @param   {Readable} fileStream - The incoming file stream
+   * @returns {Promise<{ driveFileId: string; size: number }>} Simulated upload result
+   */
   async uploadFile(
     ownerId: string,
     metadata: {
@@ -76,6 +83,13 @@ export class FakeStorageAdapter implements IStorageAdapter {
     return { usedInDrive: 1000, limit: 10000 };
   }
 
+  /**
+   * @desc    Return a fake static stream representing file content
+   * @param   {string} ownerId - The owning user (unused)
+   * @param   {string} fileId - The simulated file ID (unused)
+   * @param   {string} [rangeHeader] - Optional HTTP range header (unused)
+   * @returns {Promise<{ stream: import("stream").Readable; headers: Record<string, string>; status: number }>}
+   */
   async getFileStream(
     ownerId: string,
     fileId: string,

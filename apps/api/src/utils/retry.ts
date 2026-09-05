@@ -5,7 +5,11 @@
  */
 
 /**
- * Retries an async function with exponential backoff.
+ * @desc Retries an async function with exponential backoff.
+ * @param {() => Promise<T>} fn - The asynchronous function to execute and retry on failure.
+ * @param {number} [maxAttempts=3] - The maximum number of attempts before throwing the error.
+ * @param {number} [backoffMs=500] - The initial backoff delay in milliseconds.
+ * @returns {Promise<T>} The result of the async function if successful.
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,

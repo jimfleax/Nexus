@@ -10,6 +10,7 @@ import { favoriteKeys } from "@/lib/query-keys";
 
 /**
  * @desc    Hook returning the favorite resource IDs and a toggle handler
+ * @returns {Object} Object containing favorites Set, resources array, isLoading flag, and toggle mutation function
  */
 export function useFavorites() {
   const queryClient = useQueryClient();
@@ -25,8 +26,9 @@ export function useFavorites() {
     mutationFn: (resourceId: string) =>
       apiClient.resources.toggleFavorite(resourceId),
     onMutate: async (resourceId) => {
-      // Optimistic update
+      // Optimistic update: cancel ongoing queries to prevent overwriting the optimistic state
       await queryClient.cancelQueries({ queryKey: favoriteKeys.all() });
+      // Snapshot the previous value for rollback on error
       const previousFavorites = queryClient.getQueryData(favoriteKeys.all());
 
       queryClient.setQueryData(
@@ -45,9 +47,11 @@ export function useFavorites() {
       return { previousFavorites };
     },
     onError: (err, newTodo, context) => {
+      // Rollback the cache to the previous state if the mutation fails
       queryClient.setQueryData(favoriteKeys.all(), context?.previousFavorites);
     },
     onSettled: () => {
+      // Always invalidate the query to ensure sync with the server after error or success
       queryClient.invalidateQueries({ queryKey: favoriteKeys.all() });
     },
   });

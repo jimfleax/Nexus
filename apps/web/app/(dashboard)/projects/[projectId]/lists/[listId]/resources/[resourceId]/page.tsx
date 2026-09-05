@@ -3,6 +3,7 @@
 /**
  * @file page.tsx
  * @description Resource reader page: resolves project/list/resource ids from the URL and renders the resource view.
+ * @architecture Fetches IDs from the URL and passes them to the ResourcePage component.
  */
 import { useParams } from "next/navigation";
 import { ResourcePage } from "@/components/resource-page";

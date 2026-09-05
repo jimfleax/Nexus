@@ -1,7 +1,7 @@
 /**
  * @file gc.ts
  * @description Background garbage collection that sweeps stale pending resources and their orphaned Google Drive files.
- * @architecture Triggers on the health endpoint; reaps resources stuck in "pending" for more than 30 minutes, deleting the resource record and its Drive file using the owning user's stored refresh token.
+ * @architecture Runs on a scheduled interval; reaps resources stuck in "pending" for more than 30 minutes, deleting the resource record and its Drive file using the owning user's stored refresh token.
  */
 
 import { ResourceModel } from "./models/Resource.js";

@@ -1,3 +1,8 @@
+/**
+ * @file google.ts
+ * @description Google-specific OAuth2 provider implementation.
+ * @architecture Implements the IOAuthProvider interface to handle Google authentication and integration flows.
+ */
 import {
   IOAuthProvider,
   OAuthIdentity,
@@ -7,11 +12,20 @@ import {
 } from "./types.js";
 import { google } from "googleapis";
 
+/**
+ * @desc    Credentials required to configure the Google OAuth client
+ */
 export interface GoogleAppCredentials {
   clientId: string;
   clientSecret: string;
 }
 
+/**
+ * @desc    Builds and configures a Google OAuth2 client with a refresh token
+ * @param   {string} refreshToken - The user's Google refresh token
+ * @param   {GoogleAppCredentials} credentials - Client ID and secret
+ * @returns {object} Authenticated Google OAuth2 client
+ */
 export function buildGoogleAuthClient(
   refreshToken: string,
   { clientId, clientSecret }: GoogleAppCredentials,
@@ -22,9 +36,14 @@ export function buildGoogleAuthClient(
 }
 
 /**
- * Exchange an OAuth code using the provider, persist the refresh token when one
- * is issued, and fetch the user's identity. Shared by the login and Drive-connect
- * flows so both trust the same post-code orchestration.
+ * @desc    Exchange an OAuth code using the provider, persist the refresh token when one
+ *          is issued, and fetch the user's identity. Shared by the login and Drive-connect
+ *          flows so both trust the same post-code orchestration.
+ * @param   {Pick<IOAuthProvider, "exchangeCode" | "getIdentity">} provider - The OAuth provider
+ * @param   {string} code - The authorization code from the callback
+ * @param   {string} redirectUri - The redirect URI used in the initial request
+ * @param   {Function} persistRefreshToken - Callback to persist the refresh token
+ * @returns {Promise<{ tokens: OAuthTokens; identity: OAuthIdentity }>} The exchanged tokens and user identity
  */
 export async function authorizeWithGoogle(
   provider: Pick<IOAuthProvider, "exchangeCode" | "getIdentity">,
@@ -43,6 +62,10 @@ export async function authorizeWithGoogle(
   return { tokens, identity };
 }
 
+/**
+ * @class GoogleOAuthProvider
+ * @description Provider class that implements Google-specific OAuth flows
+ */
 export class GoogleOAuthProvider implements IOAuthProvider {
   constructor(
     private readonly clientId: string,

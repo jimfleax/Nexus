@@ -3,6 +3,7 @@
 /**
  * @file page.tsx
  * @description Project detail page: resolves the project id from the URL and renders the project view.
+ * @architecture Fetches the project via useProject hook and handles loading/not-found states.
  */
 import { useParams } from "next/navigation";
 import { ProjectPage } from "@/components/project-page";

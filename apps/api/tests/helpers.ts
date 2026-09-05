@@ -146,9 +146,6 @@ export async function teardownTestApp(ctx: TestAppContext): Promise<void> {
  * @param   {TestAppContext} ctx - The test app context
  * @returns {string} The MongoDB connection URI
  */
-export function getMongoUri(ctx: TestAppContext): string {
-  return ctx.mongoServer.getUri();
-}
 
 /**
  * @desc    Run a callback inside a tenant context for direct database operations in tests.

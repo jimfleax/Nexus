@@ -55,6 +55,13 @@ import { useResourceText } from "@/hooks/use-resources";
 import { CircleNotch, FileText } from "@phosphor-icons/react";
 import { ViewerEmptyState } from "@/components/ui/viewer-empty-state";
 
+/**
+ * @desc    Static wrapper for MarkdownViewer
+ * @param   {Object} props - Component props
+ * @param   {string} props.content - Markdown content
+ * @param   {boolean} [props.animate=true] - Whether to animate
+ * @returns {JSX.Element} The rendered article
+ */
 export function StaticMarkdownViewer({
   content,
   animate = true,
@@ -140,7 +147,8 @@ export function StaticMarkdownViewer({
 
 /**
  * @desc    Render Markdown content as a styled article
- * @param   {{resource: Resource}} props - The Markdown resource
+ * @param   {Object} props - Component props
+ * @param   {Resource} props.resource - The Markdown resource
  * @returns {JSX.Element} The rendered article
  */
 export function MarkdownViewer({ resource }: { resource: Resource }) {

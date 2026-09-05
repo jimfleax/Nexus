@@ -54,7 +54,7 @@ export function EmptyState({
   );
 }
 
-export function NotFound({
+function NotFound({
   title,
   description,
   backUrl = "/projects",
@@ -83,7 +83,7 @@ export function NotFound({
   );
 }
 
-export function DetailPageSkeleton() {
+function DetailPageSkeleton() {
   return (
     <div className="space-y-6">
       <Skeleton name="breadcrumb" loading>

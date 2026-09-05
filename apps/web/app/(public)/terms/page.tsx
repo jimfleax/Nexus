@@ -1,3 +1,8 @@
+/**
+ * @file page.tsx
+ * @description Terms of Service page for Nexus.
+ * @architecture Static public route.
+ */
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { LandingFooter } from "@/components/landing/landing-sections";
@@ -7,6 +12,9 @@ export const metadata = {
   description: "Terms of Service for Nexus Workspace",
 };
 
+/**
+ * @desc Renders the Terms of Service content with a standard layout.
+ */
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-[#2d1b4e] flex flex-col font-sans selection:bg-[#6247aa]/40">

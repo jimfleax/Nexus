@@ -61,7 +61,8 @@ function parseMessages(content?: string): Message[] {
 
 /**
  * @desc    Render a chat transcript as a conversation with copy actions
- * @param   {{resource: Resource}} props - Resource
+ * @param   {Object} props - Component props
+ * @param   {Resource} props.resource - Resource
  * @returns {JSX.Element} The chat viewer
  */
 export function ChatViewer({ resource }: { resource: Resource }) {

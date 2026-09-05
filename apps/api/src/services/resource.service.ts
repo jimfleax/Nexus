@@ -11,7 +11,12 @@ import { ProjectModel } from "../models/Project.js";
 import { updateById } from "./db-utils.js";
 import { IStorageAdapter } from "../utils/storage/types.js";
 
-/** Build a resource query with a default omission of heavy content and optional sort/limit/select. */
+/**
+ * @desc    Build a resource query with a default omission of heavy content and optional sort/limit/select.
+ * @param   {Record<string, unknown>} filter - Mongoose filter object
+ * @param   {object} [opts] - Query options (sort, limit, select)
+ * @returns {any} Mongoose query object
+ */
 export function queryResources(
   filter: Record<string, unknown>,
   opts: { sort?: Record<string, 1 | -1>; limit?: number; select?: string } = {},
@@ -125,6 +130,16 @@ export async function createResource(data: {
   return resource;
 }
 
+/**
+ * @desc    Create a resource with file upload processing, uniqueness checks, and list validation
+ * @param   {string} ownerId - The owner identifier
+ * @param   {any} body - Resource metadata
+ * @param   {IStorageAdapter} storageAdapter - The storage adapter to use for uploads
+ * @param   {NodeJS.ReadableStream} [fileStream] - Optional file stream for uploads
+ * @param   {string} [mimeType] - Optional mime type overriding body
+ * @param   {string} [checksum] - Optional checksum for duplicate detection
+ * @returns {Promise<any>} The created and uploaded resource
+ */
 export async function createResourceWithUpload(
   ownerId: string,
   body: any,
@@ -236,6 +251,11 @@ export async function toggleFavoriteResource(id: string) {
     { returnDocument: "after", updatePipeline: true } as any,
   );
 }
+/**
+ * @desc    Delete a resource by ID
+ * @param   {string} id - The resource ID
+ * @returns {Promise<any|null>} The deleted resource, or null
+ */
 export async function deleteResourceById(id: string) {
   return ResourceModel.findByIdAndDelete(id);
 }

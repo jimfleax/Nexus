@@ -87,6 +87,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       let mimeType = "";
       let checksum: string | undefined;
 
+      // Parse payload dynamically: multipart for file uploads, JSON body for links/notes
       if (request.isMultipart()) {
         const parsed = await parseMultipartResourceRequest(request);
         body = parsed.body;
@@ -158,6 +159,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
   );
 
   /**
+   * @desc    Stream a resource's associated file content directly from the storage provider
    * @route   GET /api/resources/:id/file
    * @access  Private
    */

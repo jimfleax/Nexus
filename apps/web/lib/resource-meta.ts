@@ -13,6 +13,9 @@ import {
 } from "@phosphor-icons/react";
 import type { ResourceType } from "@nexus/shared";
 
+/**
+ * @desc Resource type configurations for UI rendering
+ */
 export const RESOURCE_TYPES: {
   type: ResourceType;
   label: string;
@@ -28,6 +31,9 @@ export const RESOURCE_TYPES: {
   { type: "image", label: "Image", description: "Save an image reference" },
 ];
 
+/**
+ * @desc Icon mapping for resource types
+ */
 export const RESOURCE_ICONS: Record<ResourceType, React.ElementType> = {
   markdown: FileMd,
   pdf: FileText,
@@ -39,6 +45,9 @@ export const RESOURCE_ICONS: Record<ResourceType, React.ElementType> = {
   chat: ChatText,
 };
 
+/**
+ * @desc Human-readable labels for resource types
+ */
 export const RESOURCE_LABELS: Record<string, string> = {
   markdown: "Markdown",
   pdf: "PDF",
@@ -47,6 +56,9 @@ export const RESOURCE_LABELS: Record<string, string> = {
   text: "Text",
 };
 
+/**
+ * @desc Background colors for resource types (Tailwind classes)
+ */
 export const RESOURCE_COLORS: Record<string, string> = {
   markdown: "bg-[#9163cb]",
   pdf: "bg-[#6247aa]",

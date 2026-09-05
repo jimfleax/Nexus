@@ -1,3 +1,8 @@
+/**
+ * @file landing-features.tsx
+ * @description Animated features section for the landing page.
+ * @architecture Client component using GSAP ScrollTrigger for horizontal scroll animations.
+ */
 "use client";
 
 import React, { useEffect, useRef } from "react";
@@ -32,6 +37,10 @@ const features = [
   },
 ];
 
+/**
+ * @desc Renders a horizontally scrolling features section using GSAP
+ * @returns {JSX.Element}
+ */
 export function LandingFeatures() {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);

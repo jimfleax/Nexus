@@ -3,6 +3,7 @@
 /**
  * @file page.tsx
  * @description List detail page: resolves project/list ids from the URL and renders the list view.
+ * @architecture Fetches project and list using URL params, handles loading and not-found states.
  */
 import { useParams } from "next/navigation";
 import { ListPage } from "@/components/list-page";

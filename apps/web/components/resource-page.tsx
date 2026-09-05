@@ -39,7 +39,10 @@ const EditResourceDialog = React.lazy(() =>
 
 /**
  * @desc    Render the resource reader with breadcrumb, actions, and viewer
- * @param   {{projectId: string; listId: string; resourceId: string}} props - Route ids
+ * @param   {Object} props - Component props
+ * @param   {string} props.projectId - Route project ID
+ * @param   {string} props.listId - Route list ID
+ * @param   {string} props.resourceId - Route resource ID
  * @returns {JSX.Element} The resource page
  */
 export function ResourcePage({

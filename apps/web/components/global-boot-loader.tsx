@@ -10,8 +10,8 @@ import { useIsFetching } from "@tanstack/react-query";
 import { NexusLoader } from "@/components/ui/nexus-loader";
 
 /**
- * @desc Render a global loading overlay that tracks route changes
- * @returns {JSX.Element}
+ * @desc    Render a global loading overlay that tracks route changes
+ * @returns {JSX.Element} The loader component
  */
 export function GlobalBootLoader() {
   const isFetching = useIsFetching();

@@ -6,8 +6,9 @@
 import mongoose from "mongoose";
 
 /**
- * Run `fn` inside a fresh MongoDB transaction session. Commits on success,
- * aborts on throw, and always ends the session.
+ * @desc Run `fn` inside a fresh MongoDB transaction session. Commits on success, aborts on throw, and always ends the session.
+ * @param {(session: mongoose.ClientSession) => Promise<T>} fn - The function to execute within the transaction.
+ * @returns {Promise<T>} The result of the executed function.
  */
 export async function withTransaction<T>(
   fn: (session: mongoose.ClientSession) => Promise<T>,

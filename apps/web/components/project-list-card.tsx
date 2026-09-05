@@ -16,7 +16,12 @@ import { EntityContextMenu } from "@/components/ui/entity-context-menu";
 
 /**
  * @desc    Render a list row with count, reorder arrows, right-click context menu, and delete confirmation
- * @param   {Object} props - Project/list context, index, total, and reorder callback
+ * @param   {Object} props - Component props
+ * @param   {Project} props.project - Project context
+ * @param   {KnowledgeList} props.list - List context
+ * @param   {number} props.index - Index
+ * @param   {number} props.total - Total
+ * @param   {Function} props.onReorder - Reorder callback
  * @returns {JSX.Element} The list card
  */
 export function ProjectListCard({

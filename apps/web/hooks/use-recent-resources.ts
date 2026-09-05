@@ -9,7 +9,7 @@ import { recentKeys } from "@/lib/query-keys";
 
 /**
  * @desc Fetches recent resources for the dashboard view.
- * @returns React Query result
+ * @returns React Query result with array of recent resources
  */
 export function useRecentResources() {
   return useQuery({

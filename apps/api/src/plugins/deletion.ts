@@ -15,7 +15,7 @@ import { withTransaction } from "../utils/transactions.js";
  * @interface IDeleter
  * @description Contract for tenant-scoped cascade deletes that also clean up Drive storage.
  */
-export interface IDeleter {
+interface IDeleter {
   deleteProject(projectId: string, ownerId: string): Promise<void>;
   deleteList(listId: string, ownerId: string): Promise<void>;
   deleteResource(resourceId: string, ownerId: string): Promise<void>;

@@ -14,6 +14,7 @@ import { useCacheInvalidatingMutation } from "./use-cache-mutation";
  * @desc    Query all resources in a project's list
  * @param   {string} projectId - Project ID
  * @param   {string} listId - List ID
+ * @returns React Query result with array of resources
  */
 export function useResources(projectId: string, listId: string) {
   return useQuery({
@@ -28,6 +29,7 @@ export function useResources(projectId: string, listId: string) {
  * @param   {string} projectId - Project ID
  * @param   {string} listId - List ID
  * @param   {string} resourceId - Resource ID
+ * @returns React Query result with single resource data
  */
 export function useResource(
   projectId: string,
@@ -44,6 +46,8 @@ export function useResource(
 /**
  * @desc    Query the text content of a resource file
  * @param   {string} resourceId - Resource ID
+ * @param   {boolean} [enabled=true] - Whether the query is enabled
+ * @returns React Query result with text content
  */
 export function useResourceText(resourceId: string, enabled = true) {
   return useQuery({
@@ -56,6 +60,7 @@ export function useResourceText(resourceId: string, enabled = true) {
 
 /**
  * @desc    Mutation that creates a resource in a list and invalidates the list's resource cache
+ * @returns React Query mutation object for resource creation
  */
 export function useCreateResource() {
   return useCacheInvalidatingMutation({
@@ -77,6 +82,7 @@ export function useCreateResource() {
 
 /**
  * @desc    Mutation that updates a resource and invalidates the resource cache
+ * @returns React Query mutation object for resource update
  */
 export function useUpdateResource() {
   return useCacheInvalidatingMutation({
@@ -93,6 +99,7 @@ export function useUpdateResource() {
 
 /**
  * @desc    Mutation that deletes a resource and invalidates the resource cache
+ * @returns React Query mutation object for resource deletion
  */
 export function useDeleteResource() {
   return useCacheInvalidatingMutation({
@@ -103,6 +110,7 @@ export function useDeleteResource() {
 
 /**
  * @desc    Mutation to mark a resource as opened
+ * @returns React Query mutation object for marking a resource opened
  */
 export function useMarkOpened() {
   const queryClient = useQueryClient();

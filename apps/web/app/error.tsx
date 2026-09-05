@@ -3,6 +3,7 @@
 /**
  * @file error.tsx
  * @description Global error boundary for the app, showing a friendly fallback when a render fails.
+ * @architecture Global Next.js error boundary component.
  */
 import { ErrorState } from "@/components/ui/error-state";
 

@@ -1,6 +1,7 @@
 /**
  * @file oauth.ts
  * @description Generic OAuth2 utilities for managing token exchange and basic helpers.
+ * @architecture Provides base utility functions used across different OAuth providers in the authentication layer.
  */
 import crypto from "node:crypto";
 

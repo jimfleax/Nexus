@@ -11,6 +11,7 @@ import { metricsKeys } from "@/lib/query-keys";
 
 /**
  * @desc    Query the current user's storage and count metrics
+ * @returns React Query result with user storage metrics
  */
 export function useUserMetrics() {
   return useSuspenseQuery({

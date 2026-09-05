@@ -38,7 +38,9 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 
 /**
  * @desc    Render a PDF preview with pagination and zoom
- * @param   {{title: string; url?: string}} props - Resource title and PDF URL
+ * @param   {Object} props - Component props
+ * @param   {string} props.title - Resource title
+ * @param   {string} [props.url] - PDF URL
  * @returns {JSX.Element} The PDF viewer
  */
 export function PdfViewer({ title, url }: { title: string; url?: string }) {
@@ -120,6 +122,7 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
     const container = containerRef.current;
     if (!container) return;
 
+    // Observe container width changes to dynamically resize the PDF pages
     const observer = new ResizeObserver((entries) => {
       if (entries[0]) {
         setContainerWidth(entries[0].contentRect.width);
@@ -377,6 +380,9 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
 
 /**
  * @desc    Empty-state shown when no PDF URL is available
+ * @param   {Object} props - Component props
+ * @param   {string} props.title - Resource title
+ * @returns {JSX.Element} Empty state message
  */
 function UnavailablePdf({ title }: { title: string }) {
   return (

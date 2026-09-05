@@ -32,6 +32,7 @@ const KnowledgeListSchema = new Schema<IKnowledgeList>(
     timestamps: true,
     toJSON: {
       transform: (_, ret: any) => {
+        // Map _id to id and strip Mongoose internal fields for cleaner API responses
         ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;

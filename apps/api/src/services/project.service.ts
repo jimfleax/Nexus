@@ -89,12 +89,3 @@ export async function updateProject(
 export async function findProjectById(id: string) {
   return ProjectModel.findById(id);
 }
-
-/**
- * @desc    Delete a project by ID
- * @param   {string} id - The project ID
- * @returns {Promise<any|null>} The deleted project, or null
- */
-export async function deleteProjectById(id: string) {
-  return ProjectModel.findByIdAndDelete(id);
-}

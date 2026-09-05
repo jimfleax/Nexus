@@ -1,8 +1,17 @@
+/**
+ * @file loading.tsx
+ * @description Loading state for the settings page.
+ * @architecture Displays skeleton loaders for settings panels.
+ */
 "use client";
 
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "boneyard-js/react";
 
+/**
+ * @desc    Renders a loading skeleton for the Settings page
+ * @returns {JSX.Element} The loading UI component
+ */
 export default function Loading() {
   return (
     <div className="mx-auto max-w-4xl">

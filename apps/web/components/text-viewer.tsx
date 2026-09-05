@@ -12,7 +12,8 @@ import { CircleNotch, FileText } from "@phosphor-icons/react";
 
 /**
  * @desc    Render plain-text content with copy action and word/character counts
- * @param   {{resource: Resource}} props - Resource
+ * @param   {Object} props - Component props
+ * @param   {Resource} props.resource - Resource
  * @returns {JSX.Element} The text viewer
  */
 export function TextViewer({ resource }: { resource: Resource }) {

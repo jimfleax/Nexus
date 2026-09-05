@@ -39,7 +39,9 @@ const EditListDialog = React.lazy(() =>
 
 /**
  * @desc    Render the list header, actions, and resource items
- * @param   {{project: Project; list: KnowledgeList}} props - Project and list context
+ * @param   {Object} props - Component props
+ * @param   {Project} props.project - Project context
+ * @param   {KnowledgeList} props.list - List context
  * @returns {JSX.Element} The list page
  */
 export function ListPage({

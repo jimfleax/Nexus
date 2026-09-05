@@ -3,6 +3,7 @@
 /**
  * @file page.tsx
  * @description Settings page: reader preferences (font, size, line height, width) backed by the ReaderSettingsProvider, with a live preview.
+ * @architecture Uses useReaderSettings context to manage global reader state across the dashboard.
  */
 import {
   ArrowCounterClockwise,

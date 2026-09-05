@@ -117,6 +117,11 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
     },
   );
 
+  /**
+   * @desc    Disconnect Google Drive integration by revoking the token and clearing it from the user document
+   * @route   POST /api/integrations/google-drive/disconnect
+   * @access  Private
+   */
   fastify.post(
     "/api/integrations/google-drive/disconnect",
     async (request: any, reply) => {

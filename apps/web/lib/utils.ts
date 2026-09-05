@@ -35,6 +35,11 @@ export function formatBytes(bytes: number | null | undefined): string {
   return `${value.toFixed(value >= 100 || i === 0 ? 0 : 1)} ${units[i]}`;
 }
 
+/**
+ * @desc    Format a Date or date string to short US format (e.g., "Jan 1, 2024")
+ * @param   {string|Date|undefined|null} date - The date to format
+ * @returns {string} Formatted date, or an em dash if invalid
+ */
 export function formatDate(date: string | Date | undefined | null): string {
   if (!date) return "—";
   const d = typeof date === "string" ? new Date(date) : date;
@@ -82,13 +87,24 @@ export function formatFilenameToTitle(
   return capitalized;
 }
 
+/**
+ * @desc    Parse a string of tags separated by commas, hash symbols, or spaces
+ * @param   {string} input - The raw tag string
+ * @returns {string[]} Array of normalized tags
+ */
 export function parseTags(input: string): string[] {
+  // Split on commas, hashes, or spaces, trim and lowercase
   return input
     .split(/[,#\s]+/)
     .map((t) => t.trim().toLowerCase())
     .filter(Boolean);
 }
 
+/**
+ * @desc    Format a Date or date string to long US format (e.g., "Monday, January 1")
+ * @param   {string|Date} date - The date to format
+ * @returns {string} Formatted long date
+ */
 export function formatLongDate(date: string | Date): string {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "long",

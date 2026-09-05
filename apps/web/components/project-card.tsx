@@ -13,7 +13,8 @@ import { EntityContextMenu } from "@/components/ui/entity-context-menu";
 
 /**
  * @desc    Render a project as an animated linkable card
- * @param   {{p: Project}} props - The project to display
+ * @param   {Object} props - Component props
+ * @param   {Project & { listCount?: number }} props.p - The project to display
  * @returns {JSX.Element} The project card
  */
 export function ProjectCard({ p }: { p: Project & { listCount?: number } }) {
