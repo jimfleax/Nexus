@@ -85,12 +85,14 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       let body: any;
       let fileStream: any;
       let mimeType = "";
+      let checksum: string | undefined;
 
       if (request.isMultipart()) {
         const parsed = await parseMultipartResourceRequest(request);
         body = parsed.body;
         fileStream = parsed.fileStream;
         mimeType = parsed.mimeType;
+        checksum = parsed.checksum;
       } else {
         body = request.body;
       }
@@ -109,6 +111,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           server.storage,
           fileStream,
           mimeType,
+          checksum,
         );
         return reply.status(201).send(resource);
       } catch (err: any) {
@@ -117,6 +120,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         }
         if (
           err.message.includes("already exists") ||
+          err.message.includes("has already been added to") ||
           err.name === "StorageError" ||
           err.message.includes("stream required")
         ) {

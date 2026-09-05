@@ -1,10 +1,12 @@
 import { FastifyRequest } from "fastify";
 import { Readable } from "stream";
+import crypto from "crypto";
 
 export async function parseMultipartResourceRequest(request: FastifyRequest) {
   const body: Record<string, any> = {};
   let fileStream: Readable | undefined;
   let mimeType = "";
+  let checksum: string | undefined;
 
   let fileBuffer: Buffer | null = null;
 
@@ -35,7 +37,8 @@ export async function parseMultipartResourceRequest(request: FastifyRequest) {
 
   if (fileBuffer) {
     fileStream = Readable.from(fileBuffer);
+    checksum = crypto.createHash("sha256").update(fileBuffer).digest("hex");
   }
 
-  return { body, fileStream, mimeType };
+  return { body, fileStream, mimeType, checksum };
 }

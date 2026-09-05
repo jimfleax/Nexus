@@ -78,6 +78,7 @@ export const ResourceSchema = z.object({
   tags: z.array(z.string()),
   isFavorite: z.boolean(),
   status: ResourceStatusSchema.default("ready"),
+  checksum: z.string().optional(),
   uploadUri: z.string().optional(),
   driveFileId: z.string().optional(),
   lastOpenedAt: z.string().or(z.date()).optional(),

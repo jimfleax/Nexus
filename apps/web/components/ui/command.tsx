@@ -10,12 +10,7 @@ import { Command as CommandPrimitive } from "cmdk";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 
 import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogOverlay,
-  DialogPortal,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 /* ─── Command root ─────────────────────────────────── */
 
@@ -38,37 +33,27 @@ Command.displayName = CommandPrimitive.displayName;
 
 type CommandDialogProps = React.ComponentProps<typeof Dialog> & {
   children: React.ReactNode;
-  overlayClassName?: string;
   contentClassName?: string;
 };
 
 function CommandDialog({
   children,
-  overlayClassName,
   contentClassName,
   ...props
 }: CommandDialogProps) {
   return (
     <Dialog {...props}>
-      <DialogPortal>
-        <DialogOverlay
-          className={cn(
-            "fixed inset-0 isolate z-50 bg-black/30 backdrop-blur-xs duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
-            overlayClassName,
-          )}
-        />
-        <DialogContent
-          showCloseButton={false}
-          className={cn(
-            "overflow-hidden p-0 shadow-xl sm:top-[20%] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-0",
-            contentClassName,
-          )}
-        >
-          <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[.12em] [&_[cmdk-group-heading]]:text-[#815ac0] [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-1.5 [&_[cmdk-input-wrapper]_svg]:h-4 [&_[cmdk-input-wrapper]_svg]:w-4 [&_[cmdk-input]]:h-11 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-2.5 [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4">
-            {children}
-          </Command>
-        </DialogContent>
-      </DialogPortal>
+      <DialogContent
+        showCloseButton={false}
+        className={cn(
+          "overflow-hidden p-0 shadow-xl sm:top-[20%] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-0",
+          contentClassName,
+        )}
+      >
+        <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[.12em] [&_[cmdk-group-heading]]:text-[#815ac0] [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-1.5 [&_[cmdk-input-wrapper]_svg]:h-4 [&_[cmdk-input-wrapper]_svg]:w-4 [&_[cmdk-input]]:h-11 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-2.5 [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4">
+          {children}
+        </Command>
+      </DialogContent>
     </Dialog>
   );
 }

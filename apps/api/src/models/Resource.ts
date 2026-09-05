@@ -16,6 +16,7 @@ export interface IResource
   extends Omit<Resource, "id" | "createdAt" | "updatedAt">, Document {
   ownerId: string;
   size?: number;
+  checksum?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,6 +46,7 @@ const ResourceSchema = new Schema<IResource>(
     tags: { type: [String], default: [] },
     isFavorite: { type: Boolean, default: false },
     size: { type: Number },
+    checksum: { type: String },
     status: {
       type: String,
       enum: ["pending", "ready", "error"],
@@ -69,6 +71,7 @@ const ResourceSchema = new Schema<IResource>(
 );
 
 ResourceSchema.index({ ownerId: 1, projectId: 1, listId: 1 });
+ResourceSchema.index({ ownerId: 1, checksum: 1 });
 ResourceSchema.index(
   { title: "text", description: "text", tags: "text" },
   {

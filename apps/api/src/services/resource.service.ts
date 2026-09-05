@@ -7,6 +7,7 @@
 
 import { ResourceModel } from "../models/Resource.js";
 import { KnowledgeListModel } from "../models/KnowledgeList.js";
+import { ProjectModel } from "../models/Project.js";
 import { updateById } from "./db-utils.js";
 import { IStorageAdapter } from "../utils/storage/types.js";
 
@@ -114,6 +115,7 @@ export async function createResource(data: {
   size?: number;
   content?: string;
   url?: string;
+  checksum?: string;
 }) {
   const resource = new ResourceModel({
     ...data,
@@ -129,11 +131,28 @@ export async function createResourceWithUpload(
   storageAdapter: IStorageAdapter,
   fileStream?: NodeJS.ReadableStream,
   mimeType?: string,
+  checksum?: string,
 ) {
   // 1. Validate list membership
   const list = await validateListMembership(body.listId, body.projectId);
   if (!list) {
     throw new Error("Knowledge List not found in the specified project");
+  }
+
+  // 1.5 Check for duplicate file across entire workspace
+  if (checksum) {
+    const duplicate = await ResourceModel.findOne({ ownerId, checksum });
+    if (duplicate) {
+      const project = await ProjectModel.findById(duplicate.projectId);
+      const duplicateList = await KnowledgeListModel.findById(duplicate.listId);
+
+      const projectName = project?.name || "Unknown Project";
+      const listName = duplicateList?.name || "Unknown Collection";
+
+      throw new Error(
+        `This resource has already been added to ${projectName} > ${listName}.`,
+      );
+    }
   }
 
   // 2. Check title uniqueness
@@ -150,6 +169,7 @@ export async function createResourceWithUpload(
   // 3. Create pending/ready resource
   const resource = await createResource({
     ...body,
+    checksum,
     status: isFileUpload ? "pending" : "ready",
   });
 

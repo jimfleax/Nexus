@@ -27,6 +27,11 @@ describe("Resources Multipart Upload", () => {
     });
 
     await inTenant("test-user-1", async () => {
+      await mongoose.model("Project").create({
+        _id: fakeProjectId,
+        name: "Test Project",
+        slug: "test-project",
+      });
       await KnowledgeListModel.create({
         _id: fakeListId,
         projectId: fakeProjectId,
@@ -72,5 +77,30 @@ describe("Resources Multipart Upload", () => {
     expect(uploadMeta).toBeDefined();
     expect(uploadMeta?.title).toBe("Test Upload");
     expect(uploadMeta?.mimeType).toBe("application/pdf");
+  }, 60000);
+  it("POST /api/resources rejects duplicate file based on checksum", async () => {
+    // Attempt to upload the exact same file content (but different title)
+    const form2 = new FormData();
+    form2.append("projectId", fakeProjectId);
+    form2.append("listId", fakeListId);
+    form2.append("title", "Different Title But Same File");
+    form2.append("type", "pdf");
+    form2.append("file", Buffer.from("fake pdf content"), {
+      filename: "test2.pdf",
+      contentType: "application/pdf",
+    });
+
+    const response2 = await ctx.app.inject({
+      method: "POST",
+      url: "/api/resources",
+      headers: form2.getHeaders(),
+      payload: form2.getBuffer(),
+    });
+
+    expect(response2.statusCode).toBe(400);
+    const data2 = JSON.parse(response2.payload);
+    expect(data2.error).toContain(
+      "This resource has already been added to Test Project > Test List.",
+    );
   }, 60000);
 });
