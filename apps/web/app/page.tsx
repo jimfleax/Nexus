@@ -15,6 +15,7 @@ import {
 } from "@/components/landing/landing-sections";
 import { LandingFeatures } from "@/components/landing/landing-features";
 import { LocomotiveProvider } from "@/components/landing/locomotive-provider";
+import { BackToTop } from "@/components/landing/back-to-top";
 
 export const metadata: Metadata = {
   title: "Nexus — A quiet home for your research and learning",
@@ -51,6 +52,7 @@ export default async function LandingPage() {
           <LandingWorkspace />
         </main>
         <LandingFooter />
+        <BackToTop />
       </div>
     </LocomotiveProvider>
   );
