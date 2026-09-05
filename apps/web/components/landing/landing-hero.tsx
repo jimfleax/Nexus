@@ -55,7 +55,7 @@ export function LandingHero() {
             start: "top top",
             end: isMobile ? "+=150%" : "+=300%",
             pin: pinRef.current,
-            scrub: 2.5,
+            scrub: 1,
           },
         });
 

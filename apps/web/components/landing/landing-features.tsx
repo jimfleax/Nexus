@@ -61,7 +61,7 @@ export function LandingFeatures() {
               trigger: containerRef.current,
               start: "top top",
               end: isMobile ? "+=300%" : "+=800%",
-              scrub: 2.5,
+              scrub: 1,
               pin: true,
               invalidateOnRefresh: true,
             },

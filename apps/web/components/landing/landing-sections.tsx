@@ -75,7 +75,7 @@ export function LandingWorkspace() {
               trigger: containerRef.current,
               start: "top top",
               end: isMobile ? "+=200%" : "+=1000%",
-              scrub: 2.5,
+              scrub: 1,
               pin: true,
               invalidateOnRefresh: true,
             },
