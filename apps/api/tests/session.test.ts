@@ -54,7 +54,7 @@ describe("SessionManager", () => {
         expect.objectContaining({
           httpOnly: true,
           maxAge: 300,
-          sameSite: "none",
+          sameSite: "lax",
           path: "/",
         }),
       );
@@ -77,7 +77,7 @@ describe("SessionManager", () => {
         "oauth_state",
         expect.objectContaining({
           httpOnly: true,
-          sameSite: "none",
+          sameSite: "lax",
           path: "/",
         }),
       );

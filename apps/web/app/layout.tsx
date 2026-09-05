@@ -39,6 +39,7 @@ const ebGaramond = EB_Garamond({
 });
 
 import type { Viewport } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const viewport: Viewport = {
   themeColor: "#6247aa",
@@ -165,6 +166,7 @@ export default function RootLayout({
     >
       <body>
         <TooltipProvider>{children}</TooltipProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
