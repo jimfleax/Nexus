@@ -68,7 +68,7 @@ export default function Page() {
             exist or has been deleted.
           </p>
           <a
-            href={!project ? "/" : `/projects/${projectId}`}
+            href={!project ? "/home" : `/projects/${projectId}`}
             className="inline-flex h-9 items-center justify-center rounded-md bg-[#6247aa] px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-[#6247aa]/90"
           >
             Go back to {!project ? "Dashboard" : "Project"}

@@ -199,7 +199,7 @@ export function CommandMenu({ user }: { user?: User }) {
 
           {/* ── Navigation ── */}
           <CommandGroup heading="Navigation">
-            <CommandItem value="nav:home" onSelect={() => navigateTo("/")}>
+            <CommandItem value="nav:home" onSelect={() => navigateTo("/home")}>
               <House className="text-[#815ac0]" />
               <span>Home</span>
               <CommandShortcut>⌘1</CommandShortcut>

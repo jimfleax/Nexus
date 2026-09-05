@@ -22,7 +22,7 @@ export function OAuthSubmitButton({ children }: OAuthSubmitButtonProps) {
       size="lg"
       variant="secondary"
       disabled={pending}
-      className="w-full justify-center bg-white text-zinc-950 hover:bg-zinc-200"
+      className="w-full justify-center bg-white border border-zinc-200 shadow-sm text-zinc-800 hover:bg-zinc-50 hover:text-zinc-900 font-medium transition-colors"
     >
       {pending && <Spinner className="mr-2 size-4" />}
       {children}

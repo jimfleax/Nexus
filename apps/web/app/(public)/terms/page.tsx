@@ -1,91 +1,139 @@
-/**
- * @file page.tsx
- * @description Renders the public terms of service page.
- * @architecture Next.js App Router server component for static marketing pages.
- */
-import { StaticMarkdownViewer } from "@/components/markdown-viewer";
 import Link from "next/link";
-import { ArrowLeft, Hexagon } from "lucide-react";
-import { Metadata } from "next";
+import { ArrowLeft } from "lucide-react";
+import { LandingFooter } from "@/components/landing/landing-sections";
 
-export const metadata: Metadata = {
-  title: "Terms of Service",
+export const metadata = {
+  title: "Terms of Service | Nexus",
+  description: "Terms of Service for Nexus Workspace",
 };
 
-const termsMarkdown = `
-# Terms of Service
-
-**Effective Date:** September 1, 2026
-
-Welcome to Nexus. By accessing or using our application, you agree to be bound by these Terms of Service ("Terms"). Please read them carefully before using our knowledge workspace platform.
-
-## 1. Acceptance of Terms
-
-By creating an account, signing in via third-party providers, or using any part of the Nexus application, you agree to comply with and be bound by these Terms. If you do not agree to these Terms, you must not use our services.
-
-## 2. Description of Service
-
-Nexus provides a digital workspace for organizing research, knowledge lists, projects, and resources. We reserve the right to modify, suspend, or discontinue the service (or any part of it) at any time without prior notice.
-
-## 3. User Accounts and Security
-
-- You must authenticate using a valid Google to use Nexus.
-- You are responsible for maintaining the security of your authentication credentials and your account.
-- You are fully responsible for all activities that occur under your account.
-
-## 4. Acceptable Use
-
-You agree not to use Nexus to:
-- Upload, post, or store any content that is unlawful, harmful, defamatory, or violates any third party's rights.
-- Attempt to hack, destabilize, or adapt the service or its underlying infrastructure.
-- Transmit any worms, viruses, or code of a destructive nature.
-
-## 5. Intellectual Property
-
-The Nexus platform, including its original content, design, features, and functionality, are owned by Nexus and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws. You retain ownership over any data, links, or notes you save within your workspace.
-
-## 6. Limitation of Liability
-
-In no event shall Nexus, its developers, or its affiliates be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the service.
-
-## 7. Governing Law
-
-These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which Nexus operates, without regard to its conflict of law provisions.
-
-## 8. Contact
-
-For any questions regarding these Terms, please contact us at support@nexus.local.
-`;
-
-/**
- * @desc Server component rendering the terms of service
- * @returns {JSX.Element}
- */
-export default function TermsOfServicePage() {
+export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#f8f9fa] text-zinc-900 selection:bg-[#dec9e9] selection:text-[#6247aa]">
-      <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-4xl items-center px-4 py-4 sm:px-6">
+    <div className="min-h-screen bg-[#2d1b4e] flex flex-col font-sans selection:bg-[#6247aa]/40">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#2d1b4e]/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center px-6">
           <Link
-            href="/signin"
-            className="flex items-center text-sm font-medium text-zinc-500 transition-colors hover:text-[#6247aa]"
+            href="/"
+            className="flex items-center gap-3 text-white/80 transition-colors hover:text-white group"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Sign In
+            <ArrowLeft className="size-5 transition-transform group-hover:-translate-x-1" />
+            <span className="font-medium">Back to Home</span>
           </Link>
-          <div className="flex-1" />
-          <div className="flex items-center space-x-2 text-[#6247aa]">
-            <Hexagon className="h-6 w-6" />
-            <span className="font-semibold tracking-tight">Nexus</span>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="flex-1 relative flex flex-col items-center pt-32 pb-24 px-4 sm:px-6">
+        {/* Ambient Glow */}
+        <div className="absolute top-40 left-1/2 -translate-x-1/2 size-[600px] sm:size-[800px] bg-[#6247aa] rounded-full blur-[150px] opacity-20 pointer-events-none" />
+
+        {/* Glass Container */}
+        <div className="w-full max-w-4xl relative z-10 bg-white/5 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 p-8 sm:p-12 md:p-16 shadow-2xl">
+          <div className="mb-12 border-b border-white/10 pb-10">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight mb-4 drop-shadow-sm">
+              Terms of Service
+            </h1>
+            <p className="text-lg text-[#dec9e9]/70 font-light">
+              Last updated:{" "}
+              {new Date().toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+
+          <div className="space-y-10 text-zinc-300 font-light leading-relaxed text-lg">
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                1. Acceptance of Terms
+              </h2>
+              <p>
+                By accessing and using Nexus (&quot;the Service&quot;), you
+                agree to be bound by these Terms of Service. If you do not agree
+                to these terms, please do not use the Service.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                2. Description of Service
+              </h2>
+              <p>
+                Nexus is a personal knowledge workspace designed to help users
+                organize research, tasks, and learning materials. We reserve the
+                right to modify, suspend, or discontinue the Service at any
+                time, with or without notice.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                3. User Accounts
+              </h2>
+              <p>
+                You are responsible for maintaining the security of your account
+                and password. Nexus cannot and will not be liable for any loss
+                or damage from your failure to comply with this security
+                obligation. You must provide accurate and complete information
+                when creating an account.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                4. User Content
+              </h2>
+              <p>
+                You retain all rights to the content you post in Nexus. By
+                posting content, you grant us a license to host, store, and
+                display that content solely for the purpose of providing the
+                Service to you. We do not claim ownership of your data.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                5. Acceptable Use
+              </h2>
+              <p>
+                You agree not to use the Service for any unlawful purpose or in
+                any way that interrupts, damages, or impairs the Service. This
+                includes, but is not limited to, distributing malware,
+                attempting to breach security, or scraping data.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                6. Limitation of Liability
+              </h2>
+              <p>
+                Nexus is provided &quot;as is&quot; without any warranties. In
+                no event shall Nexus be liable for any indirect, incidental,
+                special, consequential, or punitive damages resulting from your
+                use of the Service or any loss of data.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                7. Changes to Terms
+              </h2>
+              <p>
+                We may update these terms from time to time. We will notify
+                users of any material changes by posting the new Terms of
+                Service on this page. Your continued use of the Service after
+                changes constitutes acceptance of the new terms.
+              </p>
+            </section>
           </div>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 md:py-16">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm sm:p-12">
-          <StaticMarkdownViewer content={termsMarkdown} />
-        </div>
       </main>
+
+      {/* Reuse the massive premium footer */}
+      <LandingFooter />
     </div>
   );
 }

@@ -8,45 +8,13 @@
  */
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { jwtVerify } from "jose";
 import { AppShell } from "@/components/layout/app-shell";
 import { Providers } from "@/components/providers";
+import { getSessionUser } from "@/lib/session";
+
+export { getSessionUser };
 
 export const dynamic = "force-dynamic";
-
-/**
- * @desc    Verify the nexus-session JWT and return the decoded user payload, or null if invalid
- */
-export async function getSessionUser(): Promise<{
-  id: string;
-  name: string | null;
-  email: string | null;
-  image: string | null;
-} | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("nexus-session")?.value;
-    if (!token) return null;
-
-    const secret = process.env.AUTH_SECRET;
-    if (!secret) return null;
-
-    const key = new TextEncoder().encode(secret);
-    const { payload } = await jwtVerify(token, key, { clockTolerance: 30 }); // Allow 30s clock skew
-
-    if (!payload.sub) return null;
-
-    return {
-      id: payload.sub,
-      name: (payload.name as string) ?? null,
-      email: (payload.email as string) ?? null,
-      image: (payload.image as string) ?? null,
-    };
-  } catch (err) {
-    console.error("JWT Verification failed in layout.tsx:", err);
-    return null;
-  }
-}
 
 /**
  * @desc    Render the dashboard frame with the current session user

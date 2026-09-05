@@ -19,6 +19,22 @@ export interface IResource
   checksum?: string;
   createdAt: Date;
   updatedAt: Date;
+  ai?: {
+    summary?: string;
+    shortSummary?: string;
+    topics?: string[];
+    tags?: string[];
+    entities?: { name: string; type: string }[];
+    keyPoints?: string[];
+    keywords?: string[];
+    language?: string;
+    sentiment?: string;
+    difficulty?: "beginner" | "intermediate" | "advanced";
+    contentType?: string;
+    processedAt?: Date;
+    model?: string;
+    version?: string;
+  };
 }
 
 const ResourceSchema = new Schema<IResource>(
@@ -57,6 +73,30 @@ const ResourceSchema = new Schema<IResource>(
     lastOpenedAt: { type: Date },
     readingTime: { type: String },
     ownerId: { type: String, required: true, index: true },
+    ai: {
+      summary: { type: String },
+      shortSummary: { type: String },
+      topics: { type: [String] },
+      tags: { type: [String] },
+      entities: [
+        {
+          name: { type: String, required: true },
+          type: { type: String, required: true },
+        },
+      ],
+      keyPoints: { type: [String] },
+      keywords: { type: [String] },
+      language: { type: String },
+      sentiment: { type: String },
+      difficulty: {
+        type: String,
+        enum: ["beginner", "intermediate", "advanced"],
+      },
+      contentType: { type: String },
+      processedAt: { type: Date },
+      model: { type: String },
+      version: { type: String },
+    },
   },
   {
     timestamps: true,
@@ -73,9 +113,23 @@ const ResourceSchema = new Schema<IResource>(
 ResourceSchema.index({ ownerId: 1, projectId: 1, listId: 1 });
 ResourceSchema.index({ ownerId: 1, checksum: 1 });
 ResourceSchema.index(
-  { title: "text", description: "text", tags: "text" },
   {
-    weights: { title: 10, tags: 5, description: 2 },
+    title: "text",
+    description: "text",
+    tags: "text",
+    "ai.shortSummary": "text",
+    "ai.topics": "text",
+    "ai.keywords": "text",
+  },
+  {
+    weights: {
+      title: 10,
+      tags: 5,
+      description: 2,
+      "ai.shortSummary": 1,
+      "ai.topics": 1,
+      "ai.keywords": 1,
+    },
     name: "resource_text_index",
   },
 );

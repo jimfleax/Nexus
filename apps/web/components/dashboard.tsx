@@ -83,7 +83,7 @@ export function Dashboard() {
                 href="/projects"
                 className="text-sm font-medium text-[#dec9e9] hover:text-white hover:underline"
               >
-                View all ({projects.length})
+                View all ({isMounted ? projects.length : 0})
               </Link>
             </div>
             <motion.div
@@ -95,17 +95,13 @@ export function Dashboard() {
                 className="gap-3 md:grid-cols-3 grid"
                 glowColor="255, 255, 255"
               >
-                {(projectsLoading
-                  ? (Array.from({ length: 3 }) as Project[])
-                  : projects
+                {(isMounted && !projectsLoading
+                  ? projects
+                  : (Array.from({ length: 3 }) as Project[])
                 ).map((item, i) => {
-                  const isDummy = projectsLoading;
+                  const isDummy = !isMounted || projectsLoading;
                   return (
-                    <Skeleton
-                      key={i}
-                      name="project-card"
-                      loading={projectsLoading}
-                    >
+                    <Skeleton key={i} name="project-card" loading={isDummy}>
                       {isDummy ? (
                         <div style={{ minHeight: 180 }} />
                       ) : (
@@ -133,27 +129,23 @@ export function Dashboard() {
         <div
           className={cn(
             "border-y border-[#dec9e9]",
-            recentResources.length === 0 && "border-0",
+            (!isMounted || recentResources.length === 0) && "border-0",
           )}
         >
-          {recentLoading || recentResources.length > 0 ? (
+          {!isMounted || recentLoading || recentResources.length > 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 7 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
               className="flex flex-col gap-2"
             >
-              {(recentLoading
-                ? (Array.from({ length: 3 }) as Resource[])
-                : recentResources
+              {(isMounted && !recentLoading
+                ? recentResources
+                : (Array.from({ length: 3 }) as Resource[])
               ).map((item, i) => {
-                const isDummy = recentLoading;
+                const isDummy = !isMounted || recentLoading;
                 return (
-                  <Skeleton
-                    key={i}
-                    name="resource-card"
-                    loading={recentLoading}
-                  >
+                  <Skeleton key={i} name="resource-card" loading={isDummy}>
                     {isDummy ? (
                       <div style={{ minHeight: 93 }} />
                     ) : (

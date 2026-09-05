@@ -50,7 +50,7 @@ const SIDEBAR_KEY = "nexus:sidebar-collapsed";
  * @desc    Primary nav routes rendered as icon + label + href tuples
  */
 const navigation = [
-  [BookOpen, "Home", "/"],
+  [BookOpen, "Home", "/home"],
   [Clock, "Recent", "/recent"],
   [Star, "Favorites", "/favorites"],
   [FolderOpen, "Projects", "/projects"],
@@ -103,7 +103,7 @@ function SidebarContent({
         className={`mb-4 flex items-center ${collapsed ? "" : "w-full justify-between"}`}
       >
         <Link
-          href="/"
+          href="/home"
           onClick={onNavigate}
           className="flex items-center gap-2.5 text-lg font-semibold tracking-tight"
         >

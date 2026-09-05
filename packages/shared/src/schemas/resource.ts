@@ -62,6 +62,34 @@ export const UpdateResourceSchema = z.object({
 export const ResourceStatusSchema = z.enum(["pending", "ready", "error"]);
 
 /**
+ * @constant {z.ZodObject} ResourceAiSchema
+ * @description AI-generated metadata for a resource.
+ */
+export const ResourceAiSchema = z.object({
+  summary: z.string().optional(),
+  shortSummary: z.string().optional(),
+  topics: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
+  entities: z
+    .array(
+      z.object({
+        name: z.string(),
+        type: z.string(),
+      }),
+    )
+    .optional(),
+  keyPoints: z.array(z.string()).optional(),
+  keywords: z.array(z.string()).optional(),
+  language: z.string().optional(),
+  sentiment: z.string().optional(),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+  contentType: z.string().optional(),
+  processedAt: z.string().or(z.date()).optional(),
+  model: z.string().optional(),
+  version: z.string().optional(),
+});
+
+/**
  * @constant {z.ZodObject} ResourceSchema
  * @description Serialized resource DTO returned by the API.
  */
@@ -85,6 +113,7 @@ export const ResourceSchema = z.object({
   createdAt: z.string().or(z.date()),
   updatedAt: z.string().or(z.date()),
   readingTime: z.string().optional(),
+  ai: ResourceAiSchema.optional(),
 });
 
 export type CreateResourceInput = z.infer<typeof CreateResourceSchema>;

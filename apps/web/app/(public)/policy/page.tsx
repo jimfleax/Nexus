@@ -1,87 +1,162 @@
-import { StaticMarkdownViewer } from "@/components/markdown-viewer";
 import Link from "next/link";
-import { ArrowLeft, Hexagon } from "lucide-react";
-/**
- * @file page.tsx
- * @description Renders the public privacy policy page.
- * @architecture Next.js App Router server component for static marketing pages.
- */
-import type { Metadata } from "next";
+import { ArrowLeft } from "lucide-react";
+import { LandingFooter } from "@/components/landing/landing-sections";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
+export const metadata = {
+  title: "Privacy Policy | Nexus",
+  description: "Privacy Policy for Nexus Workspace",
 };
 
-const privacyMarkdown = `
-# Privacy Policy
-
-**Effective Date:** September 1, 2026
-
-Welcome to Nexus ("we," "our," or "us"). We are committed to protecting your privacy and ensuring your personal information is handled in a safe and responsible manner. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our application and use our knowledge workspace services.
-
-## 1. Information We Collect
-
-### Personal Information
-When you sign in using third-party authentication providers, we collect basic profile information provided by these services, which may include your name, email address, and profile picture.
-
-### Usage Data
-We collect information about how you interact with Nexus, such as the projects, lists, and resources you create, modify, or delete, to provide you with a seamless and reliable experience.
-
-## 2. How We Use Your Information
-
-We use the information we collect to:
-- Provide, operate, and maintain our application.
-- Authenticate your identity and manage your user session.
-- Store and organize your projects, lists, and resources.
-- Improve our services and develop new features.
-- Communicate with you regarding updates, support, or security alerts.
-
-## 3. Data Storage and Security
-
-Your data is stored securely using industry-standard encryption and security practices. We use MongoDB Atlas for database storage, ensuring high availability and robust data protection. While we implement safeguards to protect your personal information, please note that no method of transmission over the Internet or method of electronic storage is 100% secure.
-
-## 4. Third-Party Services
-
-We use third-party services, such as Google for authentication. These third parties have their own privacy policies governing the use of your information. We encourage you to review their privacy practices.
-
-## 5. Changes to This Privacy Policy
-
-We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Effective Date."
-
-## 6. Contact Us
-
-If you have any questions or concerns about this Privacy Policy, please contact us at support@nexus.local.
-`;
-
-/**
- * @desc Server component rendering the privacy policy
- * @returns {JSX.Element}
- */
-export default function PolicyPage() {
+export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-[#f8f9fa] text-zinc-900 selection:bg-[#dec9e9] selection:text-[#6247aa]">
-      <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-4xl items-center px-4 py-4 sm:px-6">
+    <div className="min-h-screen bg-[#2d1b4e] flex flex-col font-sans selection:bg-[#6247aa]/40">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#2d1b4e]/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center px-6">
           <Link
-            href="/signin"
-            className="flex items-center text-sm font-medium text-zinc-500 transition-colors hover:text-[#6247aa]"
+            href="/"
+            className="flex items-center gap-3 text-white/80 transition-colors hover:text-white group"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Sign In
+            <ArrowLeft className="size-5 transition-transform group-hover:-translate-x-1" />
+            <span className="font-medium">Back to Home</span>
           </Link>
-          <div className="flex-1" />
-          <div className="flex items-center space-x-2 text-[#6247aa]">
-            <Hexagon className="h-6 w-6" />
-            <span className="font-semibold tracking-tight">Nexus</span>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="flex-1 relative flex flex-col items-center pt-32 pb-24 px-4 sm:px-6">
+        {/* Ambient Glow */}
+        <div className="absolute top-40 left-1/2 -translate-x-1/2 size-[600px] sm:size-[800px] bg-[#6247aa] rounded-full blur-[150px] opacity-20 pointer-events-none" />
+
+        {/* Glass Container */}
+        <div className="w-full max-w-4xl relative z-10 bg-white/5 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 p-8 sm:p-12 md:p-16 shadow-2xl">
+          <div className="mb-12 border-b border-white/10 pb-10">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight mb-4 drop-shadow-sm">
+              Privacy Policy
+            </h1>
+            <p className="text-lg text-[#dec9e9]/70 font-light">
+              Last updated:{" "}
+              {new Date().toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+
+          <div className="space-y-10 text-zinc-300 font-light leading-relaxed text-lg">
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                1. Information We Collect
+              </h2>
+              <p>
+                When you use Nexus, we collect the following types of
+                information:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-[#dec9e9]/80">
+                <li>
+                  <strong className="text-white font-medium">
+                    Account Information:
+                  </strong>{" "}
+                  Your email address and basic profile details required for
+                  authentication.
+                </li>
+                <li>
+                  <strong className="text-white font-medium">
+                    Content Data:
+                  </strong>{" "}
+                  The projects, lists, and resources you create and store within
+                  the platform.
+                </li>
+                <li>
+                  <strong className="text-white font-medium">
+                    Usage Data:
+                  </strong>{" "}
+                  Anonymous analytics on how you interact with the interface to
+                  help us improve the experience.
+                </li>
+              </ul>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                2. How We Use Your Data
+              </h2>
+              <p>
+                Your data is strictly used to provide, maintain, and improve the
+                Nexus service. We do not sell your personal data or content to
+                third parties. Your knowledge workspace is private to you.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                3. Data Storage and Security
+              </h2>
+              <p>
+                We use industry-standard encryption to protect your data both in
+                transit and at rest. While no service is completely secure, we
+                take significant measures to safeguard your information against
+                unauthorized access, alteration, or destruction.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                4. Third-Party Services
+              </h2>
+              <p>
+                We use trusted third-party sub-processors for infrastructure
+                hosting (e.g., Vercel, MongoDB) and authentication. These
+                providers are bound by strict confidentiality and data
+                protection agreements.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                5. Your Rights
+              </h2>
+              <p>
+                You have full control over your data. You can access, export,
+                modify, or permanently delete your account and all associated
+                content at any time through your account settings.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                6. Cookies
+              </h2>
+              <p>
+                We use essential cookies strictly to keep you logged in and
+                secure your session. We do not use intrusive tracking cookies or
+                cross-site advertising scripts.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold text-white tracking-wide">
+                7. Contact Us
+              </h2>
+              <p>
+                If you have any questions about this Privacy Policy or how your
+                data is handled, please reach out to us at{" "}
+                <a
+                  href="mailto:privacy@nexus.app"
+                  className="text-white font-medium hover:underline"
+                >
+                  privacy@nexus.app
+                </a>
+                .
+              </p>
+            </section>
           </div>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 md:py-16">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm sm:p-12">
-          <StaticMarkdownViewer content={privacyMarkdown} />
-        </div>
       </main>
+
+      {/* Reuse the massive premium footer */}
+      <LandingFooter />
     </div>
   );
 }

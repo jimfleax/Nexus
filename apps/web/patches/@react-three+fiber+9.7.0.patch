@@ -1,0 +1,9 @@
+diff --git a/node_modules/@react-three/fiber/dist/declarations/src/three-types.d.ts b/node_modules/@react-three/fiber/dist/declarations/src/three-types.d.ts
+index 07fd627..7f8c9a3 100644
+--- a/node_modules/@react-three/fiber/dist/declarations/src/three-types.d.ts
++++ b/node_modules/@react-three/fiber/dist/declarations/src/three-types.d.ts
+@@ -36,3 +36,3 @@
+ export type ThreeToJSXElements<T extends Record<string, any>> = {
+-    [K in keyof T & string as Uncapitalize<K>]: T[K] extends ConstructorRepresentation ? ThreeElement<T[K]> : never;
++    [K in keyof T & string as T[K] extends ConstructorRepresentation ? Uncapitalize<K> : never]: T[K] extends ConstructorRepresentation ? ThreeElement<T[K]> : never;
+ };
