@@ -15,6 +15,7 @@ import { KnowledgeList } from "@nexus/shared";
 export interface IKnowledgeList
   extends Omit<KnowledgeList, "id" | "createdAt" | "updatedAt">, Document {
   ownerId: string;
+  status: "active" | "deleting";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +27,7 @@ const KnowledgeListSchema = new Schema<IKnowledgeList>(
     slug: { type: String, required: true },
     description: { type: String },
     position: { type: Number, required: true },
+    status: { type: String, enum: ["active", "deleting"], default: "active" },
     ownerId: { type: String, required: true, index: true },
   },
   {

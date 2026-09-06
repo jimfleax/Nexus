@@ -299,6 +299,8 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           return reply.status(404).send({ error: "Knowledge List not found" });
         }
         body.projectId = list.projectId;
+      } else {
+        delete body.projectId;
       }
 
       // Check title uniqueness via service

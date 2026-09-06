@@ -100,6 +100,9 @@ describe("Project Routes", () => {
 
       expect(response.statusCode).toBe(204);
 
+      // Wait for background Phase 2 hard-delete
+      await new Promise((r) => setTimeout(r, 100));
+
       const check = await ProjectModel.findById(projects[0].id, null, {
         skipTenant: true,
       });

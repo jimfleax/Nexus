@@ -19,6 +19,9 @@ interface IDeleter {
   deleteProject(projectId: string, ownerId: string): Promise<void>;
   deleteList(listId: string, ownerId: string): Promise<void>;
   deleteResource(resourceId: string, ownerId: string): Promise<void>;
+  processProjectDeletion(projectId: string, ownerId: string): Promise<void>;
+  processListDeletion(listId: string, ownerId: string): Promise<void>;
+  processResourceDeletion(resourceId: string, ownerId: string): Promise<void>;
 }
 
 /**
@@ -28,90 +31,140 @@ interface IDeleter {
 export const deletionPlugin = fp(
   async (server: FastifyInstance) => {
     const deleter: IDeleter = {
-      /**
-       * @desc    Delete a project, its lists, its resources, and their Drive files in a transaction
-       * @param   {string} projectId - ID of the project to remove
-       * @param   {string} ownerId - Owner used to authorize Drive deletions
-       * @returns {Promise<void>} Resolves when everything is deleted
-       */
       async deleteProject(projectId, ownerId) {
-        // Defense-in-depth: explicitly scope to ownerId alongside the tenant plugin
-        const resources = await ResourceModel.find({
-          projectId,
-          ownerId,
-        }).select("driveFileId");
+        await withTransaction(async (session) => {
+          await ResourceModel.updateMany(
+            { projectId, ownerId },
+            { $set: { status: "deleting" } },
+            { session },
+          );
+          await KnowledgeListModel.updateMany(
+            { projectId, ownerId },
+            { $set: { status: "deleting" } },
+            { session },
+          );
+          await ProjectModel.updateOne(
+            { _id: projectId, ownerId },
+            { $set: { status: "deleting" } },
+            { session },
+          );
+        });
+
+        // Fire and forget Phase 2
+        deleter.processProjectDeletion(projectId, ownerId).catch((err) => {
+          server.log.error(err, "Background project deletion failed");
+        });
+      },
+
+      async deleteList(listId, ownerId) {
+        await withTransaction(async (session) => {
+          await ResourceModel.updateMany(
+            { listId, ownerId },
+            { $set: { status: "deleting" } },
+            { session },
+          );
+          await KnowledgeListModel.updateOne(
+            { _id: listId, ownerId },
+            { $set: { status: "deleting" } },
+            { session },
+          );
+        });
+
+        deleter.processListDeletion(listId, ownerId).catch((err) => {
+          server.log.error(err, "Background list deletion failed");
+        });
+      },
+
+      async deleteResource(resourceId, ownerId) {
+        await withTransaction(async (session) => {
+          await ResourceModel.updateOne(
+            { _id: resourceId, ownerId },
+            { $set: { status: "deleting" } },
+            { session },
+          );
+        });
+
+        deleter.processResourceDeletion(resourceId, ownerId).catch((err) => {
+          server.log.error(err, "Background resource deletion failed");
+        });
+      },
+
+      async processProjectDeletion(projectId, ownerId) {
+        const resources = await ResourceModel.find(
+          { projectId, ownerId, status: "deleting" },
+          null,
+          { skipTenant: true },
+        ).select("driveFileId");
+
         const driveFileIds = resources
           .map((r) => r.driveFileId)
           .filter(Boolean) as string[];
 
+        if (driveFileIds.length > 0) {
+          await server.storage.deleteFiles(ownerId, driveFileIds);
+        }
+
         await withTransaction(async (session) => {
-          await ResourceModel.deleteMany({ projectId, ownerId }, { session });
+          await ResourceModel.deleteMany(
+            { projectId, ownerId, status: "deleting" },
+            { session, skipTenant: true },
+          );
           await KnowledgeListModel.deleteMany(
-            { projectId, ownerId },
-            { session },
+            { projectId, ownerId, status: "deleting" },
+            { session, skipTenant: true },
           );
           await ProjectModel.deleteOne(
-            { _id: projectId, ownerId },
-            { session },
+            { _id: projectId, ownerId, status: "deleting" },
+            { session, skipTenant: true },
           );
         });
-
-        if (driveFileIds.length > 0) {
-          await server.storage.deleteFiles(ownerId, driveFileIds);
-        }
       },
-      /**
-       * @desc    Delete a knowledge list, its resources, and their Drive files in a transaction
-       * @param   {string} listId - ID of the list to remove
-       * @param   {string} ownerId - Owner used to authorize Drive deletions
-       * @returns {Promise<void>} Resolves when everything is deleted
-       */
-      async deleteList(listId, ownerId) {
-        // Defense-in-depth: explicitly scope to ownerId alongside the tenant plugin
-        const resources = await ResourceModel.find({
-          listId,
-          ownerId,
-        }).select("driveFileId");
+
+      async processListDeletion(listId, ownerId) {
+        const resources = await ResourceModel.find(
+          { listId, ownerId, status: "deleting" },
+          null,
+          { skipTenant: true },
+        ).select("driveFileId");
+
         const driveFileIds = resources
           .map((r) => r.driveFileId)
           .filter(Boolean) as string[];
 
-        await withTransaction(async (session) => {
-          await ResourceModel.deleteMany({ listId, ownerId }, { session });
-          await KnowledgeListModel.deleteOne(
-            { _id: listId, ownerId },
-            { session },
-          );
-        });
-
         if (driveFileIds.length > 0) {
           await server.storage.deleteFiles(ownerId, driveFileIds);
         }
-      },
-      /**
-       * @desc    Delete a single resource and its Drive file if present
-       * @param   {string} resourceId - ID of the resource to remove
-       * @param   {string} ownerId - Owner used to authorize Drive deletions
-       * @returns {Promise<void>} Resolves when the resource is deleted
-       */
-      async deleteResource(resourceId, ownerId) {
-        // Defense-in-depth: explicitly scope findById to ownerId
-        const resource = await ResourceModel.findOne({
-          _id: resourceId,
-          ownerId,
-        });
-        if (!resource) return;
 
         await withTransaction(async (session) => {
-          await ResourceModel.deleteOne(
-            { _id: resourceId, ownerId },
-            { session },
+          await ResourceModel.deleteMany(
+            { listId, ownerId, status: "deleting" },
+            { session, skipTenant: true },
+          );
+          await KnowledgeListModel.deleteOne(
+            { _id: listId, ownerId, status: "deleting" },
+            { session, skipTenant: true },
           );
         });
+      },
+
+      async processResourceDeletion(resourceId, ownerId) {
+        const resource = await ResourceModel.findOne(
+          { _id: resourceId, ownerId, status: "deleting" },
+          null,
+          { skipTenant: true },
+        );
+        if (!resource) return;
 
         if (resource.driveFileId) {
           await server.storage.deleteFiles(ownerId, [resource.driveFileId]);
         }
+
+        await withTransaction(async (session) => {
+          await ResourceModel.deleteOne(
+            { _id: resourceId, ownerId, status: "deleting" },
+            { session, skipTenant: true },
+          );
+        });
       },
     };
     server.decorate("deleter", deleter);

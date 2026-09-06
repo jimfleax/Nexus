@@ -89,6 +89,48 @@ describe("Resources Routes (CRUD)", () => {
     expect(data.listId).toBe(list2.id);
   });
 
+  it("PATCH /api/resources/:id should ignore provided projectId if no listId is provided", async () => {
+    const response = await ctx.app.inject({
+      method: "PATCH",
+      url: `/api/resources/${resourceId}`,
+      payload: {
+        projectId: "sneaky-project-id",
+        title: "Same title different project attempt",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const data = JSON.parse(response.payload);
+    expect(data.projectId).not.toBe("sneaky-project-id");
+    expect(data.title).toBe("Same title different project attempt");
+  });
+
+  it("PATCH /api/resources/:id should derive projectId from listId and override provided projectId", async () => {
+    const list3 = await inTenant("test-user-1", async () => {
+      return await mongoose.model("KnowledgeList").create({
+        projectId: "p3-real",
+        name: "List 3",
+        slug: "list-3",
+        ownerId: "test-user-1",
+        position: 2,
+      });
+    });
+
+    const response = await ctx.app.inject({
+      method: "PATCH",
+      url: `/api/resources/${resourceId}`,
+      payload: {
+        listId: list3.id,
+        projectId: "p3-fake",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const data = JSON.parse(response.payload);
+    expect(data.listId).toBe(list3.id);
+    expect(data.projectId).toBe("p3-real");
+  });
+
   it(
     "DELETE /api/resources/:id should delete the resource",
     { retry: 2 },
@@ -99,6 +141,9 @@ describe("Resources Routes (CRUD)", () => {
       });
 
       expect(response.statusCode).toBe(204);
+
+      // Wait for background Phase 2 hard-delete
+      await new Promise((r) => setTimeout(r, 100));
 
       const check = await ResourceModel.findById(resourceId, null, {
         skipTenant: true,

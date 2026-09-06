@@ -47,6 +47,8 @@ export function tenantIsolationPlugin(schema: mongoose.Schema) {
     schema.add({ ownerId: { type: String, required: true, index: true } });
   }
 
+  const hasStatus = !!schema.path("status");
+
   const injectTenant = function (this: mongoose.Query<any, any>) {
     if (this.getOptions().skipTenant) {
       return;
@@ -59,7 +61,11 @@ export function tenantIsolationPlugin(schema: mongoose.Schema) {
       );
     }
 
-    this.where({ ownerId: store.ownerId });
+    const criteria: any = { ownerId: store.ownerId };
+    if (hasStatus) {
+      criteria.status = { $ne: "deleting" };
+    }
+    this.where(criteria);
   };
 
   const queryMethods = [
@@ -92,7 +98,12 @@ export function tenantIsolationPlugin(schema: mongoose.Schema) {
       );
     }
 
-    this.pipeline().unshift({ $match: { ownerId: store.ownerId } });
+    const match: any = { ownerId: store.ownerId };
+    if (hasStatus) {
+      match.status = { $ne: "deleting" };
+    }
+
+    this.pipeline().unshift({ $match: match });
   });
 
   const injectTenantOnSave = function (this: any) {

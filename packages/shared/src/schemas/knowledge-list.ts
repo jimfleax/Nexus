@@ -49,6 +49,7 @@ export const KnowledgeListSchema = z.object({
   slug: z.string(),
   description: z.string().optional(),
   position: z.number(),
+  status: z.enum(["active", "deleting"]).default("active"),
   createdAt: z.string().or(z.date()),
   updatedAt: z.string().or(z.date()),
 });

@@ -16,6 +16,7 @@ import { Project } from "@nexus/shared";
 export interface IProject
   extends Omit<Project, "id" | "createdAt" | "updatedAt">, Document {
   ownerId: string;
+  status: "active" | "deleting";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,6 +31,7 @@ const ProjectSchema = new Schema<IProject>(
     slug: { type: String, required: true }, // We'll enforce unique per owner later if needed, but uniqueness across all requires careful tenant scoping or just compound index
     description: { type: String },
     icon: { type: String },
+    status: { type: String, enum: ["active", "deleting"], default: "active" },
     ownerId: { type: String, required: true, index: true },
   },
   {

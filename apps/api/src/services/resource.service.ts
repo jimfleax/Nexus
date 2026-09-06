@@ -220,8 +220,10 @@ export async function createResourceWithUpload(
 
     return updatedResource || (await findResourceById(resource._id.toString()));
   } catch (error: any) {
-    // 6. Rollback on failure
-    await deleteResourceById(resource._id.toString());
+    // 6. Rollback on failure only if it is not a file upload
+    if (!isFileUpload) {
+      await deleteResourceById(resource._id.toString());
+    }
     throw error;
   }
 }

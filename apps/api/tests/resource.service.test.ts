@@ -281,7 +281,7 @@ describe("ResourceService", () => {
       });
     });
 
-    it("should rollback and delete pending resource if upload fails", async () => {
+    it("should NOT rollback pending resource if file upload fails (leave for GC)", async () => {
       fakeStorage.uploadFile.mockRejectedValueOnce(new Error("Upload boom"));
 
       await tenantContext.run({ ownerId: OWNER }, async () => {
@@ -295,9 +295,10 @@ describe("ResourceService", () => {
           ),
         ).rejects.toThrow("Upload boom");
 
-        // Verify the resource was rolled back
-        const exists = await ResourceModel.findOne({ title: "Fail PDF" });
-        expect(exists).toBeNull();
+        // Verify the resource was NOT rolled back, remains pending
+        const pendingRes = await ResourceModel.findOne({ title: "Fail PDF" });
+        expect(pendingRes).not.toBeNull();
+        expect(pendingRes!.status).toBe("pending");
       });
     });
   });

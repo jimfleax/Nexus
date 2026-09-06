@@ -105,6 +105,7 @@ describe("Backend Integrity Fixes", () => {
       await inTenant(ownerId, async () => {
         await ctx.app.deleter.deleteProject(projectId, ownerId);
       });
+      await new Promise((r) => setTimeout(r, 100));
       expect(deleteFilesSpy).toHaveBeenCalledWith(ownerId, ["drive-1"]);
     });
 
@@ -228,7 +229,8 @@ describe("Backend Integrity Fixes", () => {
       const finalResources = await ResourceModel.find({}, null, {
         skipTenant: true,
       });
-      expect(finalResources.length).toBe(0);
+      expect(finalResources.length).toBe(1);
+      expect(finalResources[0].status).toBe("pending");
     });
 
     it("updates status to ready and sets driveFileId after a successful upload", async () => {
@@ -275,7 +277,7 @@ describe("Backend Integrity Fixes", () => {
       expect(resources[0].driveFileId).toBeDefined();
     });
 
-    it("deletes the pending record when uploadFile throws a StorageError", async () => {
+    it("leaves the pending record when uploadFile throws a StorageError", async () => {
       ctx.app.storage.uploadFile = vi
         .fn()
         .mockRejectedValueOnce({ name: "StorageError", message: "Failed" });
@@ -320,7 +322,8 @@ describe("Backend Integrity Fixes", () => {
         null,
         { skipTenant: true },
       );
-      expect(resources.length).toBe(0);
+      expect(resources.length).toBe(1);
+      expect(resources[0].status).toBe("pending");
     });
 
     it("creates a resource in status=ready immediately for non-file types", async () => {

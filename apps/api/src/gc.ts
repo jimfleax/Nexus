@@ -6,6 +6,8 @@
 
 import { ResourceModel } from "./models/Resource.js";
 import { UserModel } from "./models/User.js";
+import { ProjectModel } from "./models/Project.js";
+import { KnowledgeListModel } from "./models/KnowledgeList.js";
 import { IStorageAdapter } from "./utils/storage/types.js";
 
 let isGCRunning = false;
@@ -14,7 +16,10 @@ let isGCRunning = false;
  * @desc    Delete pending resources older than 30 minutes, removing orphaned Drive files where present
  * @returns {Promise<void>} Resolves when the sweep completes; never throws
  */
-export async function runGarbageCollection(storageAdapter: IStorageAdapter) {
+export async function runGarbageCollection(
+  storageAdapter: IStorageAdapter,
+  deleter?: any,
+) {
   if (isGCRunning) return;
   isGCRunning = true;
 
@@ -66,6 +71,46 @@ export async function runGarbageCollection(storageAdapter: IStorageAdapter) {
 
       // Delete the pending resource record
       await ResourceModel.findByIdAndDelete(resource._id, { skipTenant: true });
+    }
+
+    if (deleter) {
+      const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+      // Find and process Projects stuck in "deleting"
+      const staleProjects = await ProjectModel.find(
+        { status: "deleting", updatedAt: { $lt: tenMinsAgo } },
+        null,
+        { skipTenant: true },
+      );
+      for (const proj of staleProjects) {
+        await deleter
+          .processProjectDeletion(proj._id, proj.ownerId)
+          .catch(console.error);
+      }
+
+      // Find and process Lists stuck in "deleting"
+      const staleLists = await KnowledgeListModel.find(
+        { status: "deleting", updatedAt: { $lt: tenMinsAgo } },
+        null,
+        { skipTenant: true },
+      );
+      for (const list of staleLists) {
+        await deleter
+          .processListDeletion(list._id, list.ownerId)
+          .catch(console.error);
+      }
+
+      // Find and process Resources stuck in "deleting"
+      const staleDeletingResources = await ResourceModel.find(
+        { status: "deleting", updatedAt: { $lt: tenMinsAgo } },
+        null,
+        { skipTenant: true },
+      );
+      for (const res of staleDeletingResources) {
+        await deleter
+          .processResourceDeletion(res._id, res.ownerId)
+          .catch(console.error);
+      }
     }
   } catch (error) {
     console.error("Garbage collection sweep failed:", error);

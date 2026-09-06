@@ -73,6 +73,7 @@ describe("DeletionPlugin", () => {
 
       // Execute deletion
       await ctx.app.deleter.deleteProject(project._id.toString(), ownerId);
+      await new Promise((r) => setTimeout(r, 100));
 
       // Verify DB
       expect(await ProjectModel.countDocuments({ _id: project._id })).toBe(0);
@@ -139,6 +140,7 @@ describe("DeletionPlugin", () => {
 
         // Action
         await ctx.app.deleter.deleteList(list1._id.toString(), ownerId);
+        await new Promise((r) => setTimeout(r, 100));
 
         // Assert List 1 and its resources are gone
         expect(
@@ -182,6 +184,7 @@ describe("DeletionPlugin", () => {
 
         const initialDeletedCount = ctx.fakeStorage.deletedFiles.size;
         await ctx.app.deleter.deleteList(list._id.toString(), ownerId);
+        await new Promise((r) => setTimeout(r, 100));
 
         expect(await KnowledgeListModel.countDocuments({ _id: list._id })).toBe(
           0,
@@ -225,6 +228,7 @@ describe("DeletionPlugin", () => {
           resWithDrive._id.toString(),
           ownerId,
         );
+        await new Promise((r) => setTimeout(r, 100));
         expect(
           await ResourceModel.countDocuments({ _id: resWithDrive._id }),
         ).toBe(0);
@@ -236,6 +240,7 @@ describe("DeletionPlugin", () => {
           resNoDrive._id.toString(),
           ownerId,
         );
+        await new Promise((r) => setTimeout(r, 100));
         expect(
           await ResourceModel.countDocuments({ _id: resNoDrive._id }),
         ).toBe(0);

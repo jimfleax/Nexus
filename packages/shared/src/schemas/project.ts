@@ -33,6 +33,7 @@ export const ProjectSchema = z.object({
   icon: z.string().optional(),
   slug: z.string(),
   listCount: z.number().optional().default(0),
+  status: z.enum(["active", "deleting"]).default("active"),
   createdAt: z.string().or(z.date()),
   updatedAt: z.string().or(z.date()),
 });

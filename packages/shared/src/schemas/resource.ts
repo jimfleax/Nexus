@@ -57,9 +57,14 @@ export const UpdateResourceSchema = z.object({
 
 /**
  * @constant {z.ZodEnum} ResourceStatusSchema
- * @description Storage lifecycle status: pending upload, ready, or error.
+ * @description Storage lifecycle status: pending upload, ready, error, or deleting.
  */
-export const ResourceStatusSchema = z.enum(["pending", "ready", "error"]);
+export const ResourceStatusSchema = z.enum([
+  "pending",
+  "ready",
+  "error",
+  "deleting",
+]);
 
 /**
  * @constant {z.ZodObject} ResourceAiSchema

@@ -87,6 +87,9 @@ describe("Lists Routes", () => {
 
     expect(response.statusCode).toBe(204);
 
+    // Wait for background Phase 2 hard-delete
+    await new Promise((r) => setTimeout(r, 100));
+
     const check = await KnowledgeListModel.findById(lists[0].id, null, {
       skipTenant: true,
     });

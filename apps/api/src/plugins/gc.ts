@@ -28,7 +28,7 @@ export const gcPlugin = fp(
     fastify.addHook("onReady", async () => {
       fastify.log.info(`Background GC scheduled every ${intervalMs}ms`);
       intervalId = setInterval(() => {
-        runGarbageCollection(fastify.storage).catch((err) =>
+        runGarbageCollection(fastify.storage, fastify.deleter).catch((err) =>
           fastify.log.error(err, "Background GC failed"),
         );
       }, intervalMs);
