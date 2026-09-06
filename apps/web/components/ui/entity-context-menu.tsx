@@ -120,7 +120,7 @@ export function EntityContextMenu({
 
           {rename && (
             <ContextMenuItem
-              onSelect={() => setTimeout(() => setRenameOpen(true), 10)}
+              onClick={() => setTimeout(() => setRenameOpen(true), 10)}
               className="flex cursor-pointer items-center gap-2 focus:bg-[#f8f4fb]"
             >
               <TextAa className="size-4" /> Rename {entityKind}
@@ -129,7 +129,7 @@ export function EntityContextMenu({
 
           {onEdit && (
             <ContextMenuItem
-              onSelect={() => setTimeout(() => onEdit(), 10)}
+              onClick={() => setTimeout(() => onEdit(), 10)}
               className="flex cursor-pointer items-center gap-2 focus:bg-[#f8f4fb]"
             >
               <PencilSimple className="size-4" /> Edit {entityKind}
@@ -138,7 +138,7 @@ export function EntityContextMenu({
 
           {editDialog && (
             <ContextMenuItem
-              onSelect={() => setTimeout(() => setEditOpen(true), 10)}
+              onClick={() => setTimeout(() => setEditOpen(true), 10)}
               className="flex cursor-pointer items-center gap-2 focus:bg-[#f8f4fb]"
             >
               <PencilSimple className="size-4" /> Edit {entityKind}
@@ -149,7 +149,7 @@ export function EntityContextMenu({
 
           {info && (
             <ContextMenuItem
-              onSelect={() => setTimeout(() => setInfoOpen(true), 10)}
+              onClick={() => setTimeout(() => setInfoOpen(true), 10)}
               className="flex cursor-pointer items-center gap-2 focus:bg-[#f8f4fb]"
             >
               <Info className="size-4" />{" "}
@@ -166,7 +166,7 @@ export function EntityContextMenu({
 
           {(deleteDialog || onDelete) && (
             <ContextMenuItem
-              onSelect={handleDelete}
+              onClick={handleDelete}
               className="flex cursor-pointer items-center gap-2 text-red-600 focus:bg-red-50 focus:text-red-700"
             >
               <Trash className="size-4" /> Delete {entityKind}
