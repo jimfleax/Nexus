@@ -3,7 +3,13 @@ import mongoose from "mongoose";
 import { tenantContext } from "../src/db.js";
 import { projectRoutes } from "../src/routes/projects.js";
 import { ProjectModel } from "../src/models/Project.js";
-import { createTestApp, teardownTestApp, TestAppContext } from "./helpers.js";
+import {
+  createTestApp,
+  teardownTestApp,
+  TestAppContext,
+  inTenant,
+  waitFor,
+} from "./helpers.js";
 
 describe("Project Routes", () => {
   let ctx: TestAppContext;
@@ -101,7 +107,12 @@ describe("Project Routes", () => {
       expect(response.statusCode).toBe(204);
 
       // Wait for background Phase 2 hard-delete
-      await new Promise((r) => setTimeout(r, 100));
+      await waitFor(
+        async () =>
+          (await ProjectModel.findById(projects[0].id, null, {
+            skipTenant: true,
+          })) === null,
+      );
 
       const check = await ProjectModel.findById(projects[0].id, null, {
         skipTenant: true,

@@ -9,6 +9,7 @@ import {
   teardownTestApp,
   TestAppContext,
   inTenant,
+  waitFor,
 } from "./helpers.js";
 
 describe("Lists Routes", () => {
@@ -88,7 +89,12 @@ describe("Lists Routes", () => {
     expect(response.statusCode).toBe(204);
 
     // Wait for background Phase 2 hard-delete
-    await new Promise((r) => setTimeout(r, 100));
+    await waitFor(
+      async () =>
+        (await KnowledgeListModel.findById(lists[0].id, null, {
+          skipTenant: true,
+        })) === null,
+    );
 
     const check = await KnowledgeListModel.findById(lists[0].id, null, {
       skipTenant: true,

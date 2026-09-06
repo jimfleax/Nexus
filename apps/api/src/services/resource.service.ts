@@ -191,6 +191,7 @@ export async function createResourceWithUpload(
   if (!isFileUpload) return resource;
 
   // 4. Handle file upload
+  let uploadedDriveFileId: string | undefined;
   try {
     const mType =
       mimeType ||
@@ -210,6 +211,7 @@ export async function createResourceWithUpload(
       },
       fileStream as any,
     );
+    uploadedDriveFileId = uploadResult.driveFileId;
 
     // 5. Update to ready
     const updatedResource = await updateResource(resource._id.toString(), {
@@ -220,6 +222,13 @@ export async function createResourceWithUpload(
 
     return updatedResource || (await findResourceById(resource._id.toString()));
   } catch (error: any) {
+    if (uploadedDriveFileId) {
+      await storageAdapter
+        .deleteFiles(ownerId, [uploadedDriveFileId])
+        .catch((e) =>
+          console.error("Failed to compensate orphan drive file", e),
+        );
+    }
     // 6. Rollback on failure only if it is not a file upload
     if (!isFileUpload) {
       await deleteResourceById(resource._id.toString());

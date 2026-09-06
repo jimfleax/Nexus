@@ -125,6 +125,26 @@ export async function createTestApp(
   // 7. Ready the instance
   await app.ready();
 
+  // 8. Create collections to avoid memory-server "catalog changes" transaction flakiness
+  const { ProjectModel } = await import("../src/models/Project.js");
+  const { KnowledgeListModel } = await import("../src/models/KnowledgeList.js");
+  const { ResourceModel } = await import("../src/models/Resource.js");
+  const { UserModel } = await import("../src/models/User.js");
+
+  await Promise.all([
+    ProjectModel.createCollection().catch(() => {}),
+    KnowledgeListModel.createCollection().catch(() => {}),
+    ResourceModel.createCollection().catch(() => {}),
+    UserModel.createCollection().catch(() => {}),
+  ]);
+
+  await Promise.all([
+    ProjectModel.init(),
+    KnowledgeListModel.init(),
+    ResourceModel.init(),
+    UserModel.init(),
+  ]);
+
   return { app, fakeStorage, mongoServer };
 }
 
@@ -189,4 +209,25 @@ export async function createAuthTestApp(): Promise<FastifyInstance> {
 
   await app.ready();
   return app;
+}
+
+/**
+ * @desc    Wait for a condition to be met, polling every 10ms.
+ *          Useful for waiting for background operations like phase 2 deletions.
+ * @param   {() => boolean | Promise<boolean>} condition - The condition to wait for
+ * @param   {number} [timeoutMs=1000] - Maximum time to wait
+ * @returns {Promise<void>}
+ */
+export async function waitFor(
+  condition: () => boolean | Promise<boolean>,
+  timeoutMs = 1000,
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (await condition()) {
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 10));
+  }
+  throw new Error("Timeout waiting for condition");
 }

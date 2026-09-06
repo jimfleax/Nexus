@@ -37,40 +37,46 @@ export async function runGarbageCollection(
     );
 
     for (const resource of staleResources) {
-      if (resource.driveFileId) {
-        let driveDeleteSucceeded = false;
-        // Need to delete orphan drive file
-        try {
-          await storageAdapter.deleteFiles(resource.ownerId, [
-            resource.driveFileId,
-          ]);
-          driveDeleteSucceeded = true;
-        } catch (err: any) {
-          if (
-            err.name === "TokenRevokedError" ||
-            (err &&
-              err.constructor &&
-              err.constructor.name === "TokenRevokedError")
-          ) {
-            await UserModel.updateOne(
-              { ownerId: resource.ownerId },
-              { $unset: { driveRefreshToken: 1 } },
-              { skipTenant: true },
+      try {
+        if (resource.driveFileId) {
+          let driveDeleteSucceeded = false;
+          // Need to delete orphan drive file
+          try {
+            await storageAdapter.deleteFiles(resource.ownerId, [
+              resource.driveFileId,
+            ]);
+            driveDeleteSucceeded = true;
+          } catch (err: any) {
+            if (
+              err.name === "TokenRevokedError" ||
+              (err &&
+                err.constructor &&
+                err.constructor.name === "TokenRevokedError")
+            ) {
+              await UserModel.updateOne(
+                { ownerId: resource.ownerId },
+                { $unset: { driveRefreshToken: 1 } },
+                { skipTenant: true },
+              );
+            }
+            console.error(
+              `Failed to delete orphan drive file ${resource.driveFileId}:`,
+              err,
             );
           }
-          console.error(
-            `Failed to delete orphan drive file ${resource.driveFileId}:`,
-            err,
-          );
+
+          if (!driveDeleteSucceeded) {
+            continue;
+          }
         }
 
-        if (!driveDeleteSucceeded) {
-          continue;
-        }
+        // Delete the pending resource record
+        await ResourceModel.findByIdAndDelete(resource._id, {
+          skipTenant: true,
+        });
+      } catch (err) {
+        console.error("Failed to delete stale resource record", err);
       }
-
-      // Delete the pending resource record
-      await ResourceModel.findByIdAndDelete(resource._id, { skipTenant: true });
     }
 
     if (deleter) {

@@ -4,7 +4,12 @@ import { tenantContext } from "../src/db.js";
 import { ProjectModel } from "../src/models/Project.js";
 import { KnowledgeListModel } from "../src/models/KnowledgeList.js";
 import { ResourceModel } from "../src/models/Resource.js";
-import { createTestApp, teardownTestApp, TestAppContext } from "./helpers.js";
+import {
+  createTestApp,
+  teardownTestApp,
+  TestAppContext,
+  waitFor,
+} from "./helpers.js";
 
 let ctx: TestAppContext;
 
@@ -73,7 +78,13 @@ describe("DeletionPlugin", () => {
 
       // Execute deletion
       await ctx.app.deleter.deleteProject(project._id.toString(), ownerId);
-      await new Promise((r) => setTimeout(r, 100));
+      await waitFor(
+        async () =>
+          (await ProjectModel.countDocuments(
+            { _id: project._id },
+            { skipTenant: true },
+          )) === 0,
+      );
 
       // Verify DB
       expect(await ProjectModel.countDocuments({ _id: project._id })).toBe(0);
@@ -140,7 +151,13 @@ describe("DeletionPlugin", () => {
 
         // Action
         await ctx.app.deleter.deleteList(list1._id.toString(), ownerId);
-        await new Promise((r) => setTimeout(r, 100));
+        await waitFor(
+          async () =>
+            (await KnowledgeListModel.countDocuments(
+              { _id: list1._id },
+              { skipTenant: true },
+            )) === 0,
+        );
 
         // Assert List 1 and its resources are gone
         expect(
@@ -184,7 +201,13 @@ describe("DeletionPlugin", () => {
 
         const initialDeletedCount = ctx.fakeStorage.deletedFiles.size;
         await ctx.app.deleter.deleteList(list._id.toString(), ownerId);
-        await new Promise((r) => setTimeout(r, 100));
+        await waitFor(
+          async () =>
+            (await KnowledgeListModel.countDocuments(
+              { _id: list._id },
+              { skipTenant: true },
+            )) === 0,
+        );
 
         expect(await KnowledgeListModel.countDocuments({ _id: list._id })).toBe(
           0,
@@ -228,7 +251,13 @@ describe("DeletionPlugin", () => {
           resWithDrive._id.toString(),
           ownerId,
         );
-        await new Promise((r) => setTimeout(r, 100));
+        await waitFor(
+          async () =>
+            (await ResourceModel.countDocuments(
+              { _id: resWithDrive._id },
+              { skipTenant: true },
+            )) === 0,
+        );
         expect(
           await ResourceModel.countDocuments({ _id: resWithDrive._id }),
         ).toBe(0);
@@ -240,7 +269,13 @@ describe("DeletionPlugin", () => {
           resNoDrive._id.toString(),
           ownerId,
         );
-        await new Promise((r) => setTimeout(r, 100));
+        await waitFor(
+          async () =>
+            (await ResourceModel.countDocuments(
+              { _id: resNoDrive._id },
+              { skipTenant: true },
+            )) === 0,
+        );
         expect(
           await ResourceModel.countDocuments({ _id: resNoDrive._id }),
         ).toBe(0);

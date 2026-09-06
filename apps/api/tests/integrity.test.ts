@@ -5,6 +5,7 @@ import {
   beforeAll,
   afterAll,
   beforeEach,
+  afterEach,
   vi,
 } from "vitest";
 import mongoose from "mongoose";
@@ -18,6 +19,7 @@ import {
   teardownTestApp,
   TestAppContext,
   inTenant,
+  waitFor,
 } from "./helpers.js";
 import { resourceRoutes } from "../src/routes/resources.js";
 import multipart from "@fastify/multipart";
@@ -43,7 +45,10 @@ describe("Backend Integrity Fixes", () => {
     await KnowledgeListModel.deleteMany({}, { skipTenant: true });
     await ProjectModel.deleteMany({}, { skipTenant: true });
     await UserModel.deleteMany({}, { skipTenant: true });
-    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe("Fix A: deletion plugin — transaction atomicity", () => {
@@ -105,7 +110,7 @@ describe("Backend Integrity Fixes", () => {
       await inTenant(ownerId, async () => {
         await ctx.app.deleter.deleteProject(projectId, ownerId);
       });
-      await new Promise((r) => setTimeout(r, 100));
+      await waitFor(() => deleteFilesSpy.mock.calls.length > 0);
       expect(deleteFilesSpy).toHaveBeenCalledWith(ownerId, ["drive-1"]);
     });
 
@@ -275,6 +280,64 @@ describe("Backend Integrity Fixes", () => {
       expect(resources.length).toBe(1);
       expect(resources[0].status).toBe("ready");
       expect(resources[0].driveFileId).toBeDefined();
+    });
+
+    it("compensates by deleting the drive file if updateResource fails after a successful upload", async () => {
+      let projectId = new mongoose.Types.ObjectId().toHexString();
+      let listId = new mongoose.Types.ObjectId().toHexString();
+      await inTenant(ownerId, async () => {
+        await ProjectModel.create({
+          _id: projectId,
+          name: "Proj",
+          slug: "proj3",
+        });
+        await KnowledgeListModel.create({
+          _id: listId,
+          projectId,
+          name: "List",
+          slug: "list3",
+          position: 0,
+        });
+      });
+
+      // Mock updateById to throw an error so updateResource fails
+      const dbUtils = await import("../src/services/db-utils.js");
+      const updateByIdSpy = vi
+        .spyOn(dbUtils, "updateById")
+        .mockRejectedValueOnce(new Error("Fake update failure"));
+      const deleteFilesSpy = vi.spyOn(ctx.fakeStorage, "deleteFiles");
+
+      const FormData = (await import("form-data")).default;
+      const form = new FormData();
+      form.append("projectId", projectId);
+      form.append("listId", listId);
+      form.append("title", "Update Fail Test");
+      form.append("type", "pdf");
+      form.append("file", Buffer.from("fake data"), {
+        filename: "test.pdf",
+        contentType: "application/pdf",
+      });
+
+      const response = await ctx.app.inject({
+        method: "POST",
+        url: "/api/resources",
+        headers: form.getHeaders(),
+        payload: form.getBuffer(),
+      });
+      expect(response.statusCode).toBe(500);
+
+      // Verify compensation ran
+      expect(deleteFilesSpy).toHaveBeenCalled();
+
+      const resources = await ResourceModel.find(
+        { title: "Update Fail Test" },
+        null,
+        { skipTenant: true },
+      );
+      expect(resources.length).toBe(1);
+      expect(resources[0].status).toBe("pending");
+
+      updateByIdSpy.mockRestore();
     });
 
     it("leaves the pending record when uploadFile throws a StorageError", async () => {

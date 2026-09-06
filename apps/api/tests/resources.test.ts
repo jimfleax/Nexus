@@ -8,6 +8,7 @@ import {
   teardownTestApp,
   TestAppContext,
   inTenant,
+  waitFor,
 } from "./helpers.js";
 
 describe("Resources Routes (CRUD)", () => {
@@ -143,7 +144,12 @@ describe("Resources Routes (CRUD)", () => {
       expect(response.statusCode).toBe(204);
 
       // Wait for background Phase 2 hard-delete
-      await new Promise((r) => setTimeout(r, 100));
+      await waitFor(
+        async () =>
+          (await ResourceModel.findById(resourceId, null, {
+            skipTenant: true,
+          })) === null,
+      );
 
       const check = await ResourceModel.findById(resourceId, null, {
         skipTenant: true,
