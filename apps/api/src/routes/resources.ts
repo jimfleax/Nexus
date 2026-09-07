@@ -53,14 +53,15 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         params: z.object({ projectId: z.string() }),
         querystring: z.object({ listId: z.string().optional() }),
         response: {
-          200: safeArrayResponse(ResourceSchema),
+          200: z.array(ResourceSchema),
         },
       },
     },
     async (request, _reply) => {
       const { projectId } = request.params;
       const { listId } = request.query;
-      return listResourcesByProject(projectId, listId);
+      const resources = await listResourcesByProject(projectId, listId);
+      return safeArrayResponse(ResourceSchema).parse(resources);
     },
   );
 

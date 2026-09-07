@@ -36,12 +36,13 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         response: {
-          200: safeArrayResponse(ProjectSchema),
+          200: z.array(ProjectSchema),
         },
       },
     },
     async (_request, _reply) => {
-      return listProjectsWithCounts();
+      const projects = await listProjectsWithCounts();
+      return safeArrayResponse(ProjectSchema).parse(projects);
     },
   );
 

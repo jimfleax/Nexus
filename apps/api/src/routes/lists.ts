@@ -40,12 +40,13 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
       schema: {
         params: z.object({ projectId: z.string() }),
         response: {
-          200: safeArrayResponse(KnowledgeListSchema),
+          200: z.array(KnowledgeListSchema),
         },
       },
     },
     async (request, _reply) => {
-      return listByProject(request.params.projectId);
+      const lists = await listByProject(request.params.projectId);
+      return safeArrayResponse(KnowledgeListSchema).parse(lists);
     },
   );
 

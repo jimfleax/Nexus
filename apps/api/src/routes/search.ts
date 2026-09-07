@@ -35,7 +35,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
           projectId: z.string().optional(),
         }),
         response: {
-          200: safeArrayResponse(ResourceSchema),
+          200: z.array(ResourceSchema),
         },
       },
     },
@@ -56,7 +56,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
         .sort({ score: { $meta: "textScore" } as any })
         .limit(50);
 
-      return resources;
+      return safeArrayResponse(ResourceSchema).parse(resources);
     },
   );
 
@@ -110,7 +110,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
           projectId: z.string().optional(),
         }),
         response: {
-          200: safeArrayResponse(ResourceSchema),
+          200: z.array(ResourceSchema),
         },
       },
     },
@@ -123,7 +123,10 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
         isFavorite: true,
       };
 
-      return queryResources(filter, { sort: { updatedAt: -1 } });
+      const resources = await queryResources(filter, {
+        sort: { updatedAt: -1 },
+      });
+      return safeArrayResponse(ResourceSchema).parse(resources);
     },
   );
 
@@ -140,7 +143,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
           projectId: z.string().optional(),
         }),
         response: {
-          200: safeArrayResponse(ResourceSchema),
+          200: z.array(ResourceSchema),
         },
       },
     },
@@ -153,7 +156,11 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
         lastOpenedAt: { $exists: true },
       };
 
-      return queryResources(filter, { sort: { lastOpenedAt: -1 }, limit: 20 });
+      const resources = await queryResources(filter, {
+        sort: { lastOpenedAt: -1 },
+        limit: 20,
+      });
+      return safeArrayResponse(ResourceSchema).parse(resources);
     },
   );
 };

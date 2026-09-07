@@ -75,12 +75,13 @@ export const userRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         response: {
-          200: safeArrayResponse(ResourceSchema),
+          200: z.array(ResourceSchema),
         },
       },
     },
     async (_request, _reply) => {
-      return getFavorites();
+      const favorites = await getFavorites();
+      return safeArrayResponse(ResourceSchema).parse(favorites);
     },
   );
 
@@ -94,12 +95,13 @@ export const userRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         response: {
-          200: safeArrayResponse(ResourceSchema),
+          200: z.array(ResourceSchema),
         },
       },
     },
     async (_request, _reply) => {
-      return getRecent();
+      const recent = await getRecent();
+      return safeArrayResponse(ResourceSchema).parse(recent);
     },
   );
 
