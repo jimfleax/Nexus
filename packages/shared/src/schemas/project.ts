@@ -34,8 +34,8 @@ export const ProjectSchema = z.object({
   slug: z.string(),
   listCount: z.number().optional().default(0),
   status: z.enum(["active", "deleting"]).default("active"),
-  createdAt: z.string().or(z.date()),
-  updatedAt: z.string().or(z.date()),
+  createdAt: z.union([z.string(), z.date()]).optional(),
+  updatedAt: z.union([z.string(), z.date()]).optional(),
 });
 
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;

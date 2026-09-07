@@ -70,6 +70,15 @@ export const errorHandlerPlugin: FastifyPluginAsync = fp(async (fastify) => {
         (error as any).errors,
       );
     }
+    // 4.5. Response Serialization Errors
+    else if ((error as any).code === "FST_ERR_RESPONSE_SERIALIZATION") {
+      appError = new ApplicationError(
+        "Response doesn't match the schema",
+        "INTERNAL_ERROR",
+        500,
+        (error as any).cause || error,
+      );
+    }
     // 5. Known ApplicationError
     else if (error instanceof ApplicationError) {
       appError = error;
@@ -77,7 +86,7 @@ export const errorHandlerPlugin: FastifyPluginAsync = fp(async (fastify) => {
     // 6. Fallback unhandled error
     else {
       appError = new ApplicationError(
-        "An unexpected error occurred",
+        error.message || "An unexpected error occurred",
         "INTERNAL_ERROR",
         500,
       );

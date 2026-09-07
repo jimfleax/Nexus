@@ -115,8 +115,8 @@ export const ResourceSchema = z.object({
   uploadUri: z.string().optional(),
   driveFileId: z.string().optional(),
   lastOpenedAt: z.string().or(z.date()).optional(),
-  createdAt: z.string().or(z.date()),
-  updatedAt: z.string().or(z.date()),
+  createdAt: z.union([z.string(), z.date()]).optional(),
+  updatedAt: z.union([z.string(), z.date()]).optional(),
   readingTime: z.string().optional(),
   ai: ResourceAiSchema.optional(),
 });

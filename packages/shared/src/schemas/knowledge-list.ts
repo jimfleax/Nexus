@@ -50,8 +50,8 @@ export const KnowledgeListSchema = z.object({
   description: z.string().optional(),
   position: z.number(),
   status: z.enum(["active", "deleting"]).default("active"),
-  createdAt: z.string().or(z.date()),
-  updatedAt: z.string().or(z.date()),
+  createdAt: z.union([z.string(), z.date()]).optional(),
+  updatedAt: z.union([z.string(), z.date()]).optional(),
 });
 
 export type CreateKnowledgeListInput = z.infer<
