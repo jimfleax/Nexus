@@ -31,7 +31,7 @@
     "mongodb-memory-server": "^11.2.0",
     "tsx": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8",
+    "typescript-eslint": "^8.69.0",
     "vitest": "^4.1.11"
   }
 }
