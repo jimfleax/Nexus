@@ -55,7 +55,13 @@ export function ListPage({
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
-  const { data: items = [], isLoading } = useResources(project.id, list.id);
+  const {
+    data: items = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useResources(project.id, list.id);
   const router = useRouter();
   const { mutate: deleteList, isPending: isDeletingList } = useDeleteList();
 
@@ -83,9 +89,12 @@ export function ListPage({
                   </Skeleton>
                 </div>
               ) : (
-                <span className="mt-2 block text-sm text-[#6247aa]">
-                  {items.length} {items.length === 1 ? "resource" : "resources"}
-                </span>
+                !isError && (
+                  <span className="mt-2 block text-sm text-[#6247aa]">
+                    {items.length}{" "}
+                    {items.length === 1 ? "resource" : "resources"}
+                  </span>
+                )
               )}
             </>
           }
@@ -150,7 +159,20 @@ export function ListPage({
         />
       </div>
       <div className="mt-3 max-w-4xl">
-        {!isMounted || isLoading || items.length > 0 ? (
+        {isError ? (
+          <EmptyState
+            title="Failed to load resources"
+            description={
+              error?.message ||
+              "An unexpected error occurred while fetching resources."
+            }
+            action={
+              <Button onClick={() => refetch()} variant="outline">
+                Try Again
+              </Button>
+            }
+          />
+        ) : !isMounted || isLoading || items.length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 7 }}
             animate={{ opacity: 1, y: 0 }}

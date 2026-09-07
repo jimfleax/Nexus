@@ -12,6 +12,7 @@ import {
   UpdateProjectSchema,
   ProjectSchema,
   ErrorResponseSchema,
+  safeArrayResponse,
 } from "@nexus/shared";
 import {
   listProjectsWithCounts,
@@ -35,7 +36,7 @@ export const projectRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         response: {
-          200: z.array(ProjectSchema),
+          200: safeArrayResponse(ProjectSchema),
         },
       },
     },

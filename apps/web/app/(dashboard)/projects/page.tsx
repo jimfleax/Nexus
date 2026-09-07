@@ -62,7 +62,13 @@ function ProjectItem({ p }: { p: Project }) {
  * @returns {JSX.Element} Page header plus the project grid
  */
 export default function Projects() {
-  const { data: projects = [], isLoading } = useProjects();
+  const {
+    data: projects = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useProjects();
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -87,7 +93,24 @@ export default function Projects() {
         }
       />
 
-      {!isMounted || isLoading || projects.length > 0 ? (
+      {isError ? (
+        <EmptyState
+          title="Failed to load projects"
+          description={
+            error?.message ||
+            "An unexpected error occurred while fetching your projects."
+          }
+          action={
+            <button
+              onClick={() => refetch()}
+              className="inline-flex h-9 items-center justify-center rounded-md bg-[#6247aa] px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-[#815ac0] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            >
+              Try Again
+            </button>
+          }
+          className="mt-12"
+        />
+      ) : !isMounted || isLoading || projects.length > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 7 }}
           animate={{ opacity: 1, y: 0 }}

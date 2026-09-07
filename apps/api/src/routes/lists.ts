@@ -13,6 +13,7 @@ import {
   ReorderKnowledgeListSchema,
   KnowledgeListSchema,
   ErrorResponseSchema,
+  safeArrayResponse,
 } from "@nexus/shared";
 import { NotFoundError } from "../utils/errors.js";
 import {
@@ -39,7 +40,7 @@ export const listRoutes: FastifyPluginAsyncZod = async (server) => {
       schema: {
         params: z.object({ projectId: z.string() }),
         response: {
-          200: z.array(KnowledgeListSchema),
+          200: safeArrayResponse(KnowledgeListSchema),
         },
       },
     },

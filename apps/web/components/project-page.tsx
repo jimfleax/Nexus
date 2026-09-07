@@ -41,7 +41,13 @@ export function ProjectPage({ project }: { project: Project }) {
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
-  const { data: collections = [], isLoading } = useLists(project.id);
+  const {
+    data: collections = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useLists(project.id);
   const { mutate: reorderLists } = useReorderLists();
   const router = useRouter();
   const { mutate: deleteProject, isPending: isDeletingProject } =
@@ -128,10 +134,23 @@ export function ProjectPage({ project }: { project: Project }) {
         <h2 className="mb-3 font-serif text-xl">
           Collections{" "}
           <span className="text-base font-normal text-[#6247aa]">
-            {!isLoading && `(${collections.length})`}
+            {!isLoading && !isError && `(${collections.length})`}
           </span>
         </h2>
-        {!isMounted || isLoading || collections.length > 0 ? (
+        {isError ? (
+          <div className="py-12 text-center border border-dashed border-[#dec9e9] rounded-2xl">
+            <h3 className="font-serif text-lg text-red-600">
+              Failed to load collections
+            </h3>
+            <p className="mt-1 mb-4 text-sm text-[#815ac0]">
+              {error?.message ||
+                "An unexpected error occurred while fetching your collections."}
+            </p>
+            <Button onClick={() => refetch()} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        ) : !isMounted || isLoading || collections.length > 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 7 }}
             animate={{ opacity: 1, y: 0 }}

@@ -11,6 +11,7 @@ import {
   UpdateUserSettingsSchema,
   ResourceSchema,
   UserMetricsSchema,
+  safeArrayResponse,
 } from "@nexus/shared";
 import {
   getSettings,
@@ -74,7 +75,7 @@ export const userRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         response: {
-          200: z.array(ResourceSchema),
+          200: safeArrayResponse(ResourceSchema),
         },
       },
     },
@@ -93,7 +94,7 @@ export const userRoutes: FastifyPluginAsyncZod = async (server) => {
     {
       schema: {
         response: {
-          200: z.array(ResourceSchema),
+          200: safeArrayResponse(ResourceSchema),
         },
       },
     },

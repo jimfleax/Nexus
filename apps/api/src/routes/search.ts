@@ -7,7 +7,7 @@
 import { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { ResourceModel } from "../models/Resource.js";
-import { ResourceSchema } from "@nexus/shared";
+import { ResourceSchema, safeArrayResponse } from "@nexus/shared";
 import { queryResources } from "../services/resource.service.js";
 
 const scopeFilter = (ownerId: string, projectId?: string) => {
@@ -35,7 +35,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
           projectId: z.string().optional(),
         }),
         response: {
-          200: z.array(ResourceSchema),
+          200: safeArrayResponse(ResourceSchema),
         },
       },
     },
@@ -110,7 +110,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
           projectId: z.string().optional(),
         }),
         response: {
-          200: z.array(ResourceSchema),
+          200: safeArrayResponse(ResourceSchema),
         },
       },
     },
@@ -140,7 +140,7 @@ export const searchRoutes: FastifyPluginAsyncZod = async (server) => {
           projectId: z.string().optional(),
         }),
         response: {
-          200: z.array(ResourceSchema),
+          200: safeArrayResponse(ResourceSchema),
         },
       },
     },

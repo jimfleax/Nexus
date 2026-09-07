@@ -13,6 +13,7 @@ import {
   CreateResourceSchema,
   UpdateResourceSchema,
   ResourceSchema,
+  safeArrayResponse,
 } from "@nexus/shared";
 import { Readable } from "stream";
 import {
@@ -52,7 +53,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         params: z.object({ projectId: z.string() }),
         querystring: z.object({ listId: z.string().optional() }),
         response: {
-          200: z.array(ResourceSchema),
+          200: safeArrayResponse(ResourceSchema),
         },
       },
     },

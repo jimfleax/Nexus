@@ -71,3 +71,4 @@ export * from "./schemas/resource.js";
 export * from "./schemas/user.js";
 export * from "./schemas/info.js";
 export * from "./schemas/error.js";
+export * from "./schemas/utils.js";
