@@ -128,6 +128,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           msg.includes("already exists") ||
           msg.includes("has already been added to") ||
           err.name === "StorageError" ||
+          err.name === "TokenRevokedError" ||
           msg.includes("stream required")
         ) {
           return reply.status(400).send({ error: err.message } as any);
