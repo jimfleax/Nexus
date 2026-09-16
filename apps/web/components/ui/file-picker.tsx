@@ -106,24 +106,24 @@ export function FilePicker({
         disabled={disabled}
       />
 
-      <div className="flex flex-col items-center justify-center gap-2 text-center">
+      <div className="flex flex-col items-center justify-center gap-2 text-center w-full min-w-0">
         {file ? (
           <>
-            <File className="size-8 text-[#6247aa]" weight="duotone" />
-            <div className="flex flex-col items-center max-w-full">
-              <span className="text-sm font-medium text-[#6247aa] truncate max-w-full px-4">
+            <File className="size-8 text-[#6247aa] shrink-0" weight="duotone" />
+            <div className="flex flex-col items-center w-full min-w-0 px-4">
+              <span className="text-sm font-medium text-[#6247aa] truncate w-full block">
                 {file.name}
               </span>
-              <span className="text-xs text-[#6247aa]/70 mt-1">
+              <span className="text-xs text-[#6247aa]/70 mt-1 shrink-0">
                 {(file.size / (1024 * 1024)).toFixed(2)} MB
               </span>
             </div>
             <button
               type="button"
               onClick={handleRemove}
-              className="mt-2 flex items-center gap-1 rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 transition-colors"
+              className="mt-2 flex items-center justify-center gap-1 rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 transition-colors shrink-0"
             >
-              <X className="size-3" /> Remove File
+              <X className="size-3 shrink-0" /> Remove File
             </button>
           </>
         ) : (

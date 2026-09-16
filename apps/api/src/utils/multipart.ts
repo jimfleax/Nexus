@@ -37,7 +37,17 @@ export async function parseMultipartResourceRequest(request: FastifyRequest) {
           body[part.fieldname] = [body[part.fieldname], part.value];
         }
       } else {
-        body[part.fieldname] = part.value;
+        let value = part.value;
+        if (
+          typeof value === "string" &&
+          value.startsWith("[") &&
+          value.endsWith("]")
+        ) {
+          try {
+            value = JSON.parse(value);
+          } catch (e) {}
+        }
+        body[part.fieldname] = value;
       }
     }
   }

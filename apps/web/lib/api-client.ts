@@ -203,9 +203,9 @@ export const apiClient = {
           const val = input[key];
           if (val !== undefined) {
             if (Array.isArray(val)) {
-              val.forEach((v) => form.append(key, v));
+              form.set(key, JSON.stringify(val));
             } else {
-              form.append(key, val as string | Blob);
+              form.set(key, val as string | Blob);
             }
           }
         });

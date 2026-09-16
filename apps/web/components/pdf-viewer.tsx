@@ -33,6 +33,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
+import { useLocalStorage } from "@/hooks/use-local-storage";
+
 // Configure the PDF worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -46,11 +48,16 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 export function PdfViewer({ title, url }: { title: string; url?: string }) {
   const [numPages, setNumPages] = useState<number>();
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.0);
+  const [scale, setScale, isScaleHydrated] = useLocalStorage<number>(
+    "nexus-pdf-scale",
+    1.0,
+  );
   const [containerWidth, setContainerWidth] = useState<number>();
   const [blobUrl, setBlobUrl] = useState<string>();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [viewMode, setViewMode] = useState<"single" | "scroll">("single");
+  const [viewMode, setViewMode, isViewModeHydrated] = useLocalStorage<
+    "single" | "scroll"
+  >("nexus-pdf-viewMode", "single");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const transitionTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -109,14 +116,14 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
   const nextPage = useCallback(() => changePage(1), [changePage]);
 
   const zoomIn = useCallback(
-    () => setScale((prev) => Math.min(prev + 0.25, 3.0)),
-    [],
+    () => setScale((prev) => parseFloat(Math.min(prev + 0.1, 3.0).toFixed(2))),
+    [setScale],
   );
   const zoomOut = useCallback(
-    () => setScale((prev) => Math.max(prev - 0.25, 0.5)),
-    [],
+    () => setScale((prev) => parseFloat(Math.max(prev - 0.1, 0.5).toFixed(2))),
+    [setScale],
   );
-  const zoomReset = useCallback(() => setScale(1.0), []);
+  const zoomReset = useCallback(() => setScale(1.0), [setScale]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -155,160 +162,162 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
           : "rounded-2xl border border-[#dec9e9]"
       }`}
     >
-      <div className="flex flex-col gap-2 border-b border-[#dec9e9] bg-[#f8f4fb] px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-[#dec9e9] bg-[#f8f4fb] px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-2">
         <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-[#6247aa]">
           <FileText className="size-4 shrink-0 text-[#6247aa]" />
           <span className="truncate">{title}</span>
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-          <div className="flex items-center gap-1 text-xs text-[#6247aa] font-medium bg-[#dec9e9]/30 rounded-md p-1">
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    onClick={zoomOut}
-                    className="p-1 hover:bg-[#dec9e9]/50 rounded text-[#6247aa]"
-                    aria-label="Zoom Out"
-                    disabled={scale <= 0.5}
-                  />
-                }
-              >
-                <MagnifyingGlassMinus className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent>Zoom out</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    onClick={zoomReset}
-                    className="p-1 hover:bg-[#dec9e9]/50 rounded text-[#6247aa]"
-                    aria-label="Reset Zoom"
-                  />
-                }
-              >
-                <ArrowCounterClockwise className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent>Reset zoom</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    onClick={zoomIn}
-                    className="p-1 hover:bg-[#dec9e9]/50 rounded text-[#6247aa]"
-                    aria-label="Zoom In"
-                    disabled={scale >= 3.0}
-                  />
-                }
-              >
-                <MagnifyingGlassPlus className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent>Zoom in</TooltipContent>
-            </Tooltip>
-          </div>
-
-          <div className="flex items-center gap-1 text-xs text-[#6247aa] font-medium bg-[#dec9e9]/30 rounded-md p-1">
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("single")}
-                    className={`p-1 rounded text-[#6247aa] ${viewMode === "single" ? "bg-[#dec9e9]/80" : "hover:bg-[#dec9e9]/50"}`}
-                    aria-label="Single Page View"
-                  />
-                }
-              >
-                <Square className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent>Single page view</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("scroll")}
-                    className={`p-1 rounded text-[#6247aa] ${viewMode === "scroll" ? "bg-[#dec9e9]/80" : "hover:bg-[#dec9e9]/50"}`}
-                    aria-label="Continuous Scroll View"
-                  />
-                }
-              >
-                <Rows className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent>Continuous scroll view</TooltipContent>
-            </Tooltip>
-          </div>
-
-          {numPages && viewMode === "single" && (
-            <div className="flex items-center gap-2 text-xs text-[#6247aa] font-medium">
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1 text-xs text-[#6247aa] font-medium bg-[#dec9e9]/30 rounded-md p-1">
               <Tooltip>
                 <TooltipTrigger
                   render={
                     <button
                       type="button"
-                      onClick={previousPage}
-                      disabled={pageNumber <= 1}
-                      className="p-1 hover:bg-[#dec9e9]/50 rounded disabled:opacity-50"
-                      aria-label="Previous Page"
+                      onClick={() => setViewMode("single")}
+                      className={`p-1.5 rounded transition-colors text-[#6247aa] ${viewMode === "single" ? "bg-[#dec9e9]/80 shadow-xs" : "hover:bg-[#dec9e9]/50"}`}
+                      aria-label="Single Page View"
                     />
                   }
                 >
-                  <CaretLeft className="size-3.5" />
+                  <Square className="size-3.5" />
                 </TooltipTrigger>
-                <TooltipContent>Previous page</TooltipContent>
+                <TooltipContent>Single page view</TooltipContent>
               </Tooltip>
-              <span>
-                {pageNumber} of {numPages}
-              </span>
               <Tooltip>
                 <TooltipTrigger
                   render={
                     <button
                       type="button"
-                      onClick={nextPage}
-                      disabled={pageNumber >= numPages}
-                      className="p-1 hover:bg-[#dec9e9]/50 rounded disabled:opacity-50"
-                      aria-label="Next Page"
+                      onClick={() => setViewMode("scroll")}
+                      className={`p-1.5 rounded transition-colors text-[#6247aa] ${viewMode === "scroll" ? "bg-[#dec9e9]/80 shadow-xs" : "hover:bg-[#dec9e9]/50"}`}
+                      aria-label="Continuous Scroll View"
                     />
                   }
                 >
-                  <CaretRight className="size-3.5" />
+                  <Rows className="size-3.5" />
                 </TooltipTrigger>
-                <TooltipContent>Next page</TooltipContent>
+                <TooltipContent>Continuous scroll view</TooltipContent>
               </Tooltip>
             </div>
-          )}
 
-          <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1 text-xs text-[#6247aa] font-medium bg-[#dec9e9]/30 rounded-md p-1">
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <button
+                      type="button"
+                      onClick={zoomOut}
+                      className="p-1.5 hover:bg-[#dec9e9]/50 transition-colors rounded text-[#6247aa] disabled:opacity-50"
+                      aria-label="Zoom Out"
+                      disabled={scale <= 0.5}
+                    />
+                  }
+                >
+                  <MagnifyingGlassMinus className="size-3.5" />
+                </TooltipTrigger>
+                <TooltipContent>Zoom out</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <button
+                      type="button"
+                      onClick={zoomReset}
+                      className="p-1.5 hover:bg-[#dec9e9]/50 transition-colors rounded text-[#6247aa]"
+                      aria-label="Reset Zoom"
+                    />
+                  }
+                >
+                  <ArrowCounterClockwise className="size-3.5" />
+                </TooltipTrigger>
+                <TooltipContent>Reset zoom</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <button
+                      type="button"
+                      onClick={zoomIn}
+                      className="p-1.5 hover:bg-[#dec9e9]/50 transition-colors rounded text-[#6247aa] disabled:opacity-50"
+                      aria-label="Zoom In"
+                      disabled={scale >= 3.0}
+                    />
+                  }
+                >
+                  <MagnifyingGlassPlus className="size-3.5" />
+                </TooltipTrigger>
+                <TooltipContent>Zoom in</TooltipContent>
+              </Tooltip>
+            </div>
+
+            {numPages && viewMode === "single" && (
+              <div className="flex shrink-0 items-center gap-1.5 text-xs text-[#6247aa] font-medium bg-[#dec9e9]/30 rounded-md px-2 py-1">
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <button
+                        type="button"
+                        onClick={previousPage}
+                        disabled={pageNumber <= 1}
+                        className="p-1 hover:bg-[#dec9e9]/50 transition-colors rounded disabled:opacity-50"
+                        aria-label="Previous Page"
+                      />
+                    }
+                  >
+                    <CaretLeft className="size-3.5" />
+                  </TooltipTrigger>
+                  <TooltipContent>Previous page</TooltipContent>
+                </Tooltip>
+                <span className="min-w-[3rem] text-center">
+                  {pageNumber} / {numPages}
+                </span>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <button
+                        type="button"
+                        onClick={nextPage}
+                        disabled={pageNumber >= numPages}
+                        className="p-1 hover:bg-[#dec9e9]/50 transition-colors rounded disabled:opacity-50"
+                        aria-label="Next Page"
+                      />
+                    }
+                  >
+                    <CaretRight className="size-3.5" />
+                  </TooltipTrigger>
+                  <TooltipContent>Next page</TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1 ml-auto sm:ml-0">
             <a
-              className={buttonVariants({ variant: "default", size: "icon" })}
+              className={buttonVariants({ variant: "outline", size: "icon" })}
               href={blobUrl || url}
               download
               target="_blank"
               rel="noreferrer"
               title="Download"
             >
-              <Download className="size-4" />
+              <Download className="size-4 text-[#6247aa]" />
             </a>
             <a
-              className={buttonVariants({ variant: "default", size: "icon" })}
+              className={buttonVariants({ variant: "outline", size: "icon" })}
               href={blobUrl || url}
               target="_blank"
               rel="noreferrer"
               title="Open in New Tab"
             >
-              <ArrowSquareOut className="size-4" />
+              <ArrowSquareOut className="size-4 text-[#6247aa]" />
             </a>
             <button
               type="button"
-              className={buttonVariants({ variant: "secondary", size: "icon" })}
+              className={buttonVariants({ variant: "default", size: "icon" })}
               onClick={toggleExpanded}
               title={isExpanded ? "Exit Fullscreen" : "Fullscreen"}
             >
@@ -330,7 +339,7 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
             : "opacity-100 duration-500 delay-100"
         } ${isExpanded ? "flex-1" : "h-[78vh] min-h-[500px]"}`}
       >
-        {isLoadingPdf ? (
+        {!isScaleHydrated || !isViewModeHydrated ? null : isLoadingPdf ? (
           <div className="flex h-full items-center justify-center text-[#6247aa] m-auto">
             <p>Fetching PDF...</p>
           </div>

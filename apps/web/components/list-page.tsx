@@ -9,10 +9,11 @@ import React, { Suspense } from "react";
 import type { KnowledgeList, Project, Resource } from "@nexus/shared";
 import { ResourceCard } from "@/components/resource-card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "boneyard-js/react";
 import { useResources } from "@/hooks/use-resources";
 import { useRouter } from "next/navigation";
+import { useGlobalDropzone } from "@/hooks/use-global-dropzone";
 import { useDeleteList } from "@/hooks/use-lists";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Trash } from "@phosphor-icons/react";
@@ -65,8 +66,45 @@ export function ListPage({
   const router = useRouter();
   const { mutate: deleteList, isPending: isDeletingList } = useDeleteList();
 
+  const { isDragging, droppedFile, setDroppedFile } = useGlobalDropzone();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (droppedFile) {
+      setIsDialogOpen(true);
+    }
+  }, [droppedFile]);
+
   return (
     <>
+      <AnimatePresence>
+        {isDragging && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#f8f4fb]/80 backdrop-blur-sm border-4 border-dashed border-[#6247aa]"
+          >
+            <div className="text-3xl font-medium text-[#6247aa] pointer-events-none">
+              Drop file to add resource
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Suspense fallback={null}>
+        <CreateResourceDialog
+          projectId={project.id}
+          listId={list.id}
+          initialFile={droppedFile}
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) setDroppedFile(null);
+          }}
+        />
+      </Suspense>
+
       <div className="border-b border-[#dec9e9] pb-7">
         <PageBreadcrumb
           trail={[{ label: project.name, href: projectUrl(project.id) }]}

@@ -50,6 +50,7 @@ export function ResourceDialog({
   resource,
   projectId: initialProjectId,
   listId: initialListId,
+  initialFile,
   trigger,
   open: openProp,
   onOpenChange,
@@ -60,6 +61,7 @@ export function ResourceDialog({
   resource?: Resource;
   projectId?: string;
   listId?: string;
+  initialFile?: File | null;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -91,13 +93,39 @@ export function ResourceDialog({
   // Initialize Form
   useEffect(() => {
     if (open && mode === "create") {
-      setTitle("");
+      setTitle(initialFile ? formatFilenameToTitle(initialFile.name) : "");
       setDescription("");
-      setType("markdown");
+
+      let initialType: ResourceType = "markdown";
+      if (initialFile) {
+        if (
+          initialFile.type === "application/pdf" ||
+          initialFile.name.toLowerCase().endsWith(".pdf")
+        ) {
+          initialType = "pdf";
+        } else if (initialFile.type.startsWith("image/")) {
+          initialType = "image";
+        } else if (
+          initialFile.name.toLowerCase().endsWith(".md") ||
+          initialFile.name.toLowerCase().endsWith(".markdown") ||
+          initialFile.type === "text/markdown"
+        ) {
+          initialType = "markdown";
+        }
+      }
+      setType(initialType);
       setUrl("");
       setContent("");
       setTagsInput("");
-      setFile(null);
+      setFile(initialFile || null);
+
+      if (initialFile && initialType === "markdown") {
+        initialFile
+          .text()
+          .then((text) => setContent(text))
+          .catch((err) => console.error("Failed to read markdown", err));
+      }
+
       if (!initialProjectId && projects.length > 0)
         setSelectedProjectId(projects[0].id);
       if (!initialListId && availableLists.length > 0)
@@ -317,6 +345,7 @@ export function ResourceDialog({
                   id="resource-type"
                   value={type}
                   onChange={(e) => setType(e.target.value as ResourceType)}
+                  disabled={!!file && mode === "create"}
                 >
                   {RESOURCE_TYPES.map((item) => (
                     <option key={item.type} value={item.type}>
@@ -330,26 +359,45 @@ export function ResourceDialog({
             {isUploadMode && (
               <FormField label="Upload File" htmlFor="resource-file">
                 <FilePicker
-                  accept={
-                    type === "pdf"
-                      ? ".pdf"
-                      : type === "markdown"
-                        ? ".md,.markdown"
-                        : "image/*"
-                  }
+                  accept=".pdf,.md,.markdown,image/*"
                   file={file}
                   onFileSelect={async (newFile: File | null) => {
                     setFile(newFile);
-                    if (newFile && !title)
-                      setTitle(formatFilenameToTitle(newFile.name));
-
-                    if (newFile && type === "markdown") {
-                      try {
-                        const text = await newFile.text();
-                        setContent(text);
-                      } catch (err) {
-                        console.error("Failed to read markdown file", err);
+                    if (newFile) {
+                      if (!title) {
+                        setTitle(formatFilenameToTitle(newFile.name));
                       }
+
+                      let newType: ResourceType = type;
+                      if (
+                        newFile.type === "application/pdf" ||
+                        newFile.name.toLowerCase().endsWith(".pdf")
+                      ) {
+                        newType = "pdf";
+                      } else if (newFile.type.startsWith("image/")) {
+                        newType = "image";
+                      } else if (
+                        newFile.name.toLowerCase().endsWith(".md") ||
+                        newFile.name.toLowerCase().endsWith(".markdown") ||
+                        newFile.type === "text/markdown"
+                      ) {
+                        newType = "markdown";
+                      }
+
+                      if (newType !== type) {
+                        setType(newType);
+                      }
+
+                      if (newType === "markdown") {
+                        try {
+                          const text = await newFile.text();
+                          setContent(text);
+                        } catch (err) {
+                          console.error("Failed to read markdown file", err);
+                        }
+                      }
+                    } else {
+                      setContent("");
                     }
                   }}
                 />
@@ -489,6 +537,7 @@ export function ResourceDialog({
 export function CreateResourceDialog(props: {
   projectId?: string;
   listId?: string;
+  initialFile?: File | null;
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

@@ -9,9 +9,10 @@ import React, { Suspense } from "react";
 import type { Project, KnowledgeList } from "@nexus/shared";
 import { Skeleton } from "boneyard-js/react";
 import { useLists, useReorderLists } from "@/hooks/use-lists";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ProjectListCard } from "@/components/project-list-card";
 import { useRouter } from "next/navigation";
+import { useGlobalDropzone } from "@/hooks/use-global-dropzone";
 import { useDeleteProject } from "@/hooks/use-projects";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageHeader } from "@/components/ui/page-header";
@@ -73,9 +74,44 @@ export function ProjectPage({ project }: { project: Project }) {
       },
     });
   };
+  const { isDragging, droppedFile, setDroppedFile } = useGlobalDropzone();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (droppedFile) {
+      setIsDialogOpen(true);
+    }
+  }, [droppedFile]);
 
   return (
     <>
+      <AnimatePresence>
+        {isDragging && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#f8f4fb]/80 backdrop-blur-sm border-4 border-dashed border-[#6247aa]"
+          >
+            <div className="text-3xl font-medium text-[#6247aa] pointer-events-none">
+              Drop file to add resource
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Suspense fallback={null}>
+        <CreateResourceDialog
+          projectId={project.id}
+          initialFile={droppedFile}
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) setDroppedFile(null);
+          }}
+        />
+      </Suspense>
+
       <div className="mb-6">
         <PageBreadcrumb trail={[]} leaf={project.name} />
       </div>
