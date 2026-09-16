@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { Resource, ResourceType } from "@nexus/shared";
 import { useProjects } from "@/hooks/use-projects";
 import { useLists } from "@/hooks/use-lists";
@@ -205,6 +206,7 @@ export function ResourceDialog({
             file: fileToUpload || undefined,
           },
         });
+        toast.success("Resource created successfully");
       } else if (mode === "edit" && resource) {
         await updateResource({
           resourceId: resource.id,
@@ -216,11 +218,17 @@ export function ResourceDialog({
             listId: selectedListId,
           },
         });
+        toast.success("Resource updated successfully");
       }
 
       setOpen(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error(`Failed to ${mode} resource`, err);
+      toast.error(
+        err.response?.data?.error ||
+          err.message ||
+          `Failed to ${mode} resource`,
+      );
     }
   };
 
@@ -484,9 +492,19 @@ export function ResourceDialog({
                 description="Are you sure you want to delete this resource?"
                 isLoading={isDeleting}
                 onConfirm={async () => {
-                  await deleteResource(resource.id);
-                  setOpen(false);
-                  router.push(listUrl(resource.projectId, resource.listId));
+                  try {
+                    await deleteResource(resource.id);
+                    toast.success("Resource deleted successfully");
+                    setOpen(false);
+                    router.push(listUrl(resource.projectId, resource.listId));
+                  } catch (err: any) {
+                    console.error("Failed to delete resource", err);
+                    toast.error(
+                      err.response?.data?.error ||
+                        err.message ||
+                        "Failed to delete resource",
+                    );
+                  }
                 }}
                 trigger={
                   <Button

@@ -138,6 +138,15 @@ export function ListPage({
           }
           actions={
             <div className="flex gap-2">
+              <Suspense
+                fallback={
+                  <Skeleton name="button" loading>
+                    {null}
+                  </Skeleton>
+                }
+              >
+                <CreateResourceDialog projectId={project.id} listId={list.id} />
+              </Suspense>
               <Button
                 variant="outline"
                 size="lg"

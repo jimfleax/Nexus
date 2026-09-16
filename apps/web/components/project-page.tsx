@@ -133,6 +133,18 @@ export function ProjectPage({ project }: { project: Project }) {
                 </Skeleton>
               }
             >
+              <CreateResourceDialog
+                projectId={project.id}
+                disabled={collections.length === 0}
+              />
+            </Suspense>
+            <Suspense
+              fallback={
+                <Skeleton name="button" loading>
+                  {null}
+                </Skeleton>
+              }
+            >
               <CreateListDialog projectId={project.id} />
             </Suspense>
             <ConfirmDialog
