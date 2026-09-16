@@ -106,12 +106,12 @@ export function FilePicker({
         disabled={disabled}
       />
 
-      <div className="flex flex-col items-center justify-center gap-2 text-center w-full min-w-0">
+      <div className="flex flex-col items-center justify-center gap-2 text-center w-full min-w-0 overflow-hidden">
         {file ? (
           <>
             <File className="size-8 text-[#6247aa] shrink-0" weight="duotone" />
-            <div className="flex flex-col items-center w-full min-w-0 px-4">
-              <span className="text-sm font-medium text-[#6247aa] truncate w-full block">
+            <div className="flex flex-col items-center w-full min-w-0 px-4 overflow-hidden">
+              <span className="text-sm font-medium text-[#6247aa] truncate w-full block text-center">
                 {file.name}
               </span>
               <span className="text-xs text-[#6247aa]/70 mt-1 shrink-0">

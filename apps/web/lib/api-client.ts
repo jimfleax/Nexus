@@ -209,7 +209,11 @@ export const apiClient = {
             }
           }
         });
-        const { data } = await api.post<Resource>("/resources", form);
+        const { data } = await api.post<Resource>("/resources", form, {
+          headers: {
+            "Content-Type": undefined,
+          },
+        });
         return data;
       }
 
