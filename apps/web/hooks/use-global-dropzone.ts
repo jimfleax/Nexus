@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const SUPPORTED_EXTENSIONS = [".pdf", ".md", ".markdown"];
 const SUPPORTED_MIMES = ["application/pdf", "text/markdown", "image/"];
