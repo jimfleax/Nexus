@@ -229,10 +229,10 @@ export async function createResourceWithUpload(
           console.error("Failed to compensate orphan drive file", e),
         );
     }
-    // 6. Rollback on failure only if it is not a file upload
-    if (!isFileUpload) {
-      await deleteResourceById(resource._id.toString());
-    }
+    // 6. Rollback: delete the pending DB resource on any failure
+    await deleteResourceById(resource._id.toString()).catch((e) =>
+      console.error("Failed to rollback pending resource", e),
+    );
     throw error;
   }
 }

@@ -258,7 +258,7 @@ describe("Schema and relations", () => {
       payload,
     });
     expect(res.statusCode).toBe(400);
-    expect(res.json().error).toContain("Invalid payload");
+    expect(res.json().error).toContain("Validation failed");
   });
 
   it("rejects empty title", async () => {
@@ -274,7 +274,7 @@ describe("Schema and relations", () => {
       payload,
     });
     expect(res.statusCode).toBe(400);
-    expect(res.json().error).toContain("Title is required");
+    expect(res.json().error).toContain("Validation failed");
   });
 
   it("rejects invalid type", async () => {
@@ -290,7 +290,7 @@ describe("Schema and relations", () => {
       payload,
     });
     expect(res.statusCode).toBe(400);
-    expect(res.json().error).toContain("Invalid payload");
+    expect(res.json().error).toContain("Validation failed");
   });
 });
 

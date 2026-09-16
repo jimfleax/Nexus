@@ -79,6 +79,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           201: ResourceSchema,
           400: z.object({ error: z.string() }),
           404: z.object({ error: z.string() }),
+          500: z.object({ error: z.string() }),
         },
       },
     },
@@ -104,7 +105,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         if (!parsedBody.success) {
           return reply.status(400).send({
             error: "Validation failed",
-            details: parsedBody.error.errors,
+            details: parsedBody.error.issues,
           } as any);
         }
 
@@ -119,14 +120,15 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
 
         return reply.status(201).send(resource);
       } catch (err: any) {
-        if (err.message.includes("Knowledge List not found")) {
+        const msg = err?.message || "";
+        if (msg.includes("Knowledge List not found")) {
           return reply.status(404).send({ error: err.message } as any);
         }
         if (
-          err.message.includes("already exists") ||
-          err.message.includes("has already been added to") ||
+          msg.includes("already exists") ||
+          msg.includes("has already been added to") ||
           err.name === "StorageError" ||
-          err.message.includes("stream required")
+          msg.includes("stream required")
         ) {
           return reply.status(400).send({ error: err.message } as any);
         }
@@ -175,6 +177,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         response: {
           400: z.object({ error: z.string() }),
           404: z.object({ error: z.string() }),
+          500: z.object({ error: z.string() }),
 
           // 200 is omitted because it streams binary data
         },
