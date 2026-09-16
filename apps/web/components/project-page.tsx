@@ -105,6 +105,7 @@ export function ProjectPage({ project }: { project: Project }) {
           projectId={project.id}
           initialFile={droppedFile}
           open={isDialogOpen}
+          trigger={null}
           onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) setDroppedFile(null);

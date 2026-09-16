@@ -98,6 +98,7 @@ export function ListPage({
           listId={list.id}
           initialFile={droppedFile}
           open={isDialogOpen}
+          trigger={null}
           onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) setDroppedFile(null);
