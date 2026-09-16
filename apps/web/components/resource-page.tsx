@@ -115,90 +115,93 @@ export function ResourcePage({
           ]}
           leaf={resource.title}
         />
-        <div className="flex items-center gap-2">
-          <React.Suspense fallback={<div className="w-[60px]" />}>
-            <EditResourceDialog resource={resource}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-[#dec9e9] text-[#6247aa] hover:bg-[#f8f4fb]"
-              >
-                Edit
-              </Button>
-            </EditResourceDialog>
-          </React.Suspense>
-          <div className="flex gap-2">
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => toggle(resource.id)}
-                    className="text-xl text-[#6247aa] hover:text-[#6247aa] hover:bg-[#dec9e9]/30"
-                    aria-label="Toggle favorite"
-                  />
-                }
-              >
-                {favorites.has(resource.id) ? "★" : "☆"}
-              </TooltipTrigger>
-              <TooltipContent>
-                {favorites.has(resource.id)
-                  ? "Remove from favorites"
-                  : "Add to favorites"}
-              </TooltipContent>
-            </Tooltip>
-            <ConfirmDialog
-              title="Delete Resource"
-              description="Are you sure you want to delete this resource?"
-              isLoading={isDeletingResource}
-              onConfirm={() =>
-                deleteResource(resource.id, {
-                  onSuccess: () => router.push(listUrl(project.id, list.id)),
-                })
-              }
-              trigger={
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                      />
-                    }
-                  >
-                    <Trash className="size-5" />
-                  </TooltipTrigger>
-                  <TooltipContent>Delete resource</TooltipContent>
-                </Tooltip>
-              }
-            />
-          </div>
-        </div>
       </div>
       <div className="mt-10 border-b border-[#dec9e9] pb-8">
         <h1 className="mt-2 font-serif text-4xl tracking-tight">
           {resource.title}
         </h1>
-        <div className="mt-4 flex flex-wrap gap-2 text-sm text-[#6247aa]">
-          <span>{capitalizeType(resource.type)}</span>
-          <span>·</span>
-          <span>Last updated {formatDate(resource.updatedAt)}</span>
-          {resource.readingTime && (
-            <>
-              <span>·</span>
-              <span>{resource.readingTime}</span>
-            </>
-          )}
-          {resource.tags.map((t) => (
-            <span
-              key={t}
-              className="rounded bg-[#6247aa] px-2 py-0.5 text-xs text-white"
-            >
-              {t}
-            </span>
-          ))}
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[#6247aa]">
+            <span>{capitalizeType(resource.type)}</span>
+            <span>·</span>
+            <span>Last updated {formatDate(resource.updatedAt)}</span>
+            {resource.readingTime && (
+              <>
+                <span>·</span>
+                <span>{resource.readingTime}</span>
+              </>
+            )}
+            {resource.tags.map((t) => (
+              <span
+                key={t}
+                className="rounded bg-[#6247aa] px-2 py-0.5 text-xs text-white"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <React.Suspense fallback={<div className="w-[60px]" />}>
+              <EditResourceDialog resource={resource}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#dec9e9] text-[#6247aa] hover:bg-[#f8f4fb]"
+                >
+                  Edit
+                </Button>
+              </EditResourceDialog>
+            </React.Suspense>
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => toggle(resource.id)}
+                      className="text-xl text-[#6247aa] hover:text-[#6247aa] hover:bg-[#dec9e9]/30"
+                      aria-label="Toggle favorite"
+                    />
+                  }
+                >
+                  {favorites.has(resource.id) ? "★" : "☆"}
+                </TooltipTrigger>
+                <TooltipContent>
+                  {favorites.has(resource.id)
+                    ? "Remove from favorites"
+                    : "Add to favorites"}
+                </TooltipContent>
+              </Tooltip>
+              <ConfirmDialog
+                title="Delete Resource"
+                description="Are you sure you want to delete this resource?"
+                isLoading={isDeletingResource}
+                onConfirm={() =>
+                  deleteResource(resource.id, {
+                    onSuccess: () => router.push(listUrl(project.id, list.id)),
+                  })
+                }
+                trigger={
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        />
+                      }
+                    >
+                      <Trash className="size-5" />
+                    </TooltipTrigger>
+                    <TooltipContent>Delete resource</TooltipContent>
+                  </Tooltip>
+                }
+              />
+            </div>
+          </div>
         </div>
       </div>
       <div className="mt-10">
