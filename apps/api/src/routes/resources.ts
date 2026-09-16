@@ -79,7 +79,6 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           201: ResourceSchema,
           400: z.object({ error: z.string() }),
           404: z.object({ error: z.string() }),
-          500: z.object({ error: z.string() }),
         },
       },
     },
@@ -89,25 +88,26 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
       let mimeType = "";
       let checksum: string | undefined;
 
-      // Parse payload dynamically: multipart for file uploads, JSON body for links/notes
-      if (request.isMultipart()) {
-        const parsed = await parseMultipartResourceRequest(request);
-        body = parsed.body;
-        fileStream = parsed.fileStream;
-        mimeType = parsed.mimeType;
-        checksum = parsed.checksum;
-      } else {
-        body = request.body;
-      }
-
-      const parsedBody = CreateResourceSchema.safeParse(body);
-      if (!parsedBody.success) {
-        return reply.status(400).send({
-          error: "Invalid payload: " + parsedBody.error.message,
-        } as any);
-      }
-
       try {
+        // Parse payload dynamically: multipart for file uploads, JSON body for links/notes
+        if (request.isMultipart()) {
+          const parsed = await parseMultipartResourceRequest(request);
+          body = parsed.body;
+          fileStream = parsed.fileStream;
+          mimeType = parsed.mimeType;
+          checksum = parsed.checksum;
+        } else {
+          body = request.body;
+        }
+
+        const parsedBody = CreateResourceSchema.safeParse(body);
+        if (!parsedBody.success) {
+          return reply.status(400).send({
+            error: "Validation failed",
+            details: parsedBody.error.errors,
+          } as any);
+        }
+
         const resource = await createResourceWithUpload(
           request.ownerId,
           parsedBody.data,
@@ -116,6 +116,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           mimeType,
           checksum,
         );
+
         return reply.status(201).send(resource);
       } catch (err: any) {
         if (err.message.includes("Knowledge List not found")) {
@@ -129,6 +130,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         ) {
           return reply.status(400).send({ error: err.message } as any);
         }
+
         request.log.error(err, "Resource creation failed");
         return reply
           .status(500)
@@ -173,7 +175,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         response: {
           400: z.object({ error: z.string() }),
           404: z.object({ error: z.string() }),
-          500: z.object({ error: z.string() }),
+
           // 200 is omitted because it streams binary data
         },
       },

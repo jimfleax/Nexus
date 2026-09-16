@@ -52,6 +52,7 @@ describe("Resources Multipart Upload", () => {
     form.append("listId", fakeListId);
     form.append("title", "Test Upload");
     form.append("type", "pdf");
+    form.append("mimeType", "application/pdf");
     form.append("description", "");
     form.append("isFavorite", "false");
     form.append("tags", '["fundamentals"]');
