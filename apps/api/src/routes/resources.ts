@@ -79,6 +79,7 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
           201: ResourceSchema,
           400: z.object({ error: z.string() }),
           404: z.object({ error: z.string() }),
+          413: z.object({ error: z.string() }),
           500: z.object({ error: z.string() }),
         },
       },
@@ -123,6 +124,11 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (server) => {
         const msg = err?.message || "";
         if (msg.includes("Knowledge List not found")) {
           return reply.status(404).send({ error: err.message } as any);
+        }
+        if (err.code === "FST_REQ_FILE_TOO_LARGE") {
+          return reply
+            .status(413)
+            .send({ error: "File too large (max 14MB)" } as any);
         }
         if (
           msg.includes("already exists") ||

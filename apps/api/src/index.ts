@@ -50,7 +50,12 @@ fastify.register(rateLimit, {
 });
 // Register multipart support globally so file-upload routes can parse
 // multipart/form-data requests (POST /api/resources, etc.)
-fastify.register(multipart, { attachFieldsToBody: false });
+fastify.register(multipart, {
+  attachFieldsToBody: false,
+  limits: {
+    fileSize: 14 * 1024 * 1024, // 14MB limit
+  },
+});
 fastify.register(storagePlugin, {
   clientId: process.env.AUTH_GOOGLE_ID,
   clientSecret: process.env.AUTH_GOOGLE_SECRET,
