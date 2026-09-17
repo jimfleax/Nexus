@@ -36,6 +36,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { usePdfProgress } from "@/hooks/use-pdf-progress";
 import { PdfPageWrapper } from "./pdf-page-wrapper";
+import debounce from "lodash.debounce";
 
 // Configure the PDF worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -66,11 +67,16 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
 
   const { progress, syncProgress } = usePdfProgress(url);
   const maxPageReached = useRef<number>(1);
+  const hasAppliedInitialProgress = useRef(false);
 
   useEffect(() => {
-    if (progress && progress.currentPage && pageNumber === 1) {
-      setPageNumber(progress.currentPage);
-      maxPageReached.current = progress.maxPageReached || progress.currentPage;
+    if (progress && !hasAppliedInitialProgress.current) {
+      hasAppliedInitialProgress.current = true;
+      if (progress.currentPage) {
+        setPageNumber(progress.currentPage);
+        maxPageReached.current =
+          progress.maxPageReached || progress.currentPage;
+      }
     }
   }, [progress]);
 
@@ -111,9 +117,16 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
   const onDocumentLoadSuccess = useCallback(
     ({ numPages }: { numPages: number }) => {
       setNumPages(numPages);
-      setPageNumber(1);
     },
     [],
+  );
+
+  // Debounce the API call so rapid scrolling or initial load jumps don't spam the backend
+  const debouncedSync = useCallback(
+    debounce((page: number, max: number) => {
+      syncProgress({ currentPage: page, maxPageReached: max });
+    }, 1000),
+    [syncProgress],
   );
 
   const handlePageChange = useCallback(
@@ -121,9 +134,9 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
       setPageNumber(newPage);
       const newMax = Math.max(maxPageReached.current, newPage);
       maxPageReached.current = newMax;
-      syncProgress({ currentPage: newPage, maxPageReached: newMax });
+      debouncedSync(newPage, newMax);
     },
-    [syncProgress],
+    [debouncedSync],
   );
 
   const changePage = useCallback(
@@ -391,6 +404,7 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
                     width={containerWidth ? containerWidth - 32 : undefined}
                     scale={scale}
                     onPageViewed={handlePageChange}
+                    isInitialPage={progress?.currentPage === index + 1}
                   />
                 ))}
               </div>
