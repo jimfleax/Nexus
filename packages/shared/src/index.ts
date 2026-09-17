@@ -72,3 +72,4 @@ export * from "./schemas/user.js";
 export * from "./schemas/info.js";
 export * from "./schemas/error.js";
 export * from "./schemas/utils.js";
+export * from "./schemas/pdf-progress.js";
