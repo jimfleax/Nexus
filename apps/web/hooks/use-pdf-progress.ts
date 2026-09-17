@@ -8,7 +8,7 @@ export function usePdfProgress(documentUrl?: string) {
     queryKey: ["pdf-progress", documentUrl],
     queryFn: async () => {
       if (!documentUrl) return null;
-      const res = await api.get("/api/progress", { params: { documentUrl } });
+      const res = await api.get("/progress", { params: { documentUrl } });
       return res.data;
     },
     enabled: !!documentUrl,
@@ -23,7 +23,7 @@ export function usePdfProgress(documentUrl?: string) {
       maxPageReached: number;
     }) => {
       if (!documentUrl) return;
-      await api.post("/api/progress", {
+      await api.post("/progress", {
         documentUrl,
         currentPage,
         maxPageReached,

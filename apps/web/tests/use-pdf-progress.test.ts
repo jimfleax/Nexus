@@ -33,7 +33,7 @@ describe("usePdfProgress", () => {
       expect(result.current.progress).toEqual(mockProgress);
     });
 
-    expect(api.get).toHaveBeenCalledWith("/api/progress", {
+    expect(api.get).toHaveBeenCalledWith("/progress", {
       params: { documentUrl: "/test.pdf" },
     });
   });
@@ -52,7 +52,7 @@ describe("usePdfProgress", () => {
     result.current.syncProgress({ currentPage: 2, maxPageReached: 2 });
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith("/api/progress", {
+      expect(api.post).toHaveBeenCalledWith("/progress", {
         documentUrl: "/test.pdf",
         currentPage: 2,
         maxPageReached: 2,
