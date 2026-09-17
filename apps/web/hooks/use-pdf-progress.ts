@@ -40,12 +40,18 @@ export function usePdfProgress(documentUrl?: string) {
         documentUrl,
       ]);
 
-      queryClient.setQueryData(["pdf-progress", documentUrl], (old: any) => ({
-        ...old,
-        documentUrl,
-        currentPage,
-        maxPageReached,
-      }));
+      queryClient.setQueryData(
+        ["pdf-progress", documentUrl],
+        (old: unknown) => {
+          const oldProgress = old as Record<string, unknown> | undefined;
+          return {
+            ...oldProgress,
+            documentUrl,
+            currentPage,
+            maxPageReached,
+          };
+        },
+      );
       return { previousProgress };
     },
     onError: (err, newProgress, context) => {

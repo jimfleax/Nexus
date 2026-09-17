@@ -65,12 +65,12 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
   const transitionTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const { progress, syncProgress } = usePdfProgress(url);
-  const [maxPageReached, setMaxPageReached] = useState<number>(1);
+  const maxPageReached = useRef<number>(1);
 
   useEffect(() => {
     if (progress && progress.currentPage && pageNumber === 1) {
       setPageNumber(progress.currentPage);
-      setMaxPageReached(progress.maxPageReached || progress.currentPage);
+      maxPageReached.current = progress.maxPageReached || progress.currentPage;
     }
   }, [progress]);
 
@@ -119,11 +119,9 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
   const handlePageChange = useCallback(
     (newPage: number) => {
       setPageNumber(newPage);
-      setMaxPageReached((prev) => {
-        const newMax = Math.max(prev, newPage);
-        syncProgress({ currentPage: newPage, maxPageReached: newMax });
-        return newMax;
-      });
+      const newMax = Math.max(maxPageReached.current, newPage);
+      maxPageReached.current = newMax;
+      syncProgress({ currentPage: newPage, maxPageReached: newMax });
     },
     [syncProgress],
   );
