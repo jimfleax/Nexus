@@ -34,6 +34,8 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { usePdfProgress } from "@/hooks/use-pdf-progress";
+import { PdfPageWrapper } from "./pdf-page-wrapper";
 
 // Configure the PDF worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -61,6 +63,16 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const transitionTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const { progress, syncProgress } = usePdfProgress(url);
+  const [maxPageReached, setMaxPageReached] = useState<number>(1);
+
+  useEffect(() => {
+    if (progress && progress.currentPage && pageNumber === 1) {
+      setPageNumber(progress.currentPage);
+      setMaxPageReached(progress.maxPageReached || progress.currentPage);
+    }
+  }, [progress]);
 
   const {
     data: blob,
@@ -104,12 +116,26 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
     [],
   );
 
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      setPageNumber(newPage);
+      setMaxPageReached((prev) => {
+        const newMax = Math.max(prev, newPage);
+        syncProgress({ currentPage: newPage, maxPageReached: newMax });
+        return newMax;
+      });
+    },
+    [syncProgress],
+  );
+
   const changePage = useCallback(
-    (offset: number) =>
-      setPageNumber((prev) =>
-        Math.min(Math.max(1, prev + offset), numPages || 1),
-      ),
-    [numPages],
+    (offset: number) => {
+      const newPage = Math.min(Math.max(1, pageNumber + offset), numPages || 1);
+      if (newPage !== pageNumber) {
+        handlePageChange(newPage);
+      }
+    },
+    [numPages, pageNumber, handlePageChange],
   );
 
   const previousPage = useCallback(() => changePage(-1), [changePage]);
@@ -361,12 +387,12 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
             {viewMode === "scroll" && numPages ? (
               <div className="flex flex-col gap-4 pb-8">
                 {Array.from(new Array(numPages), (el, index) => (
-                  <Page
+                  <PdfPageWrapper
                     key={`page_${index + 1}`}
                     pageNumber={index + 1}
                     width={containerWidth ? containerWidth - 32 : undefined}
                     scale={scale}
-                    className="shadow-md shrink-0"
+                    onPageViewed={handlePageChange}
                   />
                 ))}
               </div>
