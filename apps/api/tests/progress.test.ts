@@ -51,4 +51,28 @@ describe("Progress Routes", () => {
     expect(dbRecord).toBeDefined();
     expect(dbRecord?.currentPage).toBe(3);
   });
+
+  it("should fetch progress via GET /api/progress", async () => {
+    // Seed data
+    const payload = {
+      documentUrl: "/docs/example.pdf",
+      currentPage: 3,
+      maxPageReached: 3,
+    };
+    await ctx.app.inject({
+      method: "POST",
+      url: "/api/progress",
+      payload,
+    });
+
+    const res = await ctx.app.inject({
+      method: "GET",
+      url: "/api/progress",
+      query: { documentUrl: "/docs/example.pdf" },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const data = res.json();
+    expect(data.currentPage).toBe(3);
+  });
 });

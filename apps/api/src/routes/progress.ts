@@ -1,4 +1,5 @@
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
+import { z } from "zod";
 import { UpsertPdfProgressRequestSchema } from "@nexus/shared";
 import { PdfProgressModel } from "../models/PdfProgress.js";
 
@@ -28,7 +29,7 @@ export const progressRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get(
     "/api/progress",
-    { schema: { querystring: { documentUrl: { type: "string" } } } },
+    { schema: { querystring: z.object({ documentUrl: z.string() }) } },
     async (request, reply) => {
       const userId = (request as any).ownerId;
       const { documentUrl } = request.query as { documentUrl: string };
