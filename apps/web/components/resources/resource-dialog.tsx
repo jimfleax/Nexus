@@ -222,12 +222,14 @@ export function ResourceDialog({
       }
 
       setOpen(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`Failed to ${mode} resource`, err);
+      const e = err as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
       toast.error(
-        err.response?.data?.error ||
-          err.message ||
-          `Failed to ${mode} resource`,
+        e.response?.data?.error || e.message || `Failed to ${mode} resource`,
       );
     }
   };
@@ -497,11 +499,15 @@ export function ResourceDialog({
                     toast.success("Resource deleted successfully");
                     setOpen(false);
                     router.push(listUrl(resource.projectId, resource.listId));
-                  } catch (err: any) {
+                  } catch (err: unknown) {
                     console.error("Failed to delete resource", err);
+                    const e = err as {
+                      response?: { data?: { error?: string } };
+                      message?: string;
+                    };
                     toast.error(
-                      err.response?.data?.error ||
-                        err.message ||
+                      e.response?.data?.error ||
+                        e.message ||
                         "Failed to delete resource",
                     );
                   }

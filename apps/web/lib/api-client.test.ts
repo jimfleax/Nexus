@@ -142,7 +142,7 @@ describe("apiClient.resources", () => {
     await apiClient.resources.create("proj-1", "list-1", input);
 
     expect(mockPost).toHaveBeenCalledWith("/resources", expect.any(FormData), {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { "Content-Type": undefined },
     });
 
     // TDD: Ensure fields are not duplicated into arrays

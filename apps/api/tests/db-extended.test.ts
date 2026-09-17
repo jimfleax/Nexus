@@ -5,10 +5,14 @@ import { tenantContext, tenantIsolationPlugin } from "../src/db.js";
 
 let mongoServer: MongoMemoryServer;
 
-const TestSchema = new mongoose.Schema({ group: String, value: Number });
+interface ITest {
+  group?: string | null;
+  value?: number | null;
+}
+const TestSchema = new mongoose.Schema<ITest>({ group: String, value: Number });
 TestSchema.plugin(tenantIsolationPlugin);
 // Use a unique name to avoid OverwriteModelError in case of parallel test runs
-const TestModel = mongoose.model("TenantExtendedTest", TestSchema);
+const TestModel = mongoose.model<ITest>("TenantExtendedTest", TestSchema);
 
 const as = async (ownerId: string | null, fn: () => Promise<any>) =>
   new Promise<void>((resolve, reject) => {
