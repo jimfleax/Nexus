@@ -21,7 +21,7 @@ import { oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 function CodeBlock({ code, language }: { code: string; language: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="relative group my-4 border border-gray-200 rounded-md overflow-hidden bg-gray-50">
+    <div className="not-prose relative group my-4 border border-gray-200 rounded-md overflow-hidden bg-gray-50 text-sm">
       <Button
         onClick={() => {
           navigator.clipboard.writeText(code);
@@ -40,8 +40,9 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
         style={oneLight}
         customStyle={{
           margin: 0,
-          borderRadius: "0.375rem",
-          fontSize: "0.85em",
+          borderRadius: 0,
+          background: "transparent",
+          padding: "1rem",
         }}
       >
         {code}
@@ -81,15 +82,14 @@ export function StaticMarkdownViewer({
         remarkPlugins={[remarkGfm]}
         components={{
           code({
-            inline,
             className,
             children,
             ...props
-          }: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) {
+          }: React.HTMLAttributes<HTMLElement>) {
             const match = /language-(\w+)/.exec(className || "");
 
-            // It's a code block if it has a class like language-xxx, or if it has newline (usually block)
-            if (!inline && match) {
+            // If it has a language match, it's definitely a code block
+            if (match) {
               return (
                 <CodeBlock
                   code={String(children).replace(/\n$/, "")}
@@ -97,16 +97,8 @@ export function StaticMarkdownViewer({
                 />
               );
             }
-            if (!inline && !className) {
-              // fallback for block with no language
-              return (
-                <CodeBlock
-                  code={String(children).replace(/\n$/, "")}
-                  language="text"
-                />
-              );
-            }
 
+            // Otherwise, treat as inline code (or pre-wrapped generic block)
             return (
               <code
                 className="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[0.85em] font-mono before:content-none after:content-none"
