@@ -21,7 +21,7 @@ import { oneLight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 function CodeBlock({ code, language }: { code: string; language: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="relative group my-4 rounded-md overflow-hidden bg-white/10">
+    <div className="relative group my-4 border border-gray-200 rounded-md overflow-hidden bg-gray-50">
       <Button
         onClick={() => {
           navigator.clipboard.writeText(code);
@@ -30,7 +30,7 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
         }}
         variant="ghost"
         size="sm"
-        className="absolute top-2 right-2 h-8 px-2 text-[#6247aa] bg-[#dec9e9] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+        className="absolute top-2 right-2 h-8 px-2 text-gray-500 bg-gray-100 hover:bg-gray-200 opacity-0 group-hover:opacity-100 transition-opacity z-10"
       >
         {copied ? <Check size={16} /> : <Copy size={16} />}
         <span className="ml-1 text-xs">{copied ? "Copied" : "Copy"}</span>
@@ -75,7 +75,7 @@ export function StaticMarkdownViewer({
       initial={animate ? (reduceMotion ? false : { opacity: 0, y: 10 }) : false}
       animate={animate ? { opacity: 1, y: 0 } : undefined}
       transition={animate ? { duration: 0.35, ease: "easeOut" } : undefined}
-      className="reading prose prose-[#6247aa] max-w-none prose-headings:font-serif prose-headings:font-normal prose-a:text-[#6247aa] prose-a:no-underline hover:prose-a:underline"
+      className="reading prose max-w-none prose-a:text-[#6247aa] prose-a:no-underline hover:prose-a:underline"
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
@@ -109,7 +109,7 @@ export function StaticMarkdownViewer({
 
             return (
               <code
-                className="bg-[#dec9e9] px-1.5 py-0.5 rounded text-[0.85em] font-mono before:content-none after:content-none"
+                className="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[0.85em] font-mono before:content-none after:content-none"
                 {...props}
               >
                 {children}
@@ -119,7 +119,7 @@ export function StaticMarkdownViewer({
           table({ children }) {
             return (
               <div className="overflow-x-auto my-6">
-                <table className="min-w-full border-collapse border border-[#dec9e9] rounded-lg">
+                <table className="min-w-full border-collapse border border-gray-200 rounded-lg">
                   {children}
                 </table>
               </div>
@@ -127,14 +127,14 @@ export function StaticMarkdownViewer({
           },
           th({ children }) {
             return (
-              <th className="px-4 py-2 border border-[#dec9e9] bg-[#f8f4fb] text-left font-semibold text-[#6247aa]">
+              <th className="px-4 py-2 border border-gray-200 bg-gray-50 text-left font-semibold text-gray-900">
                 {children}
               </th>
             );
           },
           td({ children }) {
             return (
-              <td className="px-4 py-2 border border-[#dec9e9]">{children}</td>
+              <td className="px-4 py-2 border border-gray-200">{children}</td>
             );
           },
         }}
