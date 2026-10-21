@@ -125,7 +125,7 @@ export default async function SignInPage({
             </div>
 
             <form
-              action={`${(process.env.API_URL || "http://localhost:8080").replace(/\/+$/, "")}/api/auth/google`}
+              action={`${(process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "")}/api/auth/google`}
               method="GET"
             >
               <OAuthSubmitButton provider="google">

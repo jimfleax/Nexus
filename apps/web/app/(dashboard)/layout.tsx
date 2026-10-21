@@ -34,10 +34,7 @@ export default async function DashboardLayout({
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("nexus-session")?.value || "";
 
-  const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
-    /\/+$/,
-    "",
-  );
+  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
 
   return (
     <Providers>

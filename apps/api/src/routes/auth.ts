@@ -11,7 +11,7 @@ import { FastifyPluginAsync } from "fastify";
 import { SignJWT } from "jose";
 import { findOrCreateUser, updateSettings } from "../services/user.service.js";
 import { authorizeWithGoogle } from "../utils/oauth/google.js";
-import { frontendUrl, generateState } from "../utils/oauth.js";
+import { apiUrl, frontendUrl, generateState } from "../utils/oauth.js";
 import { SessionManager } from "../utils/session.js";
 
 /** Build the HMAC-SHA256 signing key from AUTH_SECRET */
@@ -71,11 +71,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       },
     },
     async (_request, reply) => {
-      const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
-        /\/+$/,
-        "",
-      );
-      const redirectUri = `${apiUrl}/api/auth/callback/google`;
+      const redirectUri = `${apiUrl()}/api/auth/callback/google`;
       const state = generateState();
       SessionManager.setOAuthState(reply, state);
 
@@ -131,11 +127,7 @@ export const authRoutes: FastifyPluginAsync = fp(async (fastify) => {
       SessionManager.clearOAuthState(reply);
 
       try {
-        const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
-          /\/+$/,
-          "",
-        );
-        const redirectUri = `${apiUrl}/api/auth/callback/google`;
+        const redirectUri = `${apiUrl()}/api/auth/callback/google`;
         const provider = fastify.oauth.getProvider("google");
 
         // 1. Exchange code, persist a refresh token when issued, fetch identity

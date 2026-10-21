@@ -10,7 +10,28 @@ import crypto from "node:crypto";
  * @returns {string} The frontend URL without trailing slash
  */
 export const frontendUrl = () =>
-  (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
+  (
+    process.env.FRONTEND_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000")
+  ).replace(/\/+$/, "");
+
+/**
+ * @desc    Get the API base URL from environment or default
+ * @returns {string} The API URL without trailing slash
+ */
+export const apiUrl = () =>
+  (
+    process.env.API_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:8080")
+  ).replace(/\/+$/, "");
 
 /**
  * @desc    Generate a random 16-byte hex string for OAuth state validation

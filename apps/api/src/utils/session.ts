@@ -21,10 +21,15 @@ const SESSION_COOKIE = "nexus-session";
  *          A `SameSite=Lax` cookie is safely permitted because the Google callback is a top-level GET navigation.
  */
 function getCookieOptions() {
-  const apiUrl = process.env.API_URL || "http://localhost:8080";
+  const apiUrl =
+    process.env.API_URL ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:8080");
   return {
     httpOnly: true,
-    secure: apiUrl.startsWith("https://"),
+    secure:
+      apiUrl.startsWith("https://") || process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
   };

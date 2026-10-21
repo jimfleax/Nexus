@@ -8,7 +8,7 @@ import fp from "fastify-plugin";
 import { FastifyPluginAsync } from "fastify";
 import { SignJWT, jwtVerify } from "jose";
 import { updateSettings } from "../services/user.service.js";
-import { frontendUrl, generateState } from "../utils/oauth.js";
+import { apiUrl, frontendUrl, generateState } from "../utils/oauth.js";
 import { SessionManager } from "../utils/session.js";
 
 function getSigningKey(): Uint8Array {
@@ -24,11 +24,7 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
    * @access  Private
    */
   fastify.get("/api/integrations/google-drive", async (request, reply) => {
-    const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
-      /\/+$/,
-      "",
-    );
-    const redirectUri = `${apiUrl}/api/integrations/google-drive/callback`;
+    const redirectUri = `${apiUrl()}/api/integrations/google-drive/callback`;
     const nonce = generateState();
     const ownerId = (request as any).ownerId;
 
@@ -89,11 +85,7 @@ export const integrationRoutes: FastifyPluginAsync = fp(async (fastify) => {
       }
 
       try {
-        const apiUrl = (process.env.API_URL || "http://localhost:8080").replace(
-          /\/+$/,
-          "",
-        );
-        const redirectUri = `${apiUrl}/api/integrations/google-drive/callback`;
+        const redirectUri = `${apiUrl()}/api/integrations/google-drive/callback`;
         const provider = fastify.oauth.getProvider("google");
 
         const tokens = await provider.exchangeCode(code, redirectUri);
