@@ -80,6 +80,7 @@ export default async function SignInPage({
               width={64}
               height={64}
               className="h-16 w-16 object-contain drop-shadow-lg"
+              priority
             />
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-white leading-tight drop-shadow-sm">
               Sign in to your <br />
