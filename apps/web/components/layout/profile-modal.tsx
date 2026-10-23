@@ -130,17 +130,18 @@ function MetricContent({
             <CloudSlash className="size-4 shrink-0" />
             <span>Google Drive not connected.</span>
           </div>
-          <form action={`${apiUrl}/api/integrations/google-drive`} method="GET">
-            <input type="hidden" name="token" value={sessionToken} />
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full border-[#dec9e9] text-[#6247aa]"
-              type="submit"
-            >
-              Connect Google Drive
-            </Button>
-          </form>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full border-[#dec9e9] text-[#6247aa]"
+            type="button"
+            onClick={() => {
+              const url = `${apiUrl.replace(/\/+$/, "")}/api/integrations/google-drive${sessionToken ? `?token=${encodeURIComponent(sessionToken)}` : ""}`;
+              window.location.assign(url);
+            }}
+          >
+            Connect Google Drive
+          </Button>
         </div>
       )}
 

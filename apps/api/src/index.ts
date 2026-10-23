@@ -7,7 +7,7 @@
 import "dotenv/config";
 import Fastify from "fastify";
 import multipart from "@fastify/multipart";
-import { connectDB } from "./db.js";
+import { connectDB, disconnectDB } from "./db.js";
 import { authPlugin } from "./auth.js";
 import { authRoutes } from "./routes/auth.js";
 import { projectRoutes } from "./routes/projects.js";
@@ -73,6 +73,11 @@ fastify.addHook("onSend", async (_request, reply, payload) => {
   return payload;
 });
 
+// Graceful shutdown: disconnect from MongoDB when the Fastify instance closes
+fastify.addHook("onClose", async () => {
+  await disconnectDB();
+});
+
 fastify.register(oauthProviderPlugin);
 
 // Auth routes remain public because authPlugin skips URLs beginning with /api/auth/, not because of registration order
@@ -106,24 +111,52 @@ fastify.get("/api/protected", async (request, _reply) => {
 });
 
 /**
- * @desc    Boot the server: connect to MongoDB, then listen for HTTP traffic
+ * @desc    Initialization promise ensuring DB connection and Fastify readiness
  */
-const start = async () => {
-  try {
-    const mongoUri = process.env.MONGODB_URI;
-    if (!mongoUri) {
-      throw new Error("MONGODB_URI is not defined");
-    }
-    await connectDB(mongoUri);
-    fastify.log.info("Connected to MongoDB");
+let initPromise: Promise<void> | null = null;
 
-    const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
-    await fastify.listen({ port, host: "0.0.0.0" });
-    console.log(`Server listening on port ${port}`);
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
+export const init = async () => {
+  if (!initPromise) {
+    initPromise = (async () => {
+      const mongoUri = process.env.MONGODB_URI;
+      if (!mongoUri) {
+        throw new Error("MONGODB_URI is not defined");
+      }
+      await connectDB(mongoUri);
+      fastify.log.info("Connected to MongoDB");
+      await fastify.ready();
+    })();
   }
+  return initPromise;
 };
 
-start();
+// Start standalone HTTP listener only when NOT running in a Vercel serverless environment
+if (!process.env.VERCEL) {
+  init()
+    .then(async () => {
+      const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+      await fastify.listen({ port, host: "0.0.0.0" });
+      console.log(`Server listening on port ${port}`);
+    })
+    .catch((err) => {
+      fastify.log.error(err);
+      process.exit(1);
+    });
+}
+
+/**
+ * @desc Vercel Serverless Function entry point
+ */
+export default async function handler(req: any, res: any) {
+  try {
+    await init();
+    fastify.server.emit("request", req, res);
+  } catch (err) {
+    fastify.log.error(err);
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ error: "Internal Server Error" }));
+  }
+}
+
+export { fastify };

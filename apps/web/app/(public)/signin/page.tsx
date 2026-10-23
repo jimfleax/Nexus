@@ -27,11 +27,11 @@ const ERROR_MESSAGES: Record<string, string> = {
  *          and translates them into user-friendly error banners.
  *
  * @architecture
- *          The form performs a direct GET navigation to the backend API origin
- *          instead of proxying through Next.js (e.g., via `/api/auth/google`).
- *          This is strictly required because Edge networks (like Vercel) aggressively
- *          strip `Set-Cookie` headers on cross-origin proxy rewrites, which would
- *          prevent the backend from setting the `oauth_state` cookie securely.
+ *          The OAuth button performs a direct browser navigation to the backend API route
+ *          (/api/auth/google) rather than a client-side Next.js SPA navigation.
+ *          In a Vercel multi-service project, /api/auth/google is rewritten directly
+ *          to the Fastify backend service, which initiates the OAuth handshake and sets
+ *          the oauth_state cookie.
  *
  * @returns {JSX.Element} The sign-in UI
  */
@@ -125,29 +125,27 @@ export default async function SignInPage({
               </p>
             </div>
 
-            <form
-              action={`${(process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "")}/api/auth/google`}
-              method="GET"
+            <OAuthSubmitButton
+              provider="google"
+              href={`${(process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "")}/api/auth/google`}
             >
-              <OAuthSubmitButton provider="google">
-                <svg
-                  className="mr-3 h-5 w-5"
-                  aria-hidden="true"
-                  focusable="false"
-                  data-prefix="fab"
-                  data-icon="google"
-                  role="img"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 488 512"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
-                  ></path>
-                </svg>
-                Continue with Google
-              </OAuthSubmitButton>
-            </form>
+              <svg
+                className="mr-3 h-5 w-5"
+                aria-hidden="true"
+                focusable="false"
+                data-prefix="fab"
+                data-icon="google"
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 488 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
+                ></path>
+              </svg>
+              Continue with Google
+            </OAuthSubmitButton>
 
             <div className="mt-8 flex items-center justify-center gap-2 text-sm text-zinc-300">
               <svg
