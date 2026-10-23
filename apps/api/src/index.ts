@@ -6,6 +6,7 @@
 
 import "dotenv/config";
 import Fastify from "fastify";
+import mongoose from "mongoose";
 import multipart from "@fastify/multipart";
 import { connectDB, disconnectDB } from "./db.js";
 import { authPlugin } from "./auth.js";
@@ -37,6 +38,7 @@ import rateLimit from "@fastify/rate-limit";
 
 const fastify = Fastify({
   logger: true,
+  trustProxy: true,
   routerOptions: { ignoreTrailingSlash: true, ignoreDuplicateSlashes: true },
 }).withTypeProvider<ZodTypeProvider>();
 
@@ -48,6 +50,11 @@ fastify.register(cookiePlugin);
 fastify.register(rateLimit, {
   max: 100,
   timeWindow: "1 minute",
+  keyGenerator: (req) =>
+    (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+    (req.headers["x-real-ip"] as string) ||
+    req.ip ||
+    "127.0.0.1",
 });
 // Register multipart support globally so file-upload routes can parse
 // multipart/form-data requests (POST /api/resources, etc.)
@@ -111,6 +118,26 @@ fastify.get("/api/protected", async (request, _reply) => {
 });
 
 /**
+ * @desc Ensure MongoDB connection on-demand for routes requiring database persistence.
+ *       Liveness probe (/health) and OAuth redirect initiations do not block on the database.
+ */
+fastify.addHook("onRequest", async (request) => {
+  const url = request.raw.url || request.url;
+  if (
+    url === "/health" ||
+    url.startsWith("/api/auth/google") ||
+    url.startsWith("/api/auth/github")
+  ) {
+    return;
+  }
+
+  const mongoUri = process.env.MONGODB_URI;
+  if (mongoUri && mongoose.connection.readyState !== 1) {
+    await connectDB(mongoUri);
+  }
+});
+
+/**
  * @desc    Initialization promise ensuring DB connection and Fastify readiness
  */
 let initPromise: Promise<void> | null = null;
@@ -118,17 +145,17 @@ let initPromise: Promise<void> | null = null;
 export const init = async () => {
   if (!initPromise) {
     initPromise = (async () => {
-      const mongoUri = process.env.MONGODB_URI;
-      if (!mongoUri) {
-        throw new Error("MONGODB_URI is not defined");
-      }
-      await connectDB(mongoUri);
-      fastify.log.info("Connected to MongoDB");
       await fastify.ready();
-    })().catch((err) => {
-      initPromise = null;
-      throw err;
-    });
+      const mongoUri = process.env.MONGODB_URI;
+      if (mongoUri) {
+        connectDB(mongoUri).catch((err) => {
+          fastify.log.warn(
+            { err: err?.message },
+            "Initial background MongoDB connection attempt deferred",
+          );
+        });
+      }
+    })();
   }
   return initPromise;
 };
@@ -137,6 +164,11 @@ export const init = async () => {
 if (!process.env.VERCEL) {
   init()
     .then(async () => {
+      const mongoUri = process.env.MONGODB_URI;
+      if (mongoUri) {
+        await connectDB(mongoUri);
+        fastify.log.info("Connected to MongoDB");
+      }
       const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
       await fastify.listen({ port, host: "0.0.0.0" });
       console.log(`Server listening on port ${port}`);
@@ -152,6 +184,20 @@ if (!process.env.VERCEL) {
  */
 export default async function handler(req: any, res: any) {
   try {
+    if (!req.socket) {
+      req.socket = {
+        remoteAddress:
+          req.headers?.["x-forwarded-for"]?.split(",")[0]?.trim() ||
+          req.headers?.["x-real-ip"] ||
+          "127.0.0.1",
+        encrypted: true,
+      };
+    } else if (!req.socket.remoteAddress) {
+      req.socket.remoteAddress =
+        req.headers?.["x-forwarded-for"]?.split(",")[0]?.trim() ||
+        req.headers?.["x-real-ip"] ||
+        "127.0.0.1";
+    }
     await init();
     fastify.server.emit("request", req, res);
   } catch (err) {

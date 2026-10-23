@@ -20,6 +20,12 @@ await build({
   target: "node22",
   format: "esm",
   external,
+  alias: {
+    "@nexus/shared": path.resolve(
+      __dirname,
+      "../../packages/shared/src/index.ts",
+    ),
+  },
   outfile: path.resolve(__dirname, "server.mjs"),
   sourcemap: true,
 });

@@ -1,20 +1,5 @@
-var __create = Object.create;
 var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __require = /* @__PURE__ */ ((x) =>
-  typeof require !== "undefined"
-    ? require
-    : typeof Proxy !== "undefined"
-      ? new Proxy(x, {
-          get: (a, b) => (typeof require !== "undefined" ? require : a)[b],
-        })
-      : x)(function (x) {
-  if (typeof require !== "undefined") return require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
 var __esm = (fn, res, err) =>
   function __init() {
     if (err) throw err[0];
@@ -24,49 +9,10 @@ var __esm = (fn, res, err) =>
       throw ((err = [e]), e);
     }
   };
-var __commonJS = (cb, mod) =>
-  function __require2() {
-    try {
-      return (
-        mod ||
-          (0, cb[__getOwnPropNames(cb)[0]])(
-            (mod = { exports: {} }).exports,
-            mod,
-          ),
-        mod.exports
-      );
-    } catch (e) {
-      throw ((mod = 0), e);
-    }
-  };
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
-var __copyProps = (to, from, except, desc) => {
-  if ((from && typeof from === "object") || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, {
-          get: () => from[key],
-          enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
-        });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (
-  (target = mod != null ? __create(__getProtoOf(mod)) : {}),
-  __copyProps(
-    // If the importer is in node compatibility mode or this is not an ESM
-    // file that has been converted to a CommonJS file using a Babel-
-    // compatible transform (i.e. "__esModule" has not been set), then set
-    // "default" to the CommonJS "module.exports" for node compatibility.
-    isNodeMode || !mod || !mod.__esModule
-      ? __defProp(target, "default", { value: mod, enumerable: true })
-      : target,
-    mod,
-  )
-);
 
 // src/utils/crypto.ts
 import crypto from "crypto";
@@ -178,361 +124,10 @@ var init_User = __esm({
   },
 });
 
-// ../../packages/shared/dist/schemas/project.js
-var require_project = __commonJS({
-  "../../packages/shared/dist/schemas/project.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ProjectSchema =
-      exports.UpdateProjectSchema =
-      exports.CreateProjectSchema =
-        void 0;
-    var zod_1 = __require("zod");
-    exports.CreateProjectSchema = zod_1.z.object({
-      name: zod_1.z.string().min(1, "Name is required").max(100),
-      description: zod_1.z.string().max(500).optional(),
-      icon: zod_1.z.string().optional(),
-    });
-    exports.UpdateProjectSchema = exports.CreateProjectSchema.partial();
-    exports.ProjectSchema = zod_1.z.object({
-      id: zod_1.z.string(),
-      name: zod_1.z.string(),
-      description: zod_1.z.string().optional(),
-      icon: zod_1.z.string().optional(),
-      slug: zod_1.z.string(),
-      listCount: zod_1.z.number().optional().default(0),
-      status: zod_1.z.enum(["active", "deleting"]).default("active"),
-      createdAt: zod_1.z.union([zod_1.z.string(), zod_1.z.date()]).optional(),
-      updatedAt: zod_1.z.union([zod_1.z.string(), zod_1.z.date()]).optional(),
-    });
-  },
-});
-
-// ../../packages/shared/dist/schemas/knowledge-list.js
-var require_knowledge_list = __commonJS({
-  "../../packages/shared/dist/schemas/knowledge-list.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.KnowledgeListSchema =
-      exports.ReorderKnowledgeListSchema =
-      exports.UpdateKnowledgeListSchema =
-      exports.CreateKnowledgeListSchema =
-        void 0;
-    var zod_1 = __require("zod");
-    exports.CreateKnowledgeListSchema = zod_1.z.object({
-      projectId: zod_1.z.string(),
-      name: zod_1.z.string().min(1, "Name is required").max(100),
-      description: zod_1.z.string().max(500).optional(),
-    });
-    exports.UpdateKnowledgeListSchema = zod_1.z.object({
-      name: zod_1.z.string().min(1, "Name is required").max(100).optional(),
-      description: zod_1.z.string().max(500).optional(),
-    });
-    exports.ReorderKnowledgeListSchema = zod_1.z.object({
-      items: zod_1.z.array(
-        zod_1.z.object({
-          id: zod_1.z.string(),
-          position: zod_1.z.number(),
-        }),
-      ),
-    });
-    exports.KnowledgeListSchema = zod_1.z.object({
-      id: zod_1.z.string(),
-      projectId: zod_1.z.string(),
-      name: zod_1.z.string(),
-      slug: zod_1.z.string(),
-      description: zod_1.z.string().optional(),
-      position: zod_1.z.number(),
-      status: zod_1.z.enum(["active", "deleting"]).default("active"),
-      createdAt: zod_1.z.union([zod_1.z.string(), zod_1.z.date()]).optional(),
-      updatedAt: zod_1.z.union([zod_1.z.string(), zod_1.z.date()]).optional(),
-    });
-  },
-});
-
-// ../../packages/shared/dist/schemas/resource.js
-var require_resource = __commonJS({
-  "../../packages/shared/dist/schemas/resource.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ResourceSchema =
-      exports.ResourceAiSchema =
-      exports.ResourceStatusSchema =
-      exports.UpdateResourceSchema =
-      exports.CreateResourceSchema =
-      exports.ResourceTypeSchema =
-        void 0;
-    var zod_1 = __require("zod");
-    exports.ResourceTypeSchema = zod_1.z.enum([
-      "markdown",
-      "pdf",
-      "image",
-      "ebook",
-      "text",
-      "url",
-      "note",
-      "chat",
-    ]);
-    exports.CreateResourceSchema = zod_1.z.object({
-      projectId: zod_1.z.string(),
-      listId: zod_1.z.string(),
-      title: zod_1.z.string().min(1, "Title is required").max(200),
-      type: exports.ResourceTypeSchema,
-      mimeType: zod_1.z.string().optional(),
-      description: zod_1.z.string().max(1e3).optional(),
-      url: zod_1.z.string().url().optional(),
-      size: zod_1.z.number().optional(),
-      tags: zod_1.z.array(zod_1.z.string()).default([]),
-      isFavorite: zod_1.z.boolean().default(false),
-    });
-    exports.UpdateResourceSchema = zod_1.z.object({
-      title: zod_1.z.string().min(1, "Title is required").max(200).optional(),
-      listId: zod_1.z.string().optional(),
-      projectId: zod_1.z.string().optional(),
-      type: exports.ResourceTypeSchema.optional(),
-      mimeType: zod_1.z.string().optional(),
-      description: zod_1.z.string().max(1e3).optional(),
-      url: zod_1.z.string().url().optional(),
-      size: zod_1.z.number().optional(),
-      tags: zod_1.z.array(zod_1.z.string()).optional(),
-      isFavorite: zod_1.z.boolean().optional(),
-    });
-    exports.ResourceStatusSchema = zod_1.z.enum([
-      "pending",
-      "ready",
-      "error",
-      "deleting",
-    ]);
-    exports.ResourceAiSchema = zod_1.z.object({
-      summary: zod_1.z.string().optional(),
-      shortSummary: zod_1.z.string().optional(),
-      topics: zod_1.z.array(zod_1.z.string()).optional(),
-      tags: zod_1.z.array(zod_1.z.string()).optional(),
-      entities: zod_1.z
-        .array(
-          zod_1.z.object({
-            name: zod_1.z.string(),
-            type: zod_1.z.string(),
-          }),
-        )
-        .optional(),
-      keyPoints: zod_1.z.array(zod_1.z.string()).optional(),
-      keywords: zod_1.z.array(zod_1.z.string()).optional(),
-      language: zod_1.z.string().optional(),
-      sentiment: zod_1.z.string().optional(),
-      difficulty: zod_1.z
-        .enum(["beginner", "intermediate", "advanced"])
-        .optional(),
-      contentType: zod_1.z.string().optional(),
-      processedAt: zod_1.z.string().or(zod_1.z.date()).optional(),
-      model: zod_1.z.string().optional(),
-      version: zod_1.z.string().optional(),
-    });
-    exports.ResourceSchema = zod_1.z.object({
-      id: zod_1.z.string(),
-      projectId: zod_1.z.string(),
-      listId: zod_1.z.string(),
-      title: zod_1.z.string(),
-      type: exports.ResourceTypeSchema,
-      mimeType: zod_1.z.string().optional(),
-      description: zod_1.z.string().optional(),
-      url: zod_1.z.string().optional(),
-      size: zod_1.z.number().optional(),
-      tags: zod_1.z.array(zod_1.z.string()),
-      isFavorite: zod_1.z.boolean(),
-      status: exports.ResourceStatusSchema.default("ready"),
-      checksum: zod_1.z.string().optional(),
-      uploadUri: zod_1.z.string().optional(),
-      driveFileId: zod_1.z.string().optional(),
-      lastOpenedAt: zod_1.z.string().or(zod_1.z.date()).optional(),
-      createdAt: zod_1.z.union([zod_1.z.string(), zod_1.z.date()]).optional(),
-      updatedAt: zod_1.z.union([zod_1.z.string(), zod_1.z.date()]).optional(),
-      readingTime: zod_1.z.string().optional(),
-      ai: exports.ResourceAiSchema.optional(),
-    });
-  },
-});
-
-// ../../packages/shared/dist/schemas/user.js
-var require_user = __commonJS({
-  "../../packages/shared/dist/schemas/user.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.UserMetricsSchema =
-      exports.DriveMetricsSchema =
-      exports.UpdateUserSettingsSchema =
-      exports.UserSettingsSchema =
-        void 0;
-    var zod_1 = __require("zod");
-    exports.UserSettingsSchema = zod_1.z.object({
-      driveRefreshToken: zod_1.z.string().nullable().optional(),
-    });
-    exports.UpdateUserSettingsSchema = zod_1.z.object({
-      driveRefreshToken: zod_1.z.string().nullable().optional(),
-    });
-    exports.DriveMetricsSchema = zod_1.z.object({
-      connected: zod_1.z.boolean(),
-      usedInDrive: zod_1.z.number().nullable(),
-      limit: zod_1.z.number().nullable(),
-      remaining: zod_1.z.number().nullable(),
-    });
-    exports.UserMetricsSchema = zod_1.z.object({
-      usedByNexus: zod_1.z.number(),
-      resourceCount: zod_1.z.number(),
-      projectCount: zod_1.z.number(),
-      listCount: zod_1.z.number(),
-      byType: zod_1.z.record(zod_1.z.string(), zod_1.z.number()),
-      drive: exports.DriveMetricsSchema,
-    });
-  },
-});
-
-// ../../packages/shared/dist/schemas/info.js
-var require_info = __commonJS({
-  "../../packages/shared/dist/schemas/info.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.InfoSchema = void 0;
-    var zod_1 = __require("zod");
-    exports.InfoSchema = zod_1.z.object({
-      id: zod_1.z.string(),
-      type: zod_1.z.enum(["project", "list", "resource"]),
-      name: zod_1.z.string(),
-      description: zod_1.z.string().optional(),
-      createdAt: zod_1.z.string().or(zod_1.z.date()),
-      updatedAt: zod_1.z.string().or(zod_1.z.date()),
-      listCount: zod_1.z.number().optional(),
-      resourceCount: zod_1.z.number().optional(),
-      resourceType: zod_1.z.string().optional(),
-      mimeType: zod_1.z.string().optional(),
-      size: zod_1.z.number().optional(),
-      status: zod_1.z.string().optional(),
-      readingTime: zod_1.z.string().optional(),
-    });
-  },
-});
-
-// ../../packages/shared/dist/schemas/error.js
-var require_error = __commonJS({
-  "../../packages/shared/dist/schemas/error.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ErrorResponseSchema = void 0;
-    var zod_1 = __require("zod");
-    exports.ErrorResponseSchema = zod_1.z.object({
-      ok: zod_1.z.literal(false),
-      error: zod_1.z.object({
-        code: zod_1.z.string(),
-        message: zod_1.z.string(),
-        details: zod_1.z.record(zod_1.z.string(), zod_1.z.any()).optional(),
-      }),
-    });
-  },
-});
-
-// ../../packages/shared/dist/schemas/utils.js
-var require_utils = __commonJS({
-  "../../packages/shared/dist/schemas/utils.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.safeArrayResponse = safeArrayResponse6;
-    var zod_1 = __require("zod");
-    function safeArrayResponse6(schema) {
-      return zod_1.z.array(zod_1.z.unknown()).transform((arr) => {
-        return arr.reduce((acc, item) => {
-          const result = schema.safeParse(item);
-          if (result.success) {
-            acc.push(result.data);
-          } else {
-            console.error("[SafeArrayResponse] Filtered corrupt item:", item);
-            console.error(
-              "[SafeArrayResponse] Validation errors:",
-              result.error,
-            );
-          }
-          return acc;
-        }, []);
-      });
-    }
-  },
-});
-
-// ../../packages/shared/dist/schemas/pdf-progress.js
-var require_pdf_progress = __commonJS({
-  "../../packages/shared/dist/schemas/pdf-progress.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.UpsertPdfProgressRequestSchema = exports.PdfProgressSchema = void 0;
-    var zod_1 = __require("zod");
-    exports.PdfProgressSchema = zod_1.z.object({
-      userId: zod_1.z.string(),
-      documentUrl: zod_1.z.string(),
-      currentPage: zod_1.z.number().min(1),
-      maxPageReached: zod_1.z.number().min(1),
-      lastReadAt: zod_1.z.string().datetime(),
-    });
-    exports.UpsertPdfProgressRequestSchema = zod_1.z.object({
-      documentUrl: zod_1.z.string(),
-      currentPage: zod_1.z.number().min(1),
-      maxPageReached: zod_1.z.number().min(1),
-    });
-  },
-});
-
-// ../../packages/shared/dist/index.js
-var require_dist = __commonJS({
-  "../../packages/shared/dist/index.js"(exports) {
-    "use strict";
-    var __createBinding =
-      (exports && exports.__createBinding) ||
-      (Object.create
-        ? function (o, m, k, k2) {
-            if (k2 === void 0) k2 = k;
-            var desc = Object.getOwnPropertyDescriptor(m, k);
-            if (
-              !desc ||
-              ("get" in desc
-                ? !m.__esModule
-                : desc.writable || desc.configurable)
-            ) {
-              desc = {
-                enumerable: true,
-                get: function () {
-                  return m[k];
-                },
-              };
-            }
-            Object.defineProperty(o, k2, desc);
-          }
-        : function (o, m, k, k2) {
-            if (k2 === void 0) k2 = k;
-            o[k2] = m[k];
-          });
-    var __exportStar =
-      (exports && exports.__exportStar) ||
-      function (m, exports2) {
-        for (var p in m)
-          if (
-            p !== "default" &&
-            !Object.prototype.hasOwnProperty.call(exports2, p)
-          )
-            __createBinding(exports2, m, p);
-      };
-    Object.defineProperty(exports, "__esModule", { value: true });
-    __exportStar(require_project(), exports);
-    __exportStar(require_knowledge_list(), exports);
-    __exportStar(require_resource(), exports);
-    __exportStar(require_user(), exports);
-    __exportStar(require_info(), exports);
-    __exportStar(require_error(), exports);
-    __exportStar(require_utils(), exports);
-    __exportStar(require_pdf_progress(), exports);
-  },
-});
-
 // src/index.ts
 import "dotenv/config";
 import Fastify from "fastify";
+import mongoose8 from "mongoose";
 import multipart from "@fastify/multipart";
 
 // src/db.ts
@@ -1590,8 +1185,225 @@ var authRoutes = fp2(async (fastify2) => {
 });
 
 // src/routes/projects.ts
-var import_shared = __toESM(require_dist(), 1);
+import { z as z9 } from "zod";
+
+// ../../packages/shared/src/schemas/project.ts
 import { z } from "zod";
+var CreateProjectSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  description: z.string().max(500).optional(),
+  icon: z.string().optional(),
+});
+var UpdateProjectSchema = CreateProjectSchema.partial();
+var ProjectSchema2 = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  icon: z.string().optional(),
+  slug: z.string(),
+  listCount: z.number().optional().default(0),
+  status: z.enum(["active", "deleting"]).default("active"),
+  createdAt: z.union([z.string(), z.date()]).optional(),
+  updatedAt: z.union([z.string(), z.date()]).optional(),
+});
+
+// ../../packages/shared/src/schemas/knowledge-list.ts
+import { z as z2 } from "zod";
+var CreateKnowledgeListSchema = z2.object({
+  projectId: z2.string(),
+  name: z2.string().min(1, "Name is required").max(100),
+  description: z2.string().max(500).optional(),
+});
+var UpdateKnowledgeListSchema = z2.object({
+  name: z2.string().min(1, "Name is required").max(100).optional(),
+  description: z2.string().max(500).optional(),
+});
+var ReorderKnowledgeListSchema = z2.object({
+  items: z2.array(
+    z2.object({
+      id: z2.string(),
+      position: z2.number(),
+    }),
+  ),
+});
+var KnowledgeListSchema2 = z2.object({
+  id: z2.string(),
+  projectId: z2.string(),
+  name: z2.string(),
+  slug: z2.string(),
+  description: z2.string().optional(),
+  position: z2.number(),
+  status: z2.enum(["active", "deleting"]).default("active"),
+  createdAt: z2.union([z2.string(), z2.date()]).optional(),
+  updatedAt: z2.union([z2.string(), z2.date()]).optional(),
+});
+
+// ../../packages/shared/src/schemas/resource.ts
+import { z as z3 } from "zod";
+var ResourceTypeSchema = z3.enum([
+  "markdown",
+  "pdf",
+  "image",
+  "ebook",
+  "text",
+  "url",
+  "note",
+  "chat",
+]);
+var CreateResourceSchema = z3.object({
+  projectId: z3.string(),
+  listId: z3.string(),
+  title: z3.string().min(1, "Title is required").max(200),
+  type: ResourceTypeSchema,
+  mimeType: z3.string().optional(),
+  description: z3.string().max(1e3).optional(),
+  url: z3.string().url().optional(),
+  size: z3.number().optional(),
+  tags: z3.array(z3.string()).default([]),
+  isFavorite: z3.boolean().default(false),
+});
+var UpdateResourceSchema = z3.object({
+  title: z3.string().min(1, "Title is required").max(200).optional(),
+  listId: z3.string().optional(),
+  projectId: z3.string().optional(),
+  type: ResourceTypeSchema.optional(),
+  mimeType: z3.string().optional(),
+  description: z3.string().max(1e3).optional(),
+  url: z3.string().url().optional(),
+  size: z3.number().optional(),
+  tags: z3.array(z3.string()).optional(),
+  isFavorite: z3.boolean().optional(),
+});
+var ResourceStatusSchema = z3.enum(["pending", "ready", "error", "deleting"]);
+var ResourceAiSchema = z3.object({
+  summary: z3.string().optional(),
+  shortSummary: z3.string().optional(),
+  topics: z3.array(z3.string()).optional(),
+  tags: z3.array(z3.string()).optional(),
+  entities: z3
+    .array(
+      z3.object({
+        name: z3.string(),
+        type: z3.string(),
+      }),
+    )
+    .optional(),
+  keyPoints: z3.array(z3.string()).optional(),
+  keywords: z3.array(z3.string()).optional(),
+  language: z3.string().optional(),
+  sentiment: z3.string().optional(),
+  difficulty: z3.enum(["beginner", "intermediate", "advanced"]).optional(),
+  contentType: z3.string().optional(),
+  processedAt: z3.string().or(z3.date()).optional(),
+  model: z3.string().optional(),
+  version: z3.string().optional(),
+});
+var ResourceSchema2 = z3.object({
+  id: z3.string(),
+  projectId: z3.string(),
+  listId: z3.string(),
+  title: z3.string(),
+  type: ResourceTypeSchema,
+  mimeType: z3.string().optional(),
+  description: z3.string().optional(),
+  url: z3.string().optional(),
+  size: z3.number().optional(),
+  tags: z3.array(z3.string()),
+  isFavorite: z3.boolean(),
+  status: ResourceStatusSchema.default("ready"),
+  checksum: z3.string().optional(),
+  uploadUri: z3.string().optional(),
+  driveFileId: z3.string().optional(),
+  lastOpenedAt: z3.string().or(z3.date()).optional(),
+  createdAt: z3.union([z3.string(), z3.date()]).optional(),
+  updatedAt: z3.union([z3.string(), z3.date()]).optional(),
+  readingTime: z3.string().optional(),
+  ai: ResourceAiSchema.optional(),
+});
+
+// ../../packages/shared/src/schemas/user.ts
+import { z as z4 } from "zod";
+var UserSettingsSchema = z4.object({
+  driveRefreshToken: z4.string().nullable().optional(),
+});
+var UpdateUserSettingsSchema = z4.object({
+  driveRefreshToken: z4.string().nullable().optional(),
+});
+var DriveMetricsSchema = z4.object({
+  connected: z4.boolean(),
+  usedInDrive: z4.number().nullable(),
+  limit: z4.number().nullable(),
+  remaining: z4.number().nullable(),
+});
+var UserMetricsSchema = z4.object({
+  usedByNexus: z4.number(),
+  resourceCount: z4.number(),
+  projectCount: z4.number(),
+  listCount: z4.number(),
+  byType: z4.record(z4.string(), z4.number()),
+  drive: DriveMetricsSchema,
+});
+
+// ../../packages/shared/src/schemas/info.ts
+import { z as z5 } from "zod";
+var InfoSchema = z5.object({
+  id: z5.string(),
+  type: z5.enum(["project", "list", "resource"]),
+  name: z5.string(),
+  description: z5.string().optional(),
+  createdAt: z5.string().or(z5.date()),
+  updatedAt: z5.string().or(z5.date()),
+  listCount: z5.number().optional(),
+  resourceCount: z5.number().optional(),
+  resourceType: z5.string().optional(),
+  mimeType: z5.string().optional(),
+  size: z5.number().optional(),
+  status: z5.string().optional(),
+  readingTime: z5.string().optional(),
+});
+
+// ../../packages/shared/src/schemas/error.ts
+import { z as z6 } from "zod";
+var ErrorResponseSchema = z6.object({
+  ok: z6.literal(false),
+  error: z6.object({
+    code: z6.string(),
+    message: z6.string(),
+    details: z6.record(z6.string(), z6.any()).optional(),
+  }),
+});
+
+// ../../packages/shared/src/schemas/utils.ts
+import { z as z7 } from "zod";
+function safeArrayResponse(schema) {
+  return z7.array(z7.unknown()).transform((arr) => {
+    return arr.reduce((acc, item) => {
+      const result = schema.safeParse(item);
+      if (result.success) {
+        acc.push(result.data);
+      } else {
+        console.error("[SafeArrayResponse] Filtered corrupt item:", item);
+        console.error("[SafeArrayResponse] Validation errors:", result.error);
+      }
+      return acc;
+    }, []);
+  });
+}
+
+// ../../packages/shared/src/schemas/pdf-progress.ts
+import { z as z8 } from "zod";
+var PdfProgressSchema = z8.object({
+  userId: z8.string(),
+  documentUrl: z8.string(),
+  currentPage: z8.number().min(1),
+  maxPageReached: z8.number().min(1),
+  lastReadAt: z8.string().datetime(),
+});
+var UpsertPdfProgressRequestSchema = z8.object({
+  documentUrl: z8.string(),
+  currentPage: z8.number().min(1),
+  maxPageReached: z8.number().min(1),
+});
 
 // src/services/slugify.ts
 function slugify(name) {
@@ -1655,25 +1467,23 @@ var projectRoutes = async (server) => {
     {
       schema: {
         response: {
-          200: z.array(import_shared.ProjectSchema),
+          200: z9.array(ProjectSchema2),
         },
       },
     },
     async (_request, _reply) => {
       const projects = await listProjectsWithCounts();
-      return (0, import_shared.safeArrayResponse)(
-        import_shared.ProjectSchema,
-      ).parse(projects);
+      return safeArrayResponse(ProjectSchema2).parse(projects);
     },
   );
   server.post(
     "/api/projects",
     {
       schema: {
-        body: import_shared.CreateProjectSchema,
+        body: CreateProjectSchema,
         response: {
-          201: import_shared.ProjectSchema,
-          409: import_shared.ErrorResponseSchema,
+          201: ProjectSchema2,
+          409: ErrorResponseSchema,
         },
       },
     },
@@ -1686,10 +1496,10 @@ var projectRoutes = async (server) => {
     "/api/projects/:id",
     {
       schema: {
-        params: z.object({ id: z.string() }),
+        params: z9.object({ id: z9.string() }),
         response: {
-          200: import_shared.ProjectSchema,
-          404: import_shared.ErrorResponseSchema,
+          200: ProjectSchema2,
+          404: ErrorResponseSchema,
         },
       },
     },
@@ -1708,12 +1518,12 @@ var projectRoutes = async (server) => {
     "/api/projects/:id",
     {
       schema: {
-        params: z.object({ id: z.string() }),
-        body: import_shared.UpdateProjectSchema,
+        params: z9.object({ id: z9.string() }),
+        body: UpdateProjectSchema,
         response: {
-          200: import_shared.ProjectSchema,
-          404: import_shared.ErrorResponseSchema,
-          409: import_shared.ErrorResponseSchema,
+          200: ProjectSchema2,
+          404: ErrorResponseSchema,
+          409: ErrorResponseSchema,
         },
       },
     },
@@ -1732,10 +1542,10 @@ var projectRoutes = async (server) => {
     "/api/projects/:id",
     {
       schema: {
-        params: z.object({ id: z.string() }),
+        params: z9.object({ id: z9.string() }),
         response: {
-          204: z.null(),
-          404: import_shared.ErrorResponseSchema,
+          204: z9.null(),
+          404: ErrorResponseSchema,
         },
       },
     },
@@ -1756,8 +1566,7 @@ var projectRoutes = async (server) => {
 };
 
 // src/routes/lists.ts
-var import_shared2 = __toESM(require_dist(), 1);
-import { z as z2 } from "zod";
+import { z as z10 } from "zod";
 
 // src/utils/errors.ts
 var ApplicationError = class extends Error {
@@ -1830,27 +1639,25 @@ var listRoutes = async (server) => {
     "/api/projects/:projectId/lists",
     {
       schema: {
-        params: z2.object({ projectId: z2.string() }),
+        params: z10.object({ projectId: z10.string() }),
         response: {
-          200: z2.array(import_shared2.KnowledgeListSchema),
+          200: z10.array(KnowledgeListSchema2),
         },
       },
     },
     async (request, _reply) => {
       const lists = await listByProject(request.params.projectId);
-      return (0, import_shared2.safeArrayResponse)(
-        import_shared2.KnowledgeListSchema,
-      ).parse(lists);
+      return safeArrayResponse(KnowledgeListSchema2).parse(lists);
     },
   );
   server.get(
     "/api/lists/:id",
     {
       schema: {
-        params: z2.object({ id: z2.string() }),
+        params: z10.object({ id: z10.string() }),
         response: {
-          200: import_shared2.KnowledgeListSchema,
-          404: import_shared2.ErrorResponseSchema,
+          200: KnowledgeListSchema2,
+          404: ErrorResponseSchema,
         },
       },
     },
@@ -1866,14 +1673,12 @@ var listRoutes = async (server) => {
     "/api/projects/:projectId/lists",
     {
       schema: {
-        params: z2.object({ projectId: z2.string() }),
-        body: import_shared2.CreateKnowledgeListSchema.omit({
-          projectId: true,
-        }),
+        params: z10.object({ projectId: z10.string() }),
+        body: CreateKnowledgeListSchema.omit({ projectId: true }),
         response: {
-          201: import_shared2.KnowledgeListSchema,
-          404: import_shared2.ErrorResponseSchema,
-          409: import_shared2.ErrorResponseSchema,
+          201: KnowledgeListSchema2,
+          404: ErrorResponseSchema,
+          409: ErrorResponseSchema,
         },
       },
     },
@@ -1893,12 +1698,12 @@ var listRoutes = async (server) => {
     "/api/lists/:id",
     {
       schema: {
-        params: z2.object({ id: z2.string() }),
-        body: import_shared2.UpdateKnowledgeListSchema,
+        params: z10.object({ id: z10.string() }),
+        body: UpdateKnowledgeListSchema,
         response: {
-          200: import_shared2.KnowledgeListSchema,
-          404: import_shared2.ErrorResponseSchema,
-          409: import_shared2.ErrorResponseSchema,
+          200: KnowledgeListSchema2,
+          404: ErrorResponseSchema,
+          409: ErrorResponseSchema,
         },
       },
     },
@@ -1914,10 +1719,10 @@ var listRoutes = async (server) => {
     "/api/lists/:id",
     {
       schema: {
-        params: z2.object({ id: z2.string() }),
+        params: z10.object({ id: z10.string() }),
         response: {
-          204: z2.null(),
-          404: import_shared2.ErrorResponseSchema,
+          204: z10.null(),
+          404: ErrorResponseSchema,
         },
       },
     },
@@ -1936,10 +1741,10 @@ var listRoutes = async (server) => {
     "/api/projects/:projectId/lists/reorder",
     {
       schema: {
-        params: z2.object({ projectId: z2.string() }),
-        body: import_shared2.ReorderKnowledgeListSchema,
+        params: z10.object({ projectId: z10.string() }),
+        body: ReorderKnowledgeListSchema,
         response: {
-          200: z2.object({ success: z2.boolean() }),
+          200: z10.object({ success: z10.boolean() }),
         },
       },
     },
@@ -1954,8 +1759,7 @@ var listRoutes = async (server) => {
 };
 
 // src/routes/resources.ts
-var import_shared3 = __toESM(require_dist(), 1);
-import { z as z3 } from "zod";
+import { z as z11 } from "zod";
 
 // src/utils/multipart.ts
 import { Readable } from "stream";
@@ -2015,10 +1819,10 @@ var resourceRoutes = async (server) => {
     "/api/projects/:projectId/resources",
     {
       schema: {
-        params: z3.object({ projectId: z3.string() }),
-        querystring: z3.object({ listId: z3.string().optional() }),
+        params: z11.object({ projectId: z11.string() }),
+        querystring: z11.object({ listId: z11.string().optional() }),
         response: {
-          200: z3.array(import_shared3.ResourceSchema),
+          200: z11.array(ResourceSchema2),
         },
       },
     },
@@ -2026,9 +1830,7 @@ var resourceRoutes = async (server) => {
       const { projectId } = request.params;
       const { listId } = request.query;
       const resources = await listResourcesByProject(projectId, listId);
-      return (0, import_shared3.safeArrayResponse)(
-        import_shared3.ResourceSchema,
-      ).parse(resources);
+      return safeArrayResponse(ResourceSchema2).parse(resources);
     },
   );
   server.post(
@@ -2038,11 +1840,11 @@ var resourceRoutes = async (server) => {
       // 14MB limit
       schema: {
         response: {
-          201: import_shared3.ResourceSchema,
-          400: z3.object({ error: z3.string() }),
-          404: z3.object({ error: z3.string() }),
-          413: z3.object({ error: z3.string() }),
-          500: z3.object({ error: z3.string() }),
+          201: ResourceSchema2,
+          400: z11.object({ error: z11.string() }),
+          404: z11.object({ error: z11.string() }),
+          413: z11.object({ error: z11.string() }),
+          500: z11.object({ error: z11.string() }),
         },
       },
     },
@@ -2061,7 +1863,7 @@ var resourceRoutes = async (server) => {
         } else {
           body = request.body;
         }
-        const parsedBody = import_shared3.CreateResourceSchema.safeParse(body);
+        const parsedBody = CreateResourceSchema.safeParse(body);
         if (!parsedBody.success) {
           return reply.status(400).send({
             error: "Validation failed",
@@ -2103,10 +1905,10 @@ var resourceRoutes = async (server) => {
     "/api/resources/:id",
     {
       schema: {
-        params: z3.object({ id: z3.string() }),
+        params: z11.object({ id: z11.string() }),
         response: {
-          200: import_shared3.ResourceSchema,
-          404: z3.object({ error: z3.string() }),
+          200: ResourceSchema2,
+          404: z11.object({ error: z11.string() }),
         },
       },
     },
@@ -2120,11 +1922,11 @@ var resourceRoutes = async (server) => {
     "/api/resources/:id/file",
     {
       schema: {
-        params: z3.object({ id: z3.string() }),
+        params: z11.object({ id: z11.string() }),
         response: {
-          400: z3.object({ error: z3.string() }),
-          404: z3.object({ error: z3.string() }),
-          500: z3.object({ error: z3.string() }),
+          400: z11.object({ error: z11.string() }),
+          404: z11.object({ error: z11.string() }),
+          500: z11.object({ error: z11.string() }),
           // 200 is omitted because it streams binary data
         },
       },
@@ -2167,12 +1969,12 @@ var resourceRoutes = async (server) => {
     "/api/resources/:id/favorite",
     {
       schema: {
-        params: z3.object({ id: z3.string() }),
-        body: z3.object({ isFavorite: z3.boolean() }),
+        params: z11.object({ id: z11.string() }),
+        body: z11.object({ isFavorite: z11.boolean() }),
         response: {
-          200: import_shared3.ResourceSchema,
-          400: z3.object({ error: z3.string() }),
-          404: z3.object({ error: z3.string() }),
+          200: ResourceSchema2,
+          400: z11.object({ error: z11.string() }),
+          404: z11.object({ error: z11.string() }),
         },
       },
     },
@@ -2187,10 +1989,10 @@ var resourceRoutes = async (server) => {
     "/api/resources/:id/open",
     {
       schema: {
-        params: z3.object({ id: z3.string() }),
+        params: z11.object({ id: z11.string() }),
         response: {
-          200: import_shared3.ResourceSchema,
-          404: z3.object({ error: z3.string() }),
+          200: ResourceSchema2,
+          404: z11.object({ error: z11.string() }),
         },
       },
     },
@@ -2208,12 +2010,12 @@ var resourceRoutes = async (server) => {
       bodyLimit: 14 * 1024 * 1024,
       // 14MB limit
       schema: {
-        params: z3.object({ id: z3.string() }),
-        body: import_shared3.UpdateResourceSchema,
+        params: z11.object({ id: z11.string() }),
+        body: UpdateResourceSchema,
         response: {
-          200: import_shared3.ResourceSchema,
-          400: z3.object({ error: z3.string() }),
-          404: z3.object({ error: z3.string() }),
+          200: ResourceSchema2,
+          400: z11.object({ error: z11.string() }),
+          404: z11.object({ error: z11.string() }),
         },
       },
     },
@@ -2257,10 +2059,10 @@ var resourceRoutes = async (server) => {
     "/api/resources/:id",
     {
       schema: {
-        params: z3.object({ id: z3.string() }),
+        params: z11.object({ id: z11.string() }),
         response: {
-          204: z3.null(),
-          404: z3.object({ error: z3.string() }),
+          204: z11.null(),
+          404: z11.object({ error: z11.string() }),
         },
       },
     },
@@ -2275,8 +2077,7 @@ var resourceRoutes = async (server) => {
 };
 
 // src/routes/progress.ts
-var import_shared4 = __toESM(require_dist(), 1);
-import { z as z4 } from "zod";
+import { z as z12 } from "zod";
 
 // src/models/PdfProgress.ts
 import mongoose6, { Schema as Schema5 } from "mongoose";
@@ -2298,7 +2099,7 @@ var PdfProgressModel = mongoose6.model("PdfProgress", pdfProgressSchema);
 var progressRoutes = async (app) => {
   app.post(
     "/api/progress",
-    { schema: { body: import_shared4.UpsertPdfProgressRequestSchema } },
+    { schema: { body: UpsertPdfProgressRequestSchema } },
     async (request, reply) => {
       const userId = request.ownerId;
       const { documentUrl, currentPage, maxPageReached } = request.body;
@@ -2316,7 +2117,7 @@ var progressRoutes = async (app) => {
   );
   app.get(
     "/api/progress",
-    { schema: { querystring: z4.object({ documentUrl: z4.string() }) } },
+    { schema: { querystring: z12.object({ documentUrl: z12.string() }) } },
     async (request, reply) => {
       const userId = request.ownerId;
       const { documentUrl } = request.query;
@@ -2327,15 +2128,14 @@ var progressRoutes = async (app) => {
 };
 
 // src/routes/user.ts
-var import_shared5 = __toESM(require_dist(), 1);
-import { z as z5 } from "zod";
+import { z as z13 } from "zod";
 var userRoutes = async (server) => {
   server.get(
     "/api/user/settings",
     {
       schema: {
         response: {
-          200: import_shared5.UserSettingsSchema,
+          200: UserSettingsSchema,
         },
       },
     },
@@ -2347,9 +2147,9 @@ var userRoutes = async (server) => {
     "/api/user/settings",
     {
       schema: {
-        body: import_shared5.UpdateUserSettingsSchema,
+        body: UpdateUserSettingsSchema,
         response: {
-          200: import_shared5.UserSettingsSchema,
+          200: UserSettingsSchema,
         },
       },
     },
@@ -2362,15 +2162,13 @@ var userRoutes = async (server) => {
     {
       schema: {
         response: {
-          200: z5.array(import_shared5.ResourceSchema),
+          200: z13.array(ResourceSchema2),
         },
       },
     },
     async (_request, _reply) => {
       const favorites = await getFavorites();
-      return (0, import_shared5.safeArrayResponse)(
-        import_shared5.ResourceSchema,
-      ).parse(favorites);
+      return safeArrayResponse(ResourceSchema2).parse(favorites);
     },
   );
   server.get(
@@ -2378,15 +2176,13 @@ var userRoutes = async (server) => {
     {
       schema: {
         response: {
-          200: z5.array(import_shared5.ResourceSchema),
+          200: z13.array(ResourceSchema2),
         },
       },
     },
     async (_request, _reply) => {
       const recent = await getRecent();
-      return (0, import_shared5.safeArrayResponse)(
-        import_shared5.ResourceSchema,
-      ).parse(recent);
+      return safeArrayResponse(ResourceSchema2).parse(recent);
     },
   );
   server.get(
@@ -2394,7 +2190,7 @@ var userRoutes = async (server) => {
     {
       schema: {
         response: {
-          200: import_shared5.UserMetricsSchema,
+          200: UserMetricsSchema,
         },
       },
     },
@@ -2405,8 +2201,7 @@ var userRoutes = async (server) => {
 };
 
 // src/routes/search.ts
-import { z as z6 } from "zod";
-var import_shared6 = __toESM(require_dist(), 1);
+import { z as z14 } from "zod";
 var scopeFilter = (ownerId, projectId) => {
   const filter = { ownerId };
   if (projectId) filter.projectId = projectId;
@@ -2417,12 +2212,12 @@ var searchRoutes = async (server) => {
     "/api/search",
     {
       schema: {
-        querystring: z6.object({
-          q: z6.string().min(1),
-          projectId: z6.string().optional(),
+        querystring: z14.object({
+          q: z14.string().min(1),
+          projectId: z14.string().optional(),
         }),
         response: {
-          200: z6.array(import_shared6.ResourceSchema),
+          200: z14.array(ResourceSchema2),
         },
       },
     },
@@ -2439,25 +2234,23 @@ var searchRoutes = async (server) => {
         .select("-content")
         .sort({ score: { $meta: "textScore" } })
         .limit(50);
-      return (0, import_shared6.safeArrayResponse)(
-        import_shared6.ResourceSchema,
-      ).parse(resources);
+      return safeArrayResponse(ResourceSchema2).parse(resources);
     },
   );
   server.get(
     "/api/search/suggestions",
     {
       schema: {
-        querystring: z6.object({
-          q: z6.string().min(1),
-          projectId: z6.string().optional(),
+        querystring: z14.object({
+          q: z14.string().min(1),
+          projectId: z14.string().optional(),
         }),
         response: {
-          200: z6.array(
-            z6.object({
-              id: z6.string(),
-              title: z6.string(),
-              type: z6.string(),
+          200: z14.array(
+            z14.object({
+              id: z14.string(),
+              title: z14.string(),
+              type: z14.string(),
             }),
           ),
         },
@@ -2477,11 +2270,11 @@ var searchRoutes = async (server) => {
     "/api/favorites",
     {
       schema: {
-        querystring: z6.object({
-          projectId: z6.string().optional(),
+        querystring: z14.object({
+          projectId: z14.string().optional(),
         }),
         response: {
-          200: z6.array(import_shared6.ResourceSchema),
+          200: z14.array(ResourceSchema2),
         },
       },
     },
@@ -2495,20 +2288,18 @@ var searchRoutes = async (server) => {
       const resources = await queryResources(filter, {
         sort: { updatedAt: -1 },
       });
-      return (0, import_shared6.safeArrayResponse)(
-        import_shared6.ResourceSchema,
-      ).parse(resources);
+      return safeArrayResponse(ResourceSchema2).parse(resources);
     },
   );
   server.get(
     "/api/recent",
     {
       schema: {
-        querystring: z6.object({
-          projectId: z6.string().optional(),
+        querystring: z14.object({
+          projectId: z14.string().optional(),
         }),
         response: {
-          200: z6.array(import_shared6.ResourceSchema),
+          200: z14.array(ResourceSchema2),
         },
       },
     },
@@ -2523,9 +2314,7 @@ var searchRoutes = async (server) => {
         sort: { lastOpenedAt: -1 },
         limit: 20,
       });
-      return (0, import_shared6.safeArrayResponse)(
-        import_shared6.ResourceSchema,
-      ).parse(resources);
+      return safeArrayResponse(ResourceSchema2).parse(resources);
     },
   );
 };
@@ -3321,20 +3110,19 @@ var oauthProviderPlugin = fp7(
 );
 
 // src/routes/info.ts
-var import_shared7 = __toESM(require_dist(), 1);
-import { z as z7 } from "zod";
+import { z as z15 } from "zod";
 var infoRoutes = async (server) => {
   server.get(
     "/api/info",
     {
       schema: {
-        querystring: z7.object({
-          type: z7.enum(["project", "list", "resource"]),
-          id: z7.string(),
+        querystring: z15.object({
+          type: z15.enum(["project", "list", "resource"]),
+          id: z15.string(),
         }),
         response: {
-          200: import_shared7.InfoSchema,
-          404: z7.object({ error: z7.string() }),
+          200: InfoSchema,
+          404: z15.object({ error: z15.string() }),
         },
       },
     },
@@ -3523,6 +3311,7 @@ import cookiePlugin from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
 var fastify = Fastify({
   logger: true,
+  trustProxy: true,
   routerOptions: { ignoreTrailingSlash: true, ignoreDuplicateSlashes: true },
 }).withTypeProvider();
 fastify.setValidatorCompiler(validatorCompiler);
@@ -3532,6 +3321,11 @@ fastify.register(cookiePlugin);
 fastify.register(rateLimit, {
   max: 100,
   timeWindow: "1 minute",
+  keyGenerator: (req) =>
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.headers["x-real-ip"] ||
+    req.ip ||
+    "127.0.0.1",
 });
 fastify.register(multipart, {
   attachFieldsToBody: false,
@@ -3572,27 +3366,46 @@ fastify.get("/health", async (_request, _reply) => {
 fastify.get("/api/protected", async (request, _reply) => {
   return { ok: true, user: request.ownerId };
 });
+fastify.addHook("onRequest", async (request) => {
+  const url = request.raw.url || request.url;
+  if (
+    url === "/health" ||
+    url.startsWith("/api/auth/google") ||
+    url.startsWith("/api/auth/github")
+  ) {
+    return;
+  }
+  const mongoUri = process.env.MONGODB_URI;
+  if (mongoUri && mongoose8.connection.readyState !== 1) {
+    await connectDB(mongoUri);
+  }
+});
 var initPromise = null;
 var init = async () => {
   if (!initPromise) {
     initPromise = (async () => {
-      const mongoUri = process.env.MONGODB_URI;
-      if (!mongoUri) {
-        throw new Error("MONGODB_URI is not defined");
-      }
-      await connectDB(mongoUri);
-      fastify.log.info("Connected to MongoDB");
       await fastify.ready();
-    })().catch((err) => {
-      initPromise = null;
-      throw err;
-    });
+      const mongoUri = process.env.MONGODB_URI;
+      if (mongoUri) {
+        connectDB(mongoUri).catch((err) => {
+          fastify.log.warn(
+            { err: err?.message },
+            "Initial background MongoDB connection attempt deferred",
+          );
+        });
+      }
+    })();
   }
   return initPromise;
 };
 if (!process.env.VERCEL) {
   init()
     .then(async () => {
+      const mongoUri = process.env.MONGODB_URI;
+      if (mongoUri) {
+        await connectDB(mongoUri);
+        fastify.log.info("Connected to MongoDB");
+      }
       const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
       await fastify.listen({ port, host: "0.0.0.0" });
       console.log(`Server listening on port ${port}`);
@@ -3604,6 +3417,20 @@ if (!process.env.VERCEL) {
 }
 async function handler(req, res) {
   try {
+    if (!req.socket) {
+      req.socket = {
+        remoteAddress:
+          req.headers?.["x-forwarded-for"]?.split(",")[0]?.trim() ||
+          req.headers?.["x-real-ip"] ||
+          "127.0.0.1",
+        encrypted: true,
+      };
+    } else if (!req.socket.remoteAddress) {
+      req.socket.remoteAddress =
+        req.headers?.["x-forwarded-for"]?.split(",")[0]?.trim() ||
+        req.headers?.["x-real-ip"] ||
+        "127.0.0.1";
+    }
     await init();
     fastify.server.emit("request", req, res);
   } catch (err) {
