@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_UWSFzcEqwZLv08XXvTkal0pAZ4FJ",
+  "orgId": "team_IR4VOQvUsni6luXmPsAw6znZ",
+  "projectName": "nexus",
+  "settings": {
+    "createdAt": 1792783698945,
+    "framework": "services",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}
