@@ -125,7 +125,10 @@ export const init = async () => {
       await connectDB(mongoUri);
       fastify.log.info("Connected to MongoDB");
       await fastify.ready();
-    })();
+    })().catch((err) => {
+      initPromise = null;
+      throw err;
+    });
   }
   return initPromise;
 };

@@ -3,7 +3,8 @@
   "services": {
     "api": {
       "root": "apps/api",
-      "framework": "fastify"
+      "framework": "fastify",
+      "entrypoint": "server.mjs"
     },
     "web": {
       "root": "apps/web",
