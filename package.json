@@ -12,7 +12,7 @@
     "lint:all": "npm run lint --workspaces --if-present",
     "typecheck:all": "npm run typecheck --workspaces --if-present",
     "typecheck:ci": "npm run build --workspace=packages/shared && npm run typecheck:all",
-    "prepare": "husky || true"
+    "prepare": "node .husky/install.mjs"
   },
   "dependencies": {
     "patch-package": "^8.0.1"
