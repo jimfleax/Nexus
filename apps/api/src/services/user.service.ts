@@ -178,7 +178,11 @@ export async function getMetrics(
       }
     }
   } catch (err: any) {
-    console.error(`Failed to fetch drive metrics for ${ownerId}:`, err.message);
+    console.error(
+      "Failed to fetch drive metrics for user:",
+      ownerId,
+      err?.message,
+    );
   }
 
   return {

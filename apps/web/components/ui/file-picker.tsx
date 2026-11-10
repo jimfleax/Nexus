@@ -15,6 +15,37 @@ interface FilePickerProps {
 }
 
 /**
+ * @desc    Validate if a dropped or selected file matches the accept pattern
+ * @param   {File} file - The file to test
+ * @param   {string} [accept] - Comma-separated list of extensions or mime types
+ * @returns {boolean} True if accepted or accept is empty
+ */
+export function isFileTypeAccepted(file: File, accept?: string): boolean {
+  if (!accept || !accept.trim()) return true;
+
+  const patterns = accept
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (patterns.length === 0) return true;
+
+  const fileName = (file.name || "").toLowerCase();
+  const fileType = (file.type || "").toLowerCase();
+
+  return patterns.some((pattern) => {
+    if (pattern.startsWith(".")) {
+      return fileName.endsWith(pattern);
+    }
+    if (pattern.endsWith("/*")) {
+      const baseType = pattern.slice(0, -1);
+      return fileType.startsWith(baseType);
+    }
+    return fileType === pattern;
+  });
+}
+
+/**
  * @desc    Render a file picker handling drop, browse, and removal
  * @param   {FilePickerProps} props - Current file and callback
  * @returns {JSX.Element} The picker UI
@@ -49,16 +80,9 @@ export function FilePicker({
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFile = e.dataTransfer.files[0];
-      // Basic mime type check if accept is provided (e.g., "image/*")
-      if (accept) {
-        const sanitizedAccept = accept
-          .replace(/\./g, "\\.")
-          .replace(/\*/g, ".*");
-        const acceptRegex = new RegExp(sanitizedAccept);
-        if (!acceptRegex.test(droppedFile.type)) {
-          alert(`Invalid file type. Accepted: ${accept}`);
-          return;
-        }
+      if (accept && !isFileTypeAccepted(droppedFile, accept)) {
+        alert(`Invalid file type. Accepted: ${accept}`);
+        return;
       }
       onFileSelect(droppedFile);
       e.dataTransfer.clearData();
