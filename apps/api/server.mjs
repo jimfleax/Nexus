@@ -920,7 +920,11 @@ async function getMetrics(ownerId, storage) {
       }
     }
   } catch (err) {
-    console.error(`Failed to fetch drive metrics for ${ownerId}:`, err.message);
+    console.error(
+      "Failed to fetch drive metrics for user:",
+      ownerId,
+      err?.message,
+    );
   }
   return {
     usedByNexus,
