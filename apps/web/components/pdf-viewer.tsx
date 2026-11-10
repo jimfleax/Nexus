@@ -389,6 +389,7 @@ export function PdfViewer({ title, url }: { title: string; url?: string }) {
             file={blobUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             className={`flex flex-col items-center ${viewMode === "single" ? "m-auto" : ""}`}
+            suspense={false}
             loading={
               <div className="text-sm text-[#6247aa] m-auto">
                 Rendering PDF...
