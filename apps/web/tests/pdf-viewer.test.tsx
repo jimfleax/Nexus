@@ -6,11 +6,11 @@ import { PdfViewer } from "@/components/pdf-viewer";
 import { TestWrapper } from "./test-utils";
 
 // Mock ResizeObserver for jsdom
-global.ResizeObserver = class {
+global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
-} as any;
+};
 
 // Mock pdfjs and react-pdf components
 vi.mock("react-pdf", () => ({
@@ -20,13 +20,21 @@ vi.mock("react-pdf", () => ({
       workerSrc: "",
     },
   },
-  Document: ({ children, loading, suspense }: any) => (
+  Document: ({
+    children,
+    loading,
+    suspense,
+  }: {
+    children?: React.ReactNode;
+    loading?: React.ReactNode;
+    suspense?: boolean;
+  }) => (
     <div data-testid="pdf-document" data-suspense={String(suspense)}>
       {loading}
       {children}
     </div>
   ),
-  Page: ({ pageNumber }: any) => (
+  Page: ({ pageNumber }: { pageNumber: number }) => (
     <div data-testid={`pdf-page-${pageNumber}`}>Page {pageNumber}</div>
   ),
 }));
